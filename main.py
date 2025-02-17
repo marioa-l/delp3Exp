@@ -2,7 +2,7 @@ import sys
 import csv
 import glob
 import re
-from sampling.byWorldSampling import *
+from sampling import Programs, Worlds
 from sampling.byProgramSampling import *
 import argparse
 from multiprocessing import Process
