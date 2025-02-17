@@ -3,7 +3,7 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from buildYesGAN import *
 from buildNoGAN import *
-from toCNF import *
+from utils.toCNF import *
 tf.get_logger().setLevel('ERROR')
 tf.get_logger().warning('test')
 

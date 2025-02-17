@@ -1,7 +1,7 @@
 import copy
-from utils import *
+from utils.utils import *
 from progress.counter import Counter
-from consultDeLP import *
+from delp.consultDeLP import *
 import time
 import numpy as np
 from sympy import *

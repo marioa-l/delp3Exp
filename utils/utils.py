@@ -4,7 +4,7 @@ import os
 from collections import OrderedDict
 
 import numpy as np
-from bn import BayesNetwork
+from probmodels.bn import BayesNetwork
 
 """Generals Names and Values"""
 BN_NAMES = "BN"

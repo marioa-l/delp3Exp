@@ -1,5 +1,5 @@
 import signal
-from consultDeLP import *
+from delp.consultDeLP import *
 import argparse
 from em.bnCode import *
 

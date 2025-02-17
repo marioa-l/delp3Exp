@@ -3,9 +3,9 @@ sys.path.insert(1, './Utils/')
 sys.path.insert(2, './EM/BNs/')
 import argparse
 import numpy as np
-from bn import *
+from probmodels.bn import *
 import pyAgrum as gum
-from utils import *
+from utils.utils import *
 
 
 class CreateDeLP3E: 

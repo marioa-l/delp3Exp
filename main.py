@@ -2,8 +2,8 @@ import sys
 import csv
 import glob
 import re
-from byWorldSampling import *
-from byProgramSampling import *
+from sampling.byWorldSampling import *
+from sampling.byProgramSampling import *
 import argparse
 from multiprocessing import Process
 
