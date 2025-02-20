@@ -271,16 +271,16 @@ class BayesNetwork:
                   - prob is the probability of that sample occurring
         """
         samplesToReturn = []
-        database = self.generator.drawSamples(samples)
+        self.generator.drawSamples(samples)
         
         spinner = Spinner("Generating samples with probabilities...")
         for i in range(samples):
             world = []
             asdict = {}
-            for node in self.bn.nodes():
-                value = database.get(i)[node]
+            for j, node in enumerate(self.bn.nodes()):
+                value = self.generator.samplesAt(i,j)
                 world.append(int(value))
-                asdict[str(node)] = value
+                asdict[str(node)] = int(value)
             
             prob = self.get_sampling_prob(asdict)
             samplesToReturn.append([world, asdict, prob])
@@ -310,6 +310,104 @@ class BayesNetwork:
         plt.xlabel('World State (binary to decimal)')
         plt.ylabel('Relative Frequency')
         plt.show()
+
+
+    def approximate_entropy_pyagrum(self, n_samples=10000):
+        """
+        Approximate the entropy of the Bayesian Network using Monte Carlo sampling
+        and PyAgrum's inference capabilities.
+        
+        Args:
+            n_samples (int): Number of samples to use for approximation
+        
+        Returns:
+            float: Approximated entropy value
+        """
+        entropy = 0.0
+        samples = self.generator.drawSamples(n_samples)
+        
+        spinner = Spinner("Approximating entropy...")
+        sample_entropies = []
+        
+        # Usar batch processing para mejorar eficiencia
+        batch_size = min(1000, n_samples)
+        for i in range(0, n_samples, batch_size):
+            batch_end = min(i + batch_size, n_samples)
+            for j in range(i, batch_end):
+                evidence = {}
+                # Construir evidencia del mundo actual
+                for node in self.bn.nodes():
+                    value = self.generator.samplesAt(j, node)
+                    evidence[node] = value
+                
+                # Calcular P(X=x) usando el inferenciador
+                prob = self.get_sampling_prob(evidence)
+                if prob > 0:
+                    sample_entropies.append(-prob * math.log2(prob))
+            spinner.next()
+        
+        spinner.finish()
+        
+        # Estimación final de la entropía
+        entropy = sum(sample_entropies) * (2**len(self.bn.nodes()) / n_samples)
+        
+        return entropy
+
+
+    def compare_entropy_methods(self):
+        """
+        Compare different methods for entropy calculation:
+        1. Exact entropy (using all possible worlds)
+        2. pyAgrum's entropy approximation using factorized approach
+        
+        Returns:
+            dict: Dictionary containing computation times and entropy values for each method
+        """
+        results = {'exact': {}, 'pyagrum': {}}
+        
+        # 1. Exact entropy calculation
+        start_time = time.time()
+        exact_entropy = self.getEntropy()
+        exact_time = time.time() - start_time
+        results['exact'] = {
+            'entropy': exact_entropy,
+            'time': exact_time
+        }
+        
+        # 2. Aproximación de la entropía usando pyAgrum
+        start_time = time.time()
+        try:
+            entropy = 0
+            # Suponemos que self.bn es la red bayesiana y self.ie el motor de inferencia (LazyPropagation)
+            self.ie.makeInference()  # Hacemos la inferencia una única vez
+            
+            # Obtener el orden topológico para asegurar que los padres se procesen antes que el nodo
+            ordered_nodes = list(self.bn.topologicalOrder())
+            for node in ordered_nodes:
+                parents = list(self.bn.parents(node))
+                if not parents:
+                    # Para nodos sin padres, la entropía es la marginal: H(X)
+                    h_node = self.ie.H([node])
+                else:
+                    # Para nodos con padres, usamos que H(X|Pa(X)) = H(X,Pa(X)) - H(Pa(X))
+                    h_joint = self.ie.H([node] + parents)
+                    h_parents = self.ie.H(parents)
+                    h_node = h_joint - h_parents
+                # Sumar la contribución del nodo
+                entropy += h_node
+
+        except Exception as e:
+            print(f"Error in pyAgrum entropy calculation: {e}")
+            entropy = float('nan')
+
+        pyagrum_time = time.time() - start_time
+        results['pyagrum'] = {
+            'entropy': entropy,
+            'time': pyagrum_time,
+            'error': abs(entropy - exact_entropy) if not math.isnan(entropy) else float('nan')
+        }
+        
+        return results
 
 
     def load_bn(self):
