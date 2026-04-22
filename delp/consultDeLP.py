@@ -7,7 +7,7 @@ def query_to_delp(delp_program, literals):
     delp_string = delp_program + 'use_criterion(more_specific);'
     status_literals = {}
     for literal in literals:
-        cmd = ['./globalCore', 'stream', delp_string, 'answ', literal]
+        cmd = ['delp/globalCore', 'stream', delp_string, 'answ', literal]
         literal_time = time.time()
         proc = subprocess.Popen(cmd,
                                 stdout=subprocess.PIPE,
@@ -19,5 +19,7 @@ def query_to_delp(delp_program, literals):
             #return o.decode('ascii')
         else:
             print("Error to consult literal")
+            print("Comando:", " ".join(cmd))
+            print("Error:", e.decode('utf-8'))
             exit()
     return status_literals

@@ -1,9 +1,10 @@
-import re
 import json
 import os
+import re
 from collections import OrderedDict
 
 import numpy as np
+
 from probmodels.bn import BayesNetwork
 
 """Generals Names and Values"""
@@ -18,7 +19,7 @@ STATUS = {
     "pno": 0.0,
     "pundecided": 0.0,
     "punknown": 0.0,
-    "time": 0.0
+    "time": 0.0,
 }
 """General Utils"""
 
@@ -39,7 +40,7 @@ def read_json_file(path_file: str) -> json:
 
 
 def natural_key(string_):
-    return [int(s) if s.isdigit() else s for s in re.split(r'(\d+)', string_)]
+    return [int(s) if s.isdigit() else s for s in re.split(r"(\d+)", string_)]
 
 
 def gfn(path: str) -> str:
@@ -49,25 +50,25 @@ def gfn(path: str) -> str:
 
 def gdn(path: str) -> str:
     """Get the directory name in a specified path"""
-    return os.path.dirname(path) + '/'
+    return os.path.dirname(path) + "/"
 
 
 def gfnexact(path: str) -> str:
     """Get the file name that contains the exact values of the model specified in path"""
     dir_name = os.path.dirname(path)
     model_name = gfn(path)[:-5]
-    return dir_name + '/exact/' + model_name + '_e_w.json'
+    return dir_name + "/exact/" + model_name + "_e_wNEW.json"
 
 
 def gfnexact_from_sampling(path: str) -> str:
     dir_name = os.path.dirname(os.path.dirname(os.path.dirname(path)))
     model_name = gfn(path)[:-9]
-    return dir_name + '/exact/' + model_name + '_e_w.json'
+    return dir_name + "/exact/" + model_name + "_e_wNEW.json"
 
 
 def to_decimal_format(number: float, decimals: int) -> str:
     """To format a float number"""
-    return str(format(number, '.' + str(decimals) + 'f')).replace('.', ',')
+    return str(format(number, "." + str(decimals) + "f")).replace(".", ",")
 
 
 def bin_to_int(in_binary: str) -> int:
@@ -86,17 +87,17 @@ def get_percentile(percentile: int, total: int) -> float:
 
 def write_results(results: json, path: str, approach: str) -> None:
     """To compute and save results"""
-    n_samples = results['data']['n_samples']
-    for lit, status in results['status'].items():
-        status['percY'] = get_percentile(status['yes'], n_samples)
-        status['percN'] = get_percentile(status['no'], n_samples)
-        status['percU'] = get_percentile(status['undecided'], n_samples)
-        status['percUNK'] = get_percentile(status['unknown'], n_samples)
-        status['l'] = status['pyes']
-        status['u'] = 1 - status['pno']
-        if status['u'] - status['l'] <= WIDTH_OF_INTEREST:
-            status['flag'] = "INTEREST"
-    with open(path + approach + '.json', 'w') as outfile:
+    n_samples = results["data"]["n_samples"]
+    for lit, status in results["status"].items():
+        status["percY"] = get_percentile(status["yes"], n_samples)
+        status["percN"] = get_percentile(status["no"], n_samples)
+        status["percU"] = get_percentile(status["undecided"], n_samples)
+        status["percUNK"] = get_percentile(status["unknown"], n_samples)
+        status["l"] = status["pyes"]
+        status["u"] = 1 - status["pno"]
+        if status["u"] - status["l"] <= WIDTH_OF_INTEREST:
+            status["flag"] = "INTEREST"
+    with open(path + approach + "NEW.json", "w") as outfile:
         json.dump(results, outfile, indent=4)
 
 
@@ -117,8 +118,8 @@ def compute_metric(approximate: list, exact: list):
 
 def format_annot(annot: str, world: list) -> str:
     """To transform annot into an expression from the values of a world"""
-    to_eval = ''
-    aux = annot.strip().split(' ')
+    to_eval = ""
+    aux = annot.strip().split(" ")
     for element in aux:
         try:
             if world[int(element)] == 1:
@@ -146,7 +147,7 @@ def eval_annot(annot: str, world: list) -> bool:
 
 def is_trivial_annot(annot: str) -> bool:
     """To evaluate if an annotation is 'trivial'"""
-    if annot == 'True' or annot == '' or annot == 'not True':
+    if annot == "True" or annot == "" or annot == "not True":
         return True
     else:
         return False
@@ -161,9 +162,9 @@ def get_prog_info(model: list) -> list:
     for index, annot in enumerate(model):
         if not is_trivial_annot(annot[1]):
             annotations[index] = annot[1]
-            program_in_bin.append('x')
+            program_in_bin.append("x")
         else:
-            if annot[1] == 'True' or annot[1] == '':
+            if annot[1] == "True" or annot[1] == "":
                 program_in_bin.append(1)
             else:
                 program_in_bin.append(0)
@@ -178,22 +179,22 @@ class Model:
         self.model_path = model_path
         model_data = read_json_file(model_path)
         # The rule and annotations
-        self.model = model_data['af']
+        self.model = model_data["af"]
         # The number of EM variables in the model
-        self.em_vars = model_data['em_var']
+        self.em_vars = model_data["em_var"]
         # The number of rules in the model
         self.am_rules_dim = len(self.model)
         # Info of the program in the model
         self.n_annots, self.annotations, self.prog_in_bin = get_prog_info(self.model)
         # All literals used in the AM model
-        self.literals_in_model = model_data['literals']
+        self.literals_in_model = model_data["literals"]
         # To load the Bayesian Network of the model
-        index_model = re.search(r'\d+', gfn(model_path)).group()
+        index_model = re.search(r"\d+", gfn(model_path)).group()
         self.em = BayesNetwork(gbn(index_model), gdn(model_path))
         self.em.load_bn()
         self.save_path = save_path + gfn(model_path)[:-5]
-        self.to_bin_prog_format = '{0:0' + str(self.n_annots) + 'b}'
-        self.to_bin_world_format = '{0:0' + str(self.em_vars) + 'b}'
+        self.to_bin_prog_format = "{0:0" + str(self.n_annots) + "b}"
+        self.to_bin_world_format = "{0:0" + str(self.em_vars) + "b}"
 
     def get_n_worlds(self) -> int:
         """Return the total number of possible worlds"""
@@ -210,13 +211,15 @@ class Model:
 
     def id_world_to_bin(self, id_world: int) -> list:
         """To convert the id of a world into a binary array and it's evidence"""
-        world = [int(digit) for digit in list(self.to_bin_world_format.format(id_world))]
+        world = [
+            int(digit) for digit in list(self.to_bin_world_format.format(id_world))
+        ]
         evidence = {i: world[i] for i in range(len(world))}
         return [world, evidence]
 
     def map_bin_to_prog(self, bin_array: list) -> str:
         """Map a binary array into a prog"""
-        prog = ''
+        prog = ""
         for index, value in enumerate(bin_array):
             if value == 1:
                 # Add the rule
@@ -225,15 +228,15 @@ class Model:
 
     def map_world_to_prog(self, world: list) -> list:
         """Map a world (in binary representation) into a prog"""
-        prog = ''
-        prog_in_bin = '0b'
+        prog = ""
+        prog_in_bin = "0b"
         for rule, annot in self.model:
             check_annot = eval_annot(annot, world)
             if check_annot:
                 prog += rule
-                prog_in_bin += '1'
+                prog_in_bin += "1"
             else:
-                prog_in_bin += '0'
+                prog_in_bin += "0"
         id_prog = bin_to_int(prog_in_bin)
         return [prog, id_prog]
 
@@ -241,21 +244,16 @@ class Model:
         """Return the literals with interest intervals of the model
         (for sampling)"""
         exact_file_name = gfnexact(self.model_path)
-        literals = read_json_file(exact_file_name)['status'].keys()
+        literals = read_json_file(exact_file_name)["status"].keys()
         return literals
 
     def search_lit_to_consult(self):
-        """Search literals to consult in the model"""
-        literals = []
-        levels = list(self.literals_in_model.keys())
-        # Simple one
-        literals.append(np.random.choice(self.literals_in_model["0"], 1)[0])
-        # Medium one
-        from_levels = np.random.choice(levels[1:-1], 1)[0]
-        literals.append(np.random.choice(self.literals_in_model[str(from_levels)], 1)[0])
-        # Complex one
-        literals.append(np.random.choice(self.literals_in_model[levels[-1]], 1)[0])
-        return literals
+        """Return all unique literals present in the model"""
+        literals = set()
+        for level in self.literals_in_model.values():
+            for lit in level:
+                literals.add(lit)
+        return list(literals)
 
 
 class KnownSamples:

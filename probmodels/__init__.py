@@ -1,4 +1,2 @@
 # probmodels/__init__.py
-from .bn import *
-
-__all__ = ['BayesNetwork', 'create_random_dag']
+from .bn import BayesNetwork, create_random_dag

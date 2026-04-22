@@ -1,14 +1,36 @@
+# Python
 .*
 !/.gitignore
-tags*
 __pycache__/
-idea/
-Docu/
 *.py[cod]
 *$py.class
+*.pyc
+
+# Environments
 .env
 .venv
-pruebas.py
-globalCore
-*.pyc
+
+# IDE / editor
+.idea
+.ropeproject
+tags*
+
+# Binaries (place platform-specific binary as delp/globalCore — not tracked)
+delp/globalCore
+delp/coremac
+**/globalCore
+**/coremac
+
+# Experiment results (generated locally, not tracked)
+results/
+*.csv
+
+# Figures (generated locally, not tracked)
+*.pdf
+*.png
+
+# Research notes (internal, not tracked)
+SESSION_NOTES.md
 local/
+Docu/
+pruebas.py
