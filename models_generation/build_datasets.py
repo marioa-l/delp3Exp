@@ -1,7 +1,7 @@
 import argparse
-from buildKBs import *
+from models_generation.buildKBs import *
 import glob
-from utils import *
+from utils.utils import *
 
 
 class Datasets:

@@ -1,7 +1,7 @@
 import numpy as np
 from progress.bar import IncrementalBar
 from progress.spinner import Spinner
-from consultDeLP import queryToProgram
+from delp.consultDeLP import queryToProgram
 from em.bn import *
 from utilsExp import *
 import time
