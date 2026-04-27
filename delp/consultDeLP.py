@@ -1,7 +1,11 @@
 import os
+import platform
 import time
 import tempfile
 import subprocess
+
+# Use the macOS binary on Darwin and the Linux one elsewhere.
+_BINARY = 'delp/coremac' if platform.system() == 'Darwin' else 'delp/globalCore'
 
 
 def query_to_delp(delp_program, literals):
@@ -22,7 +26,7 @@ def query_to_delp(delp_program, literals):
 
     try:
         for literal in literals:
-            cmd = ['delp/globalCore', 'file', tmp_path, 'answ', f'[{literal}]']
+            cmd = [_BINARY, 'file', tmp_path, 'answ', literal]
             literal_time = time.time()
             proc = subprocess.Popen(cmd,
                                     stdout=subprocess.PIPE,
