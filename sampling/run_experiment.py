@@ -326,13 +326,16 @@ if __name__ == "__main__":
 
     csv_path = os.path.join(output_path, f"{config_name}_results.csv")
     if rows:
-        df = pd.read_csv(csv_path, sep=";")
+        df = pd.DataFrame(rows)
         print(f"\nResults saved to: {csv_path}")
-        print(f"Total rows: {len(df)}  ({df['model'].nunique()} models)")
-        print(f"\nWinner distribution:\n{df['winner'].value_counts().to_string()}")
-        df["quality_diff"] = df["worlds_quality"] - df["progs_quality"]
-        print(f"\nQuality diff (worlds − programs):")
-        print(f"  mean : {df['quality_diff'].mean():+.4f}")
-        print(f"  std  : {df['quality_diff'].std():.4f}")
+        try:
+            print(f"Total rows: {len(df)}  ({df['model'].nunique()} models)")
+            print(f"\nWinner distribution:\n{df['winner'].value_counts().to_string()}")
+            df["quality_diff"] = df["worlds_quality"] - df["progs_quality"]
+            print(f"\nQuality diff (worlds − programs):")
+            print(f"  mean : {df['quality_diff'].mean():+.4f}")
+            print(f"  std  : {df['quality_diff'].std():.4f}")
+        except Exception as e:
+            print(f"  (summary unavailable: {e})")
     else:
         print("No results generated.")
