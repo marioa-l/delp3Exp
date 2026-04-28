@@ -250,7 +250,14 @@ def run_config(input_path, output_path, time_limit, config_name,
     print(f"{'='*60}\n")
 
     csv_path = os.path.join(output_path, f"{config_name}_results.csv")
-    write_header = not os.path.exists(csv_path)
+    # Start every run with a fresh CSV. If a previous one exists, back it up
+    # so we don't lose data — appending would silently duplicate rows.
+    if os.path.exists(csv_path):
+        from datetime import datetime
+        backup = f"{csv_path}.bak.{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        os.rename(csv_path, backup)
+        print(f"[warn] Existing CSV moved to {backup}")
+    write_header = True
     completed = 0
     all_rows = []
 
