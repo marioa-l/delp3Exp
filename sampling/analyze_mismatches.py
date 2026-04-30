@@ -111,7 +111,7 @@ def plot_feature_comparison(df, out):
 
     for ax, feat in zip(axes, feats):
         data = [correct[feat].values, mismatch[feat].values]
-        bp = ax.boxplot(data, tick_labels=["correct", "mismatch"],
+        bp = ax.boxplot(data, labels=["correct", "mismatch"],
                         patch_artist=True, widths=0.55,
                         medianprops=dict(color="black", linewidth=1.2),
                         showfliers=True)
