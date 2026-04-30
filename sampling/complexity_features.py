@@ -121,7 +121,7 @@ def _parse_am_metrics(result: dict) -> dict:
     }
 
 
-def compute_am_metrics(model_path: str, timeout: int = 300,
+def compute_am_metrics(model_path: str, timeout: int = 900,
                        save_raw_to: Optional[str] = None) -> Optional[dict]:
     """
     Run the DeLP solver on the program and extract AM complexity metrics.
