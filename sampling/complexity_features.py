@@ -121,8 +121,15 @@ def _parse_am_metrics(result: dict) -> dict:
     }
 
 
-def compute_am_metrics(model_path: str, timeout: int = 300) -> Optional[dict]:
-    """Run the DeLP solver on the program and extract AM complexity metrics."""
+def compute_am_metrics(model_path: str, timeout: int = 300,
+                       save_raw_to: Optional[str] = None) -> Optional[dict]:
+    """
+    Run the DeLP solver on the program and extract AM complexity metrics.
+
+    If `save_raw_to` is given, the full solver JSON output (status + dGraph)
+    is also written to that path so future feature extraction can avoid
+    re-running the solver.
+    """
     with open(model_path) as f:
         model_data = json.load(f)
     delp_text = _model_to_delp_text(model_data)
@@ -144,6 +151,11 @@ def compute_am_metrics(model_path: str, timeout: int = 300) -> Optional[dict]:
             os.unlink(tmp_path)
         except OSError:
             pass
+
+    if save_raw_to is not None:
+        os.makedirs(os.path.dirname(save_raw_to), exist_ok=True)
+        with open(save_raw_to, 'w') as f:
+            json.dump(result, f)
 
     return _parse_am_metrics(result)
 
@@ -280,11 +292,14 @@ def compute_af_extra(model_data: dict) -> dict:
 
 
 # ── Top-level convenience wrapper ─────────────────────────────────────────────
-def compute_all(model_path: str, bn_path: Optional[str] = None) -> dict:
+def compute_all(model_path: str, bn_path: Optional[str] = None,
+                save_raw_to: Optional[str] = None) -> dict:
     """
     Compute all complexity features for a single model.
 
     `bn_path` defaults to <dir>/BN<N>.bifxml beside the model.
+    `save_raw_to`, if set, is the path where the raw solver JSON output is
+    written so future feature extraction can avoid calling the solver again.
     Missing data is filled with NaN-like sentinels.
     """
     with open(model_path) as f:
@@ -298,7 +313,7 @@ def compute_all(model_path: str, bn_path: Optional[str] = None) -> dict:
 
     out = {}
 
-    am = compute_am_metrics(model_path)
+    am = compute_am_metrics(model_path, save_raw_to=save_raw_to)
     if am is None:
         am = {k: None for k in (
             'am_n_arguments', 'am_n_defeaters', 'am_n_trees',

@@ -30,6 +30,7 @@ from sampling.complexity_features import compute_all  # noqa: E402
 
 INPUT_CSV = "results/all_results.csv"
 CACHE     = "results/complexity_cache.json"
+DGRAPH_DIR = "results/dgraphs"
 
 # Default model repo locations (try in order); can be overridden via --models_root
 DEFAULT_ROOTS = [
@@ -64,9 +65,10 @@ def save_cache(cache: dict) -> None:
 
 
 def _worker(args):
-    config, model_name, model_path = args
+    config, model_name, model_path, dgraph_path = args
     try:
-        return (config, model_name, compute_all(model_path), None)
+        return (config, model_name,
+                compute_all(model_path, save_raw_to=dgraph_path), None)
     except Exception as e:  # pragma: no cover
         return (config, model_name, None, str(e))
 
@@ -93,13 +95,16 @@ def main():
     todo = []
     for cfg, model_name in pairs:
         key = f"{cfg}/{model_name}"
-        if key in cache and cache[key].get("am_n_arguments") is not None:
+        dgraph_path = os.path.join(DGRAPH_DIR, cfg, f"{model_name}_dgraph.json")
+        # Skip only if BOTH the cached features and the raw dgraph already exist
+        if (key in cache and cache[key].get("am_n_arguments") is not None
+                and os.path.exists(dgraph_path)):
             continue
         path = os.path.join(root, cfg, f"{model_name}.json")
         if not os.path.exists(path):
             print(f"  [warn] missing model file: {path}")
             continue
-        todo.append((cfg, model_name, path))
+        todo.append((cfg, model_name, path, dgraph_path))
 
     print(f"Pairs to compute: {len(todo)}")
 
@@ -109,12 +114,12 @@ def main():
         t0 = time.time()
         if args.workers <= 1:
             for i, job in enumerate(todo):
-                cfg, model_name, _, err = _worker(job)
+                cfg, model_name, features, err = _worker(job)
                 key = f"{cfg}/{model_name}"
-                if err:
+                if err or features is None:
                     print(f"  [{i+1}/{len(todo)}] ERROR {key}: {err}")
                     continue
-                cache[key] = _worker(job)[2]
+                cache[key] = features
                 if (i + 1) % 25 == 0:
                     save_cache(cache)
                     elapsed = time.time() - t0
