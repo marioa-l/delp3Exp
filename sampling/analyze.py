@@ -92,6 +92,10 @@ def load_data():
     # Continuous target: positive = worlds better, negative = programs better
     df["quality_diff"] = df["worlds_quality"] - df["progs_quality"]
 
+    # n_programs can exceed int64 (2^64) and arrive as object — coerce to float
+    df["n_worlds"]   = df["n_worlds"].astype(float)
+    df["n_programs"] = df["n_programs"].astype(float)
+
     # Log-space features (useful for tree, less so for correlation)
     df["log_n_worlds"]   = np.log2(df["n_worlds"])
     df["log_n_programs"] = np.log2(df["n_programs"])
