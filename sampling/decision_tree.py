@@ -41,8 +41,6 @@ COLOR_PROGRAMS = "#D55E00"
 PREDICTORS = [
     # Model structural features
     "em_var", "n_annots", "n_rules", "annots_minus_em",
-    # n_worlds and n_programs are 2^em_var and 2^n_annots — redundant but useful
-    # in log space for tree splits
     # Literal features
     "lit_is_negated", "lit_head_def", "lit_head_strict", "lit_body_count",
     "lit_is_fact", "lit_is_ann_fact",
@@ -50,19 +48,34 @@ PREDICTORS = [
     # AF global features
     "af_pct_annotated", "af_avg_annot_vars", "af_avg_connectors",
     "af_avg_body_size", "af_max_body_size",
+    # AM complexity features (from dialectical graph)
+    "am_n_arguments", "am_n_defeaters", "am_n_trees",
+    "am_avg_def_rules", "am_avg_arg_lines", "am_avg_height_lines",
+    # EM complexity features (Bayesian Network)
+    "em_n_arcs", "em_treewidth", "em_avg_in_degree", "em_max_in_degree",
+    "em_entropy",
+    # AF extended complexity features
+    "af_n_em_vars_used", "af_avg_complexity", "af_max_complexity",
 ]
 
 
 def load_data():
     df = pd.read_csv(INPUT_CSV, sep=";")
-    # Coerce big-int columns to float (some > int64)
     for c in ("n_worlds", "n_programs"):
         if c in df.columns:
             df[c] = df[c].astype(float)
-    # Drop rows without a valid winner (ties or missing)
     df = df.dropna(subset=["winner"])
     df = df[df["winner"].isin(["worlds", "programs"])].copy()
     df["winner_binary"] = (df["winner"] == "worlds").astype(int)
+    return df
+
+
+def impute_predictors(df, predictors):
+    """Fill NaN in predictor columns with the column median (column-wise)."""
+    for col in predictors:
+        if col in df.columns and df[col].isna().any():
+            med = df[col].median()
+            df[col] = df[col].fillna(med)
     return df
 
 
@@ -123,6 +136,7 @@ def main():
 
     df = load_data()
     predictors = [p for p in PREDICTORS if p in df.columns]
+    df = impute_predictors(df, predictors)
     X = df[predictors].values
     y = df["winner_binary"].values
 

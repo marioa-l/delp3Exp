@@ -46,6 +46,11 @@ PREDICTORS = [
     "lit_complement_body", "lit_complement_head",
     "af_pct_annotated", "af_avg_annot_vars", "af_avg_connectors",
     "af_avg_body_size", "af_max_body_size",
+    "am_n_arguments", "am_n_defeaters", "am_n_trees",
+    "am_avg_def_rules", "am_avg_arg_lines", "am_avg_height_lines",
+    "em_n_arcs", "em_treewidth", "em_avg_in_degree", "em_max_in_degree",
+    "em_entropy",
+    "af_n_em_vars_used", "af_avg_complexity", "af_max_complexity",
 ]
 
 
@@ -65,6 +70,15 @@ def load_data():
     df = df.dropna(subset=["winner"])
     df = df[df["winner"].isin(["worlds", "programs"])].copy()
     df["winner_binary"] = (df["winner"] == "worlds").astype(int)
+    return df
+
+
+def impute_predictors(df, predictors):
+    """Fill NaN in predictor columns with the column median."""
+    for col in predictors:
+        if col in df.columns and df[col].isna().any():
+            med = df[col].median()
+            df[col] = df[col].fillna(med)
     return df
 
 
@@ -186,6 +200,7 @@ def main():
 
     df = load_data()
     predictors = [p for p in PREDICTORS if p in df.columns]
+    df = impute_predictors(df, predictors)
 
     print("Training decision tree...")
     df, depth, acc = fit_tree_and_predict(df, predictors)

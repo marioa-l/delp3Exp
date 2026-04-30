@@ -41,24 +41,24 @@ COLOR_PROGRAMS = "#D55E00"   # orange
 
 # Features to analyse as potential predictors
 PREDICTORS = [
-    "annots_minus_em",
-    "em_var",
-    "n_annots",
-    "n_rules",
+    # Structural sizes
+    "annots_minus_em", "em_var", "n_annots", "n_rules",
     "exact_width",
-    "lit_head_def",
-    "lit_head_strict",
-    "lit_body_count",
-    "lit_is_negated",
-    "lit_is_fact",
-    "lit_is_ann_fact",
-    "lit_complement_body",
-    "lit_complement_head",
-    "af_pct_annotated",
-    "af_avg_annot_vars",
-    "af_avg_connectors",
-    "af_avg_body_size",
-    "af_max_body_size",
+    # Literal features
+    "lit_head_def", "lit_head_strict", "lit_body_count",
+    "lit_is_negated", "lit_is_fact", "lit_is_ann_fact",
+    "lit_complement_body", "lit_complement_head",
+    # AF basic features
+    "af_pct_annotated", "af_avg_annot_vars", "af_avg_connectors",
+    "af_avg_body_size", "af_max_body_size",
+    # AM complexity (dialectical graph)
+    "am_n_arguments", "am_n_defeaters", "am_n_trees",
+    "am_avg_def_rules", "am_avg_arg_lines", "am_avg_height_lines",
+    # EM complexity (Bayesian Network)
+    "em_n_arcs", "em_treewidth", "em_avg_in_degree", "em_max_in_degree",
+    "em_entropy",
+    # AF extended complexity
+    "af_n_em_vars_used", "af_avg_complexity", "af_max_complexity",
 ]
 
 TARGETS = ["winner_binary", "quality_diff"]
@@ -109,9 +109,11 @@ def plot_correlation_heatmap(df, out):
     """Spearman correlations of all predictors vs each target."""
     corr_rows = []
     for feat in PREDICTORS:
+        if feat not in df.columns:
+            continue
         row = {"feature": feat}
         for tgt in TARGETS:
-            r, p = stats.spearmanr(df[feat], df[tgt])
+            r, p = stats.spearmanr(df[feat], df[tgt], nan_policy="omit")
             row[f"r_{tgt}"] = r
             row[f"p_{tgt}"] = p
         corr_rows.append(row)
@@ -208,13 +210,18 @@ def plot_feature_scatters(df, corr_df, out):
 
 # ── 3. Decision tree ──────────────────────────────────────────────────────────
 def fit_decision_tree(df, out, summary_lines):
-    X = df[PREDICTORS].values
-    y = df["winner_binary"].values
+    predictors = [p for p in PREDICTORS if p in df.columns]
+    df_imp = df.copy()
+    for col in predictors:
+        if df_imp[col].isna().any():
+            df_imp[col] = df_imp[col].fillna(df_imp[col].median())
+    X = df_imp[predictors].values
+    y = df_imp["winner_binary"].values
 
     # Cross-validated accuracy at different depths
     summary_lines.append("\n=== Decision Tree CV Accuracy ===")
     best_depth, best_acc = 1, 0
-    for depth in range(1, 6):
+    for depth in range(1, 11):
         dt = DecisionTreeClassifier(max_depth=depth, random_state=42)
         scores = cross_val_score(dt, X, y, cv=5, scoring="accuracy")
         summary_lines.append(f"  depth={depth}: {scores.mean():.3f} ± {scores.std():.3f}")
@@ -228,10 +235,10 @@ def fit_decision_tree(df, out, summary_lines):
     dt.fit(X, y)
 
     summary_lines.append("\n=== Decision Tree Rules ===")
-    summary_lines.append(export_text(dt, feature_names=PREDICTORS))
+    summary_lines.append(export_text(dt, feature_names=predictors))
 
     # Feature importances
-    importances = pd.Series(dt.feature_importances_, index=PREDICTORS)
+    importances = pd.Series(dt.feature_importances_, index=predictors)
     importances = importances[importances > 0].sort_values(ascending=True)
 
     fig, axes = plt.subplots(1, 2, figsize=(16, max(4, len(importances) * 0.4 + 2)))
@@ -247,7 +254,7 @@ def fit_decision_tree(df, out, summary_lines):
 
     # Right: tree structure
     ax2 = axes[1]
-    plot_tree(dt, feature_names=PREDICTORS,
+    plot_tree(dt, feature_names=predictors,
               class_names=["programs", "worlds"],
               filled=True, rounded=True, ax=ax2,
               fontsize=9, impurity=False,
