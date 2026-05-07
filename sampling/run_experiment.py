@@ -318,6 +318,12 @@ if __name__ == "__main__":
                         help="Max number of models to process (default: all)")
     parser.add_argument("--workers", type=int, default=1,
                         help="Parallel workers (default: 1). Use 4 on icic-server.")
+    parser.add_argument("--time_limit", type=int, default=None,
+                        help="Override the per-literal time limit (seconds) "
+                             "from the config file.")
+    parser.add_argument("--output_root", default=None,
+                        help="Override the output root. The config's directory "
+                             "name is appended (e.g. results_5min/sss).")
     args = parser.parse_args()
 
     cfg = load_json(args.config)
@@ -325,6 +331,11 @@ if __name__ == "__main__":
     output_path = cfg["output_path"]
     time_limit  = cfg["time_limit"]
     config_name = os.path.basename(os.path.normpath(input_path))
+
+    if args.time_limit is not None:
+        time_limit = args.time_limit
+    if args.output_root is not None:
+        output_path = os.path.join(args.output_root, config_name)
 
     os.makedirs(output_path, exist_ok=True)
 
