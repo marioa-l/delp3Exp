@@ -29,8 +29,10 @@ import pandas as pd
 from sklearn.tree import DecisionTreeClassifier, export_text, plot_tree
 from sklearn.model_selection import cross_val_score, StratifiedKFold
 
-INPUT_CSV  = "results/all_results.csv"
-OUTPUT_DIR = "results/analysis"
+DEFAULT_INPUT_CSV  = "results/all_results.csv"
+DEFAULT_OUTPUT_DIR = "results/analysis"
+INPUT_CSV  = DEFAULT_INPUT_CSV   # may be overridden by CLI
+OUTPUT_DIR = DEFAULT_OUTPUT_DIR  # may be overridden by CLI
 
 FONT = "DejaVu Sans"
 LABEL_SIZE, TITLE_SIZE = 13, 16
@@ -129,7 +131,12 @@ def main():
     parser.add_argument("--max_depth", type=int, default=None,
                         help="Force a specific depth (default: pick best by CV)")
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--input_csv", default=DEFAULT_INPUT_CSV)
+    parser.add_argument("--output_dir", default=DEFAULT_OUTPUT_DIR)
     args = parser.parse_args()
+    global INPUT_CSV, OUTPUT_DIR
+    INPUT_CSV = args.input_csv
+    OUTPUT_DIR = args.output_dir
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     plt.rcParams["font.family"] = FONT

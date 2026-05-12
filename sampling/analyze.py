@@ -31,8 +31,10 @@ from sklearn.preprocessing import LabelEncoder
 warnings.filterwarnings("ignore")
 
 # ── Configuration ─────────────────────────────────────────────────────────────
-INPUT_CSV  = "results/all_results.csv"
-OUTPUT_DIR = "results/analysis"
+DEFAULT_INPUT_CSV  = "results/all_results.csv"
+DEFAULT_OUTPUT_DIR = "results/analysis"
+INPUT_CSV  = DEFAULT_INPUT_CSV   # may be overridden by CLI
+OUTPUT_DIR = DEFAULT_OUTPUT_DIR  # may be overridden by CLI
 FONT       = "DejaVu Sans"
 LABEL_SIZE = 13
 TITLE_SIZE = 16
@@ -301,6 +303,15 @@ def print_summary(df, corr_df, summary_lines):
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 def main():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input_csv", default=DEFAULT_INPUT_CSV)
+    parser.add_argument("--output_dir", default=DEFAULT_OUTPUT_DIR)
+    args = parser.parse_args()
+    global INPUT_CSV, OUTPUT_DIR
+    INPUT_CSV = args.input_csv
+    OUTPUT_DIR = args.output_dir
+
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     plt.rcParams["font.family"] = FONT
 

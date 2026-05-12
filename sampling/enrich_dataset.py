@@ -28,9 +28,9 @@ import pandas as pd
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from sampling.complexity_features import compute_all  # noqa: E402
 
-INPUT_CSV = "results/all_results.csv"
-CACHE     = "results/complexity_cache.json"
-DGRAPH_DIR = "results/dgraphs"
+DEFAULT_INPUT_CSV  = "results/all_results.csv"
+DEFAULT_CACHE      = "results/complexity_cache.json"
+DEFAULT_DGRAPH_DIR = "results/dgraphs"
 
 # Default model repo locations (try in order); can be overridden via --models_root
 DEFAULT_ROOTS = [
@@ -50,18 +50,18 @@ def find_models_root(override: str | None) -> str:
     )
 
 
-def load_cache() -> dict:
-    if not os.path.exists(CACHE):
+def load_cache(path: str) -> dict:
+    if not os.path.exists(path):
         return {}
-    with open(CACHE) as f:
+    with open(path) as f:
         return json.load(f)
 
 
-def save_cache(cache: dict) -> None:
-    tmp = CACHE + ".tmp"
+def save_cache(cache: dict, path: str) -> None:
+    tmp = path + ".tmp"
     with open(tmp, "w") as f:
         json.dump(cache, f, indent=2)
-    os.replace(tmp, CACHE)
+    os.replace(tmp, path)
 
 
 def _worker(args):
@@ -79,23 +79,32 @@ def main():
                         help="Path to delp3e_models / exp-delp3e directory")
     parser.add_argument("--workers", type=int, default=1,
                         help="Parallel workers (1 = sequential)")
+    parser.add_argument("--input_csv", default=DEFAULT_INPUT_CSV,
+                        help="CSV to enrich (will be overwritten; backed up first)")
+    parser.add_argument("--cache", default=DEFAULT_CACHE,
+                        help="Cache file for parsed complexity features")
+    parser.add_argument("--dgraph_dir", default=DEFAULT_DGRAPH_DIR,
+                        help="Where to read/write raw dGraph JSONs")
     args = parser.parse_args()
 
     root = find_models_root(args.models_root)
     print(f"Using models root: {root}")
+    input_csv = args.input_csv
+    cache_path = args.cache
+    dgraph_dir = args.dgraph_dir
 
-    df = pd.read_csv(INPUT_CSV, sep=";")
+    df = pd.read_csv(input_csv, sep=";")
     pairs = df[["config", "model"]].drop_duplicates().values.tolist()
     print(f"Unique (config, model) pairs in dataset: {len(pairs)}")
 
-    cache = load_cache()
+    cache = load_cache(cache_path)
     print(f"Cached pairs: {len(cache)}")
 
     # Build job list for missing pairs only
     todo = []
     for cfg, model_name in pairs:
         key = f"{cfg}/{model_name}"
-        dgraph_path = os.path.join(DGRAPH_DIR, cfg, f"{model_name}_dgraph.json")
+        dgraph_path = os.path.join(dgraph_dir, cfg, f"{model_name}_dgraph.json")
         # Skip only if BOTH the cached features and the raw dgraph already exist
         if (key in cache and cache[key].get("am_n_arguments") is not None
                 and os.path.exists(dgraph_path)):
@@ -121,7 +130,7 @@ def main():
                     continue
                 cache[key] = features
                 if (i + 1) % 25 == 0:
-                    save_cache(cache)
+                    save_cache(cache, cache_path)
                     elapsed = time.time() - t0
                     rate = (i + 1) / elapsed
                     remaining = (len(todo) - i - 1) / rate
@@ -141,14 +150,14 @@ def main():
                         continue
                     cache[key] = features
                     if done % 25 == 0:
-                        save_cache(cache)
+                        save_cache(cache, cache_path)
                         elapsed = time.time() - t0
                         rate = done / elapsed
                         remaining = (len(todo) - done) / rate
                         print(f"  [{done}/{len(todo)}] saved cache "
                               f"({elapsed/60:.1f} min elapsed, "
                               f"~{remaining/60:.1f} min remaining)")
-        save_cache(cache)
+        save_cache(cache, cache_path)
         print(f"All done in {(time.time() - t0)/60:.1f} min.")
 
     # Merge cache features into the CSV
@@ -169,12 +178,12 @@ def main():
     feat_df = feat_df[[c for c in feat_df.columns if c not in df.columns]]
     enriched = pd.concat([df.reset_index(drop=True), feat_df], axis=1)
 
-    backup = INPUT_CSV + ".pre_enrich"
+    backup = input_csv + ".pre_enrich"
     if not os.path.exists(backup):
-        os.rename(INPUT_CSV, backup)
+        os.rename(input_csv, backup)
         print(f"  Backed up original to: {backup}")
-    enriched.to_csv(INPUT_CSV, sep=";", index=False)
-    print(f"  Saved enriched CSV: {INPUT_CSV}")
+    enriched.to_csv(input_csv, sep=";", index=False)
+    print(f"  Saved enriched CSV: {input_csv}")
     print(f"  Total columns: {len(enriched.columns)}  (added {len(feat_df.columns)} new)")
 
 
