@@ -248,27 +248,152 @@ def loco_accuracy(clf, X, y, groups):
 
 
 # ── Plot helpers ─────────────────────────────────────────────────────────────
+def _split_labels(feat: str, thr: float, encoders: dict):
+    """Return ('low|medium', 'high') style labels for a split."""
+    order = encoders.get(feat, [])
+    lo = [order[i] for i in range(len(order)) if i <= thr]
+    hi = [order[i] for i in range(len(order)) if i > thr]
+    return ("|".join(lo) if lo else "?",
+            "|".join(hi) if hi else "?")
+
+
+def _layout_tree(dt):
+    """Compute (x, y) positions for every node. Leaves first, then internals."""
+    from sklearn.tree import _tree
+    tree = dt.tree_
+    is_leaf = (tree.children_left == _tree.TREE_LEAF)
+
+    # Assign x to leaves in DFS order
+    leaf_x = {}
+    counter = [0]
+    def visit(node):
+        if is_leaf[node]:
+            leaf_x[node] = counter[0]
+            counter[0] += 1
+        else:
+            visit(tree.children_left[node])
+            visit(tree.children_right[node])
+    visit(0)
+
+    # x for internals = midpoint of children's x
+    positions = {}
+    def assign_x(node):
+        if is_leaf[node]:
+            x = leaf_x[node]
+        else:
+            xl = assign_x(tree.children_left[node])
+            xr = assign_x(tree.children_right[node])
+            x = (xl + xr) / 2
+        positions[node] = x
+        return x
+    assign_x(0)
+
+    # y = -depth
+    depths = {}
+    def assign_depth(node, d):
+        depths[node] = d
+        if not is_leaf[node]:
+            assign_depth(tree.children_left[node], d + 1)
+            assign_depth(tree.children_right[node], d + 1)
+    assign_depth(0, 0)
+
+    return positions, depths, is_leaf, leaf_x
+
+
 def plot_tree_pdf(dt, predictors, depth, acc, encoders, out_path, title):
-    fig = plt.figure(figsize=(20, 10))
-    ax_imp = plt.subplot2grid((1, 3), (0, 0))
+    """
+    Custom tree renderer.
+    - Internal nodes: white boxes with feature name + categorical split labels.
+    - Leaves: colored boxes (blue=worlds, orange=programs) showing the verdict.
+    """
+    from sklearn.tree import _tree
+    tree = dt.tree_
+    n_nodes = tree.node_count
+    positions, depths, is_leaf, leaf_x = _layout_tree(dt)
+    n_leaves = len(leaf_x)
+    max_depth = max(depths.values())
+
+    # Figure proportions: width scales with leaves; height with depth
+    fig_w = max(10, n_leaves * 0.9)
+    fig_h = max(6, (max_depth + 1) * 2.0)
+
+    # Importances panel on the left
+    fig = plt.figure(figsize=(fig_w + 5, fig_h))
+    gs = fig.add_gridspec(1, 5)
+    ax_imp = fig.add_subplot(gs[0, 0])
     importances = pd.Series(dt.feature_importances_, index=predictors)
     importances = importances[importances > 0].sort_values(ascending=True)
     bars = ax_imp.barh(importances.index, importances.values,
-                       color=COLOR_WORLDS, edgecolor="white", height=0.6)
+                       color="#666666", edgecolor="white", height=0.6)
     for bar, val in zip(bars, importances.values):
-        ax_imp.text(val + 0.005, bar.get_y() + bar.get_height() / 2,
-                    f"{val:.3f}", va="center", fontsize=9, fontname=FONT)
+        ax_imp.text(val + 0.003, bar.get_y() + bar.get_height() / 2,
+                    f"{val:.3f}", va="center", fontsize=8, fontname=FONT)
     ax_imp.set_xlabel("Gini importance", fontsize=LABEL_SIZE, fontname=FONT)
     ax_imp.set_title("Feature importances", fontsize=TITLE_SIZE,
                      fontname=FONT, pad=10)
-    ax_imp.tick_params(direction="in", labelsize=10)
+    ax_imp.tick_params(direction="in", labelsize=9)
 
-    ax_tree = plt.subplot2grid((1, 3), (0, 1), colspan=2)
-    plot_tree(dt, feature_names=predictors,
-              class_names=["programs", "worlds"], filled=True, rounded=True,
-              ax=ax_tree, fontsize=8, impurity=False, proportion=True)
-    ax_tree.set_title(f"{title}  (depth={depth}, CV acc={acc:.3f})",
-                      fontsize=TITLE_SIZE, fontname=FONT, pad=10)
+    ax = fig.add_subplot(gs[0, 1:])
+    ax.axis("off")
+    ax.set_xlim(-1, n_leaves + 1)
+    ax.set_ylim(-max_depth - 0.6, 0.6)
+
+    # Draw edges first (so boxes overlay them)
+    for node in range(n_nodes):
+        if is_leaf[node]:
+            continue
+        x_p, y_p = positions[node], -depths[node]
+        for child in (tree.children_left[node], tree.children_right[node]):
+            x_c, y_c = positions[child], -depths[child]
+            ax.plot([x_p, x_c], [y_p - 0.16, y_c + 0.16],
+                    color="#999999", lw=0.9, zorder=1)
+
+    # Draw nodes
+    for node in range(n_nodes):
+        x, y = positions[node], -depths[node]
+        if is_leaf[node]:
+            counts = tree.value[node][0]
+            n_progs, n_worlds = counts[0], counts[1]
+            total = n_progs + n_worlds
+            if n_worlds >= n_progs:
+                cls = "WORLDS"
+                color = COLOR_WORLDS
+                purity = n_worlds / total if total else 0
+            else:
+                cls = "PROGRAMS"
+                color = COLOR_PROGRAMS
+                purity = n_progs / total if total else 0
+            box_text = f"{cls}\n{int(total)} samples\n{purity*100:.0f}% pure"
+            ax.text(x, y, box_text, ha="center", va="center",
+                    fontsize=9, fontname=FONT, color="white",
+                    bbox=dict(boxstyle="round,pad=0.4", facecolor=color,
+                              edgecolor=color, lw=1.5),
+                    zorder=2)
+        else:
+            feat = predictors[tree.feature[node]]
+            thr  = tree.threshold[node]
+            lo, hi = _split_labels(feat, thr, encoders)
+            label = f"{feat}\n{{{lo}}}  vs  {{{hi}}}"
+            ax.text(x, y, label, ha="center", va="center",
+                    fontsize=8, fontname=FONT, color="black",
+                    bbox=dict(boxstyle="round,pad=0.35", facecolor="white",
+                              edgecolor="#333333", lw=0.9),
+                    zorder=2)
+            # Branch labels on the edges
+            x_l = positions[tree.children_left[node]]
+            x_r = positions[tree.children_right[node]]
+            y_c = -depths[node] - 0.5
+            ax.text((x + x_l) / 2, y_c, "yes", ha="center", va="center",
+                    fontsize=7, color="#444444", fontname=FONT, zorder=2,
+                    bbox=dict(boxstyle="round,pad=0.15",
+                              facecolor="white", edgecolor="none", alpha=0.85))
+            ax.text((x + x_r) / 2, y_c, "no", ha="center", va="center",
+                    fontsize=7, color="#444444", fontname=FONT, zorder=2,
+                    bbox=dict(boxstyle="round,pad=0.15",
+                              facecolor="white", edgecolor="none", alpha=0.85))
+
+    ax.set_title(f"{title}  (depth={depth}, CV acc={acc:.3f})",
+                 fontsize=TITLE_SIZE, fontname=FONT, pad=10)
     fig.tight_layout()
     fig.savefig(out_path, format="pdf", bbox_inches="tight")
     plt.close(fig)
@@ -315,6 +440,9 @@ def main():
     parser.add_argument("--n_bins", type=int, default=3,
                         help="Number of categorical levels (3 = low/medium/high)")
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--depths", default="auto",
+                        help="Comma-separated list of depths to fit and save "
+                             "(e.g. 3,5). Use 'auto' to pick by CV.")
     args = parser.parse_args()
 
     os.makedirs(args.output_dir, exist_ok=True)
@@ -395,20 +523,40 @@ def main():
                                class_weight="balanced"), X_raw, y, groups)
     print(f"  LOCO mean acc: {loco_raw.mean():.3f} ± {loco_raw.std():.3f}")
 
-    # ── Outputs ──────────────────────────────────────────────────────────────
-    pdf_path = os.path.join(args.output_dir, f"abstract_tree_n{args.n_bins}.pdf")
-    plot_tree_pdf(dt, list(X.columns), best_d, best_acc, encoders,
-                  pdf_path, "Abstract decision tree")
+    # ── Outputs (one or more depths) ─────────────────────────────────────────
+    if args.depths == "auto":
+        depths_to_save = [best_d]
+    else:
+        depths_to_save = sorted({int(d.strip()) for d in args.depths.split(",")})
 
-    rules_path = os.path.join(args.output_dir,
-                              f"abstract_tree_rules_n{args.n_bins}.txt")
-    with open(rules_path, "w") as f:
-        f.write("Decision tree expressed with categorical labels\n")
-        f.write("================================================\n\n")
-        f.write(render_natural_rules(dt, list(X.columns), encoders))
-        f.write("\n\n\nExport (raw sklearn rule text):\n")
-        f.write(export_text(dt, feature_names=list(X.columns)))
-    print(f"  Saved: {rules_path}")
+    saved_pairs = []  # (depth, cv_acc) per saved tree
+    for fixed_d in depths_to_save:
+        if fixed_d == best_d:
+            d_tree = dt           # reuse the already-fit tree
+            d_acc = best_acc
+        else:
+            d_tree = DecisionTreeClassifier(max_depth=fixed_d,
+                                            random_state=args.seed,
+                                            class_weight="balanced")
+            d_tree.fit(X, y)
+            d_scores = cv_accuracy(d_tree, X, y, args.seed)
+            d_acc = d_scores.mean()
+
+        pdf_path = os.path.join(args.output_dir,
+                                f"abstract_tree_n{args.n_bins}_d{fixed_d}.pdf")
+        plot_tree_pdf(d_tree, list(X.columns), fixed_d, d_acc, encoders,
+                      pdf_path, "Abstract decision tree")
+
+        rules_path = os.path.join(args.output_dir,
+                                  f"abstract_tree_rules_n{args.n_bins}_d{fixed_d}.txt")
+        with open(rules_path, "w") as f:
+            f.write(f"Decision tree (depth={fixed_d}, CV acc={d_acc:.3f})\n")
+            f.write("================================================\n\n")
+            f.write(render_natural_rules(d_tree, list(X.columns), encoders))
+            f.write("\n\n\nExport (raw sklearn rule text):\n")
+            f.write(export_text(d_tree, feature_names=list(X.columns)))
+        print(f"  Saved: {rules_path}")
+        saved_pairs.append((fixed_d, d_acc))
 
     summary_path = os.path.join(args.output_dir,
                                 f"abstract_tree_summary_n{args.n_bins}.txt")
@@ -417,6 +565,10 @@ def main():
     lines.append(f"Input CSV: {args.input_csv}")
     lines.append(f"Rows: {len(df)}  configs: {df.config.nunique()}")
     lines.append(f"Abstract features: {X.shape[1]}  bins: {args.n_bins}")
+    lines.append("")
+    lines.append("=== Trees saved ===")
+    for d_, a_ in saved_pairs:
+        lines.append(f"  depth={d_:2d}  CV acc={a_:.3f}")
     lines.append("")
     lines.append("=== Validation ===")
     lines.append(f"5-fold CV (abstract tree, depth={best_d}): "
