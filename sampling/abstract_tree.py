@@ -300,7 +300,8 @@ def _layout_tree(dt):
     return positions, depths, is_leaf, leaf_x
 
 
-def plot_tree_pdf(dt, predictors, depth, acc, encoders, out_path, title):
+def plot_tree_pdf(dt, predictors, depth, acc, encoders, out_path, title,
+                  leaf_counts):
     """
     Custom tree renderer.
     - Internal nodes: white boxes with feature name + categorical split labels.
@@ -352,9 +353,7 @@ def plot_tree_pdf(dt, predictors, depth, acc, encoders, out_path, title):
     for node in range(n_nodes):
         x, y = positions[node], -depths[node]
         if is_leaf[node]:
-            counts = tree.value[node][0]
-            n_progs, n_worlds = counts[0], counts[1]
-            total = n_progs + n_worlds
+            n_progs, n_worlds, total = leaf_counts.get(node, (0, 0, 0))
             if n_worlds >= n_progs:
                 cls = "WORLDS"
                 color = COLOR_WORLDS
@@ -363,7 +362,7 @@ def plot_tree_pdf(dt, predictors, depth, acc, encoders, out_path, title):
                 cls = "PROGRAMS"
                 color = COLOR_PROGRAMS
                 purity = n_progs / total if total else 0
-            box_text = f"{cls}\n{int(total)} samples\n{purity*100:.0f}% pure"
+            box_text = f"{cls}\n{total} samples\n{purity*100:.0f}% pure"
             ax.text(x, y, box_text, ha="center", va="center",
                     fontsize=9, fontname=FONT, color="white",
                     bbox=dict(boxstyle="round,pad=0.4", facecolor=color,
@@ -400,7 +399,25 @@ def plot_tree_pdf(dt, predictors, depth, acc, encoders, out_path, title):
     print(f"  Saved: {out_path}")
 
 
-def render_natural_rules(dt, predictors, encoders) -> str:
+def compute_leaf_counts(dt, X, y):
+    """
+    Return a dict {leaf_id: (n_programs, n_worlds, total)} computed from the
+    actual training samples. Robust against class_weight reweighting because
+    we count raw samples reaching each leaf.
+    """
+    leaf_ids = dt.apply(X)
+    counts: dict = {}
+    for lid, label in zip(leaf_ids, y):
+        n_p, n_w = counts.get(lid, (0, 0))
+        if label == 1:
+            n_w += 1
+        else:
+            n_p += 1
+        counts[lid] = (n_p, n_w)
+    return {lid: (n_p, n_w, n_p + n_w) for lid, (n_p, n_w) in counts.items()}
+
+
+def render_natural_rules(dt, predictors, encoders, leaf_counts) -> str:
     """Translate sklearn integer thresholds back to category labels."""
     from sklearn.tree import _tree
     tree = dt.tree_
@@ -412,8 +429,6 @@ def render_natural_rules(dt, predictors, encoders) -> str:
             feat = predictors[tree.feature[node]]
             thr  = tree.threshold[node]
             order = encoders.get(feat, [])
-            # For "<= thr" predicate, the categories included are those whose
-            # encoded id <= thr. Translate to a list of names.
             lo_idx = [i for i in range(len(order)) if i <= thr]
             hi_idx = [i for i in range(len(order)) if i > thr]
             lo_names = [order[i] for i in lo_idx] or ["?"]
@@ -423,11 +438,12 @@ def render_natural_rules(dt, predictors, encoders) -> str:
             lines.append(f"{indent}ELSE  ({feat} in {{{', '.join(hi_names)}}}):")
             recurse(tree.children_right[node], depth + 1)
         else:
-            counts = tree.value[node][0]
-            n_progs, n_worlds = counts[0], counts[1]
+            n_progs, n_worlds, total = leaf_counts.get(node, (0, 0, 0))
             cls = "worlds" if n_worlds >= n_progs else "programs"
+            purity = max(n_progs, n_worlds) / total if total else 0
             lines.append(f"{indent}-> recommend {cls.upper()}  "
-                         f"(n_progs={int(n_progs)}, n_worlds={int(n_worlds)})")
+                         f"(n_progs={n_progs}, n_worlds={n_worlds}, "
+                         f"total={total}, purity={purity*100:.0f}%)")
     recurse(0, 0)
     return "\n".join(lines)
 
@@ -542,17 +558,20 @@ def main():
             d_scores = cv_accuracy(d_tree, X, y, args.seed)
             d_acc = d_scores.mean()
 
+        leaf_counts = compute_leaf_counts(d_tree, X.values, y)
+
         pdf_path = os.path.join(args.output_dir,
                                 f"abstract_tree_n{args.n_bins}_d{fixed_d}.pdf")
         plot_tree_pdf(d_tree, list(X.columns), fixed_d, d_acc, encoders,
-                      pdf_path, "Abstract decision tree")
+                      pdf_path, "Abstract decision tree", leaf_counts)
 
         rules_path = os.path.join(args.output_dir,
                                   f"abstract_tree_rules_n{args.n_bins}_d{fixed_d}.txt")
         with open(rules_path, "w") as f:
             f.write(f"Decision tree (depth={fixed_d}, CV acc={d_acc:.3f})\n")
             f.write("================================================\n\n")
-            f.write(render_natural_rules(d_tree, list(X.columns), encoders))
+            f.write(render_natural_rules(d_tree, list(X.columns),
+                                         encoders, leaf_counts))
             f.write("\n\n\nExport (raw sklearn rule text):\n")
             f.write(export_text(d_tree, feature_names=list(X.columns)))
         print(f"  Saved: {rules_path}")
