@@ -90,6 +90,9 @@ def _worker(job):
         "region": region, "method": method,
         "exact_l": exact_l, "exact_u": exact_u,
     }
+    # The samplers write their per-model JSONs under save_path; ensure the
+    # target directory exists before any of them is invoked.
+    os.makedirs(save_path, exist_ok=True)
     try:
         if method == "worlds":
             base_l, base_u, base_t = _run_worlds(
