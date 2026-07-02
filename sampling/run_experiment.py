@@ -236,11 +236,13 @@ def run_one_model(args):
 
 
 def run_config(input_path, output_path, time_limit, config_name,
-               max_models=None, workers=1):
+               max_models=None, workers=1, skip_models=0):
 
     all_models = sorted(glob.glob(os.path.join(input_path, "*model.json")),
                         key=natural_key)
     models_with_exact = [m for m in all_models if os.path.exists(exact_path_for(m))]
+    if skip_models > 0:
+        models_with_exact = models_with_exact[skip_models:]
     if max_models is not None:
         models_with_exact = models_with_exact[:max_models]
 
@@ -324,6 +326,10 @@ if __name__ == "__main__":
     parser.add_argument("--output_root", default=None,
                         help="Override the output root. The config's directory "
                              "name is appended (e.g. results_5min/sss).")
+    parser.add_argument("--skip_models", type=int, default=0,
+                        help="Skip the first N models with an exact file. "
+                             "Useful to build a validation set on models the "
+                             "training experiment did not use.")
     args = parser.parse_args()
 
     cfg = load_json(args.config)
@@ -340,7 +346,7 @@ if __name__ == "__main__":
     os.makedirs(output_path, exist_ok=True)
 
     rows = run_config(input_path, output_path, time_limit, config_name,
-                      args.max_models, args.workers)
+                      args.max_models, args.workers, args.skip_models)
 
     csv_path = os.path.join(output_path, f"{config_name}_results.csv")
     if rows:

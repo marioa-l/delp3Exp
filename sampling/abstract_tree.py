@@ -159,41 +159,48 @@ LEVEL_LABELS = ["low", "medium", "high"]
 
 
 def bin_with_theory_or_quantile(df: pd.DataFrame, col: str, n_bins: int,
-                                report: dict) -> pd.Series:
-    """Bin a numeric column. Use theoretical thresholds if defined; else quantile."""
+                                report: dict, bins_out: dict) -> pd.Series:
+    """
+    Bin a numeric column. Use theoretical thresholds if defined; else quantile.
+    Also record the numeric thresholds in ``bins_out`` so a downstream
+    recommender can replay the same binning on new data.
+    """
     s = df[col].dropna()
     if len(s) == 0:
         report[col] = "all-NaN"
+        bins_out[col] = {"method": "all-NaN", "bins": None}
         return pd.Series([np.nan] * len(df), index=df.index)
 
     if col in THEORETICAL_BINS and n_bins == 3:
         bins = THEORETICAL_BINS[col]
         method = "theoretical"
     else:
-        # Quantile-based bins
         try:
             quantiles = np.linspace(0, 1, n_bins + 1)
             bins = list(np.unique(np.quantile(s, quantiles)))
             if len(bins) < n_bins + 1:
-                # Not enough variation; fallback to constant
                 report[col] = "constant"
+                bins_out[col] = {"method": "constant", "bins": None}
                 return pd.Series(["medium"] * len(df), index=df.index)
             bins[0] = -np.inf
             bins[-1] = np.inf
             method = "quantile"
         except Exception:
             report[col] = "failed"
+            bins_out[col] = {"method": "failed", "bins": None}
             return pd.Series([np.nan] * len(df), index=df.index)
 
     labels = LEVEL_LABELS if n_bins == 3 else [f"q{i+1}" for i in range(n_bins)]
     binned = pd.cut(df[col], bins=bins, labels=labels, include_lowest=True)
     report[col] = f"{method}: {[round(b, 3) for b in bins]}"
+    bins_out[col] = {"method": method, "bins": list(bins), "labels": list(labels)}
     return binned.astype("string")
 
 
 def build_abstract_dataframe(df: pd.DataFrame, n_bins: int):
     out = pd.DataFrame(index=df.index)
     threshold_report = {}
+    bins_numeric = {}
 
     for name, fn in DERIVED_FEATURES:
         out[name] = df.apply(fn, axis=1)
@@ -206,14 +213,15 @@ def build_abstract_dataframe(df: pd.DataFrame, n_bins: int):
                     if pd.api.types.is_numeric_dtype(out[c])
                     and c not in ("lit_is_negated", "lit_is_fact", "lit_is_ann_fact")]
     for col in numeric_cols:
-        out[col] = bin_with_theory_or_quantile(out, col, n_bins, threshold_report)
+        out[col] = bin_with_theory_or_quantile(
+            out, col, n_bins, threshold_report, bins_numeric)
 
     # Sign / direction features
     for name, fn in SIGN_FEATURES:
         out[name] = df.apply(fn, axis=1)
         threshold_report[name] = "categorical"
 
-    return out, threshold_report
+    return out, threshold_report, bins_numeric
 
 
 # ── Encoding ─────────────────────────────────────────────────────────────────
@@ -475,7 +483,7 @@ def main():
     print(f"  {len(df)} rows | {df.config.nunique()} configs")
 
     # Build abstract feature dataframe
-    X_cat, thresholds = build_abstract_dataframe(df, args.n_bins)
+    X_cat, thresholds, bins_numeric = build_abstract_dataframe(df, args.n_bins)
     print(f"\nAbstract features: {X_cat.shape[1]}")
 
     X, encoders = encode_for_sklearn(X_cat)
@@ -576,6 +584,25 @@ def main():
             f.write(export_text(d_tree, feature_names=list(X.columns)))
         print(f"  Saved: {rules_path}")
         saved_pairs.append((fixed_d, d_acc))
+
+        # Save a pickle so recommend_abstract.py can replay the model on
+        # new data without retraining.
+        import pickle
+        pkl_path = os.path.join(
+            args.output_dir,
+            f"abstract_tree_n{args.n_bins}_d{fixed_d}.pkl")
+        with open(pkl_path, "wb") as f:
+            pickle.dump({
+                "tree": d_tree,
+                "encoders": encoders,
+                "bins_numeric": bins_numeric,
+                "feature_columns": list(X.columns),
+                "predictors_categorical": list(X_cat.columns),
+                "n_bins": args.n_bins,
+                "cv_accuracy": d_acc,
+                "depth": fixed_d,
+            }, f)
+        print(f"  Saved: {pkl_path}")
 
     summary_path = os.path.join(args.output_dir,
                                 f"abstract_tree_summary_n{args.n_bins}.txt")
