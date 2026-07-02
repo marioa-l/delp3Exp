@@ -131,6 +131,61 @@ def fig_confusion(val_df: pd.DataFrame, out_path: str):
     print(f"  Saved: {out_path}")
 
 
+def fig_abstract_per_leaf(val_df: pd.DataFrame, out_path: str,
+                          problem_threshold: float = 0.6):
+    """
+    Per-leaf accuracy of the abstract tree, sorted by accuracy. Bars are
+    coloured red when the leaf is below `problem_threshold` (the "failure
+    regions" the paper needs to flag) and green otherwise. Every bar is
+    annotated with its sample count so the reader can tell apart a
+    catastrophic leaf that covers 100+ samples from a noisy leaf that
+    covers only 4.
+    """
+    if "pred_abs_region" not in val_df.columns:
+        print(f"  [warn] no pred_abs_region column — skipping {out_path}")
+        return
+
+    grp = val_df.groupby("pred_abs_region").agg(
+        n=("match_abs", "size"),
+        acc=("match_abs", "mean"),
+        majority_pred=("pred_abs_method",
+                       lambda s: s.mode().iloc[0] if not s.empty else "?"),
+    ).reset_index().sort_values("acc")
+
+    n_leaves = len(grp)
+    fig_h = max(4, 0.55 * n_leaves + 1.5)
+
+    fig, ax = plt.subplots(figsize=(9, fig_h))
+    y = np.arange(n_leaves)
+
+    colors = ["#C0392B" if a < problem_threshold else "#27AE60"
+              for a in grp["acc"].values]
+    ax.barh(y, grp["acc"].values, color=colors, edgecolor="white", height=0.65)
+
+    for i, (acc, n, pred) in enumerate(zip(grp["acc"], grp["n"],
+                                           grp["majority_pred"])):
+        ax.text(min(acc + 0.02, 1.02), i,
+                f"{acc:.2f}   (n={n}, pred={pred})",
+                va="center", fontsize=10, fontname=FONT)
+
+    ax.axvline(problem_threshold, color="black", lw=0.7, ls="--",
+               label=f"Threshold ({problem_threshold:.1f})")
+    ax.axvline(0.5, color="gray", lw=0.6, ls=":", label="Chance level (0.5)")
+
+    ax.set_yticks(y)
+    ax.set_yticklabels(grp["pred_abs_region"], fontname=FONT, fontsize=11)
+    ax.set_xlim(0, 1.30)
+    style_ax(ax, xlabel="Accuracy on validation set",
+             ylabel="Abstract-tree leaf",
+             title="Abstract tree: failure concentrates in a few leaves")
+    ax.legend(loc="lower right", fontsize=10, framealpha=0.9)
+
+    fig.tight_layout()
+    fig.savefig(out_path, format="pdf", bbox_inches="tight")
+    plt.close(fig)
+    print(f"  Saved: {out_path}")
+
+
 # ── Heuristic figures ──────────────────────────────────────────────────────
 def fig_per_region(heur_df: pd.DataFrame, out_path: str):
     """Baseline vs heuristic average quality per region."""
@@ -269,6 +324,10 @@ def main():
                                             "validation_per_config.pdf"))
         fig_confusion(val_df, os.path.join(args.output_dir,
                                            "validation_confusion.pdf"))
+        fig_abstract_per_leaf(
+            val_df,
+            os.path.join(args.output_dir, "abstract_tree_per_leaf.pdf"),
+            problem_threshold=0.6)
     else:
         print(f"[warn] validation CSV not found at {args.val_csv} — skipping.")
 
