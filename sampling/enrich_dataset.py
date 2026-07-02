@@ -173,18 +173,29 @@ def main():
         feats = cache.get(key, {})
         feature_rows.append({k: feats.get(k) for k in feat_keys})
 
-    feat_df = pd.DataFrame(feature_rows)
-    # Drop columns from feat_df that already exist in df (avoid duplicates)
-    feat_df = feat_df[[c for c in feat_df.columns if c not in df.columns]]
-    enriched = pd.concat([df.reset_index(drop=True), feat_df], axis=1)
+    # Cache values are the source of truth for every feature key.
+    # Overwrite pre-existing columns (they may be all-NaN from an earlier
+    # enrich pass) so we never leave silently empty columns in the CSV.
+    feat_df = pd.DataFrame(feature_rows).reset_index(drop=True)
+    df = df.reset_index(drop=True)
+
+    added, overwritten = 0, 0
+    for col in feat_df.columns:
+        if col in df.columns:
+            df[col] = feat_df[col]
+            overwritten += 1
+        else:
+            df[col] = feat_df[col]
+            added += 1
 
     backup = input_csv + ".pre_enrich"
     if not os.path.exists(backup):
         os.rename(input_csv, backup)
         print(f"  Backed up original to: {backup}")
-    enriched.to_csv(input_csv, sep=";", index=False)
+    df.to_csv(input_csv, sep=";", index=False)
     print(f"  Saved enriched CSV: {input_csv}")
-    print(f"  Total columns: {len(enriched.columns)}  (added {len(feat_df.columns)} new)")
+    print(f"  Total columns: {len(df.columns)}  "
+          f"(added {added}, overwritten {overwritten})")
 
 
 if __name__ == "__main__":

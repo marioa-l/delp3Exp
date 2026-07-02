@@ -137,7 +137,9 @@ def main():
             json.dump(cache, f, indent=2)
         print(f"Done in {(time.time() - t0)/60:.1f} min.")
 
-    # Merge into CSV
+    # Merge into CSV. Cache values are the source of truth for every feature
+    # key in the cache: overwrite pre-existing columns (which may be all-NaN
+    # from a previous enrich pass) rather than silently keeping the empties.
     print("\nMerging into CSV...")
     feat_keys = set()
     for v in cache.values():
@@ -147,17 +149,26 @@ def main():
         {k: cache.get(f"{cfg}/{m}", {}).get(k) for k in feat_keys}
         for cfg, m in df[["config", "model"]].values
     ]
-    feat_df = pd.DataFrame(feat_rows)
-    feat_df = feat_df[[c for c in feat_df.columns if c not in df.columns]]
-    enriched = pd.concat([df.reset_index(drop=True), feat_df], axis=1)
+    feat_df = pd.DataFrame(feat_rows).reset_index(drop=True)
+    df = df.reset_index(drop=True)
+
+    added, overwritten = 0, 0
+    for col in feat_df.columns:
+        if col in df.columns:
+            df[col] = feat_df[col]
+            overwritten += 1
+        else:
+            df[col] = feat_df[col]
+            added += 1
 
     backup = args.input_csv + ".pre_network"
     if not os.path.exists(backup):
         os.rename(args.input_csv, backup)
         print(f"  Backed up original to: {backup}")
-    enriched.to_csv(args.input_csv, sep=";", index=False)
+    df.to_csv(args.input_csv, sep=";", index=False)
     print(f"  Saved enriched CSV: {args.input_csv}")
-    print(f"  Columns: {len(enriched.columns)}  (added {len(feat_df.columns)})")
+    print(f"  Columns: {len(df.columns)}  "
+          f"(added {added}, overwritten {overwritten})")
 
 
 if __name__ == "__main__":
