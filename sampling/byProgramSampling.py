@@ -70,8 +70,68 @@ class Programs:
         # to save programs id and bin
         self.local_n_programs = []
 
+    # ── Heuristic P helpers ──────────────────────────────────────────────────
+    def _compute_annotation_marginals(self):
+        """
+        For every annotated rule, compute the BN marginal probability that
+        its annotation formula evaluates to True. Returns a dict
+        ``{annotation_index -> marginal in [0, 1]}``.
+
+        Uses SymPy to enumerate satisfying assignments and the BN's
+        LazyPropagation engine to sum their probabilities. Values are
+        clamped to [0, 1] to guard against numerical drift.
+        """
+        marginals = {}
+        for annot_idx, forms in self.adapted_annots.items():
+            try:
+                models = list(satisfiable(eval(forms["True"]), all_models=True))
+            except Exception:
+                marginals[annot_idx] = 0.5
+                continue
+            prob = 0.0
+            for model in models:
+                if model:
+                    evidence = to_evidence(model)
+                    prob += self.utils.em.get_sampling_prob(evidence)
+            marginals[annot_idx] = min(1.0, max(0.0, prob))
+        return marginals
+
+    def _sample_program_bin_from_marginals(self, marginals):
+        """
+        Draw a program by including each annotated rule independently
+        according to its marginal probability. Returns the binary
+        program string used by ``map_bin_to_prog``.
+        """
+        out = list(self.utils.prog_in_bin)
+        for idx, marg in marginals.items():
+            out[idx] = 1 if np.random.random() < marg else 0
+        return out
+
+    def _has_direct_strict_contradiction(self, program_text: str) -> bool:
+        """
+        Cheap syntactic pre-filter: return True if the program contains
+        a strict fact and the strict fact for its complement literal.
+        Only inspects lines that look like strict facts (``<- true``) —
+        which are the ones the LLM-labelling experiment showed can flip
+        polarity when annotations disagree.
+        """
+        facts = set()
+        for line in program_text.split(";"):
+            line = line.strip()
+            if not line.endswith("<- true") and " <- true" not in line:
+                continue
+            head = line.split(" <- ", 1)[0].strip()
+            if head:
+                facts.add(head)
+        for f in facts:
+            comp = f[1:] if f.startswith("~") else "~" + f
+            if comp in facts:
+                return True
+        return False
+
     def start_sampling(
-        self, percentile_samples: int, info: str, max_seconds: int = None
+        self, percentile_samples: int, info: str, max_seconds: int = None,
+        mode: str = "random",
     ) -> list:
         """To run exact compute of the interval or select randomly a subset of all
         possible programs (combining the values of its annotations) to perform an
@@ -107,6 +167,11 @@ class Programs:
         worlds_consulted = 0
         history = []
 
+        # Pre-compute annotation marginals if we're using the heuristic.
+        annotation_marginals = None
+        if mode == "bn_marginal":
+            annotation_marginals = self._compute_annotation_marginals()
+
         if max_seconds is not None:
             lit_to_query = self.utils.get_interest_lit()
             self.results["status"] = {lit: copy.copy(STATUS) for lit in lit_to_query}
@@ -118,7 +183,7 @@ class Programs:
             total_worlds_consulted = 0
 
             for lit in lit_to_query:
-                print(f"  -> Evaluando literal: {lit}")
+                print(f"  -> Evaluando literal: {lit}  (mode={mode})")
                 self.known_evidences = []  # reset
                 (
                     lit_time,
@@ -128,7 +193,8 @@ class Programs:
                     lit_history,
                     lit_delp_calls,
                 ) = self.consult_single_literal_time(
-                    self.local_n_programs, self.adapted_annots, lit, max_seconds
+                    self.local_n_programs, self.adapted_annots, lit, max_seconds,
+                    mode, annotation_marginals,
                 )
 
                 total_time += lit_time
@@ -208,11 +274,25 @@ class Programs:
         adapted_annots: dict,
         lit: str,
         max_seconds: int,
+        mode: str = "random",
+        annotation_marginals: dict = None,
     ) -> tuple:
+        """
+        Iterate sampling programs until the time budget is exhausted.
+        Supported modes:
+            "random"       — pick programs uniformly from the enumerated
+                             list (current baseline).
+            "bn_marginal"  — draw each rule's presence independently with
+                             probability equal to its annotation's BN
+                             marginal, then reject the candidate before
+                             the solver call if it contains a direct
+                             strict contradiction (Heuristic P).
+        """
         initial_time = time.time()
         lit_history = []
         delp_calls = 0
         inconsistent_programs = 0
+        prefiltered = 0
         sampled_count = 0
 
         while True:
@@ -220,9 +300,14 @@ class Programs:
             if current_time >= max_seconds:
                 break
 
-            sampled_prog = np.random.choice(programs, 1, replace=True)[0]
             sampled_count += 1
-            sampled_in_bin = self.utils.id_prog_to_bin(sampled_prog)
+
+            if mode == "bn_marginal" and annotation_marginals is not None:
+                sampled_in_bin = self._sample_program_bin_from_marginals(
+                    annotation_marginals)
+            else:
+                sampled_prog = np.random.choice(programs, 1, replace=True)[0]
+                sampled_in_bin = self.utils.id_prog_to_bin(sampled_prog)
 
             expression = ""
             for index, value in enumerate(sampled_in_bin):
@@ -233,6 +318,15 @@ class Programs:
                         expression += adapted_annots[index]["False"] + " & "
             flag = False
             program = self.utils.map_bin_to_prog(sampled_in_bin)
+
+            # Cheap syntactic pre-filter for Heuristic P: skip candidates
+            # with obvious strict contradictions before touching the solver.
+            if mode == "bn_marginal":
+                if self._has_direct_strict_contradiction(program):
+                    prefiltered += 1
+                    inconsistent_programs += 1
+                    continue
+
             status = query_to_delp(program, [lit])
             delp_calls += 1
 

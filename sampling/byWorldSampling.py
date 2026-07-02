@@ -1,4 +1,7 @@
 import copy
+import json
+import os
+import re
 import time
 
 import numpy as np
@@ -16,9 +19,80 @@ class Worlds:
         self.results = {}
         # To control repeated programs generates by worlds
         self.known_progs = KnownSamples()
+        # Optional cache for the argument-influence table (populated lazily
+        # when a heuristic mode needs it).
+        self._influence_cache = None
+
+    # ── Heuristic W helpers ──────────────────────────────────────────────────
+    def _load_influence_from_dgraph(self, dgraph_path: str):
+        """
+        Build a mapping ``rule_index -> influence_score`` from a cached
+        solver dGraph. The influence score of a rule is the in-degree, in
+        the AM attack graph, of the argument that has the rule's head as
+        its conclusion. Rules whose head does not appear in any attacked
+        argument get score 0.
+        """
+        if not os.path.exists(dgraph_path):
+            return {}
+        with open(dgraph_path) as f:
+            raw = json.load(f)
+        # Build a directed attack graph: node = argument id (string),
+        # edge = defeat (attacker -> defended). Count in-degrees.
+        in_degree = {}
+        for entry in raw.get("dGraph", []):
+            lit = next(iter(entry))
+            for argument in entry[lit]:
+                arg_key = next(iter(argument))
+                ad = argument[arg_key]
+                arg_id = ad.get("id", arg_key)
+                in_degree.setdefault(arg_id, 0)
+                for d in ad.get("defeats", []):
+                    target = d.get("defeat") if isinstance(d, dict) else d
+                    if target:
+                        in_degree[target] = in_degree.get(target, 0) + 1
+        # For each rule of the AF (annotated OR not — we key by index into
+        # utils.model), look up the in-degree of the argument concluding its
+        # head literal.
+        rule_scores = {}
+        for i, entry in enumerate(self.utils.model):
+            rule_str = entry[0]
+            head = self._rule_head(rule_str)
+            if head is None:
+                rule_scores[i] = 0
+                continue
+            best = 0
+            for arg_id, deg in in_degree.items():
+                if head in arg_id:
+                    best = max(best, deg)
+            rule_scores[i] = best
+        return rule_scores
+
+    @staticmethod
+    def _rule_head(rule_str: str):
+        if " -< " in rule_str:
+            return rule_str.split(" -< ", 1)[0].strip()
+        if " <- " in rule_str:
+            return rule_str.split(" <- ", 1)[0].strip()
+        return None
+
+    def _influence_of_world(self, world_bin) -> float:
+        """
+        Sum the influence score of every annotated rule active under the
+        world. If no influence table is available, returns 1 so the
+        centrality factor becomes neutral.
+        """
+        if not self._influence_cache:
+            return 1.0
+        score = 0.0
+        for i, bit in enumerate(world_bin):
+            if i in self._influence_cache and bit == 1:
+                score += self._influence_cache[i]
+        return max(score, 1.0)  # keep it strictly positive
 
     def start_sampling(
-        self, percentile_samples: int, source: str, info: str, max_seconds: int = None
+        self, percentile_samples: int, source: str, info: str,
+        max_seconds: int = None, mode: str = "random",
+        dgraph_path: str = None,
     ) -> dict:
         print(f"--- Sampleando modelo/programa: {self.utils.model_path} ---")
         """Permite samplear por porcentaje o por tiempo (en segundos)"""
@@ -28,6 +102,15 @@ class Worlds:
         unique_worlds = []
         repeated_worlds = 0
         history = {}
+
+        # If a heuristic mode was requested, prepare its state.
+        if mode == "bn_centrality":
+            if dgraph_path is not None:
+                self._influence_cache = self._load_influence_from_dgraph(dgraph_path)
+            else:
+                self._influence_cache = {}
+        else:
+            self._influence_cache = None
 
         if max_seconds is not None:
             # Samplear por tiempo de forma aislada por cada literal
@@ -41,12 +124,12 @@ class Worlds:
             total_unique_progs = 0
 
             for lit in lit_to_query:
-                print(f"  -> Evaluando literal: {lit}")
+                print(f"  -> Evaluando literal: {lit}  (mode={mode})")
                 self.known_progs = (
                     KnownSamples()
                 )  # Reset cache para aislar el experimento
                 lit_n_samples, lit_time, lit_history, lit_delp_calls, lit_rep_worlds = (
-                    self.consult_single_literal_time(n_worlds, lit, max_seconds)
+                    self.consult_single_literal_time(n_worlds, lit, max_seconds, mode)
                 )
 
                 total_n_samples += lit_n_samples
@@ -104,32 +187,74 @@ class Worlds:
         return history
 
     def consult_single_literal_time(
-        self, n_worlds: int, lit: str, max_seconds: int
+        self, n_worlds: int, lit: str, max_seconds: int,
+        mode: str = "random",
     ) -> tuple:
-        """Itera sobre worlds generados al azar consultando un único literal hasta agotar el tiempo"""
+        """
+        Iterate sampling worlds until the time budget is exhausted.
+        Two modes are supported:
+            "random"        — the current uniform random sampling of world IDs.
+            "bn_centrality" — importance sampling: worlds are drawn directly
+                              from the BN's joint distribution and accepted
+                              proportionally to their argument-influence
+                              score (Heuristic W). Each unique world is
+                              still processed at most once; the influence
+                              score modulates rejection so decisive worlds
+                              are visited first.
+        """
         initial_time = time.time()
         lit_history = []
         delp_calls = 0
         sampled_count = 0
         sampled_ids = set()
 
+        # Buffer for BN-drawn worlds when using the heuristic.
+        bn_buffer = []
+        BN_BATCH = 200
+        influence_norm = None  # highest observed influence, used to normalize
+
         while True:
             current_time = time.time() - initial_time
             if current_time >= max_seconds:
                 break
 
-            sampled_world = np.random.choice(n_worlds, 1, replace=True)[0]
             sampled_count += 1
 
-            # Skip repeated worlds — only process each world once
-            if sampled_world in sampled_ids:
-                continue
-            sampled_ids.add(sampled_world)
-
-            if isinstance(sampled_world, (int, np.int64)):
-                world, evidence = self.utils.id_world_to_bin(sampled_world)
+            if mode == "bn_centrality":
+                if not bn_buffer:
+                    try:
+                        unique_batch, _ = self.utils.em.gen_samples(BN_BATCH)
+                    except Exception:
+                        unique_batch = []
+                    bn_buffer.extend(unique_batch)
+                if not bn_buffer:
+                    # Fallback to uniform if BN sampler failed
+                    sampled_world = int(np.random.choice(n_worlds, 1, replace=True)[0])
+                    if sampled_world in sampled_ids:
+                        continue
+                    sampled_ids.add(sampled_world)
+                    world, evidence = self.utils.id_world_to_bin(sampled_world)
+                else:
+                    entry = bn_buffer.pop(0)
+                    world = entry[0]
+                    world_key = tuple(world)
+                    if world_key in sampled_ids:
+                        continue
+                    # Compute the influence-based acceptance probability.
+                    infl = self._influence_of_world(world)
+                    if influence_norm is None or infl > influence_norm:
+                        influence_norm = max(infl, 1.0)
+                    accept_prob = infl / influence_norm
+                    if np.random.random() > accept_prob:
+                        continue
+                    sampled_ids.add(world_key)
+                    evidence = {i: int(v) for i, v in enumerate(world)}
             else:
-                world, evidence = sampled_world
+                sampled_world = int(np.random.choice(n_worlds, 1, replace=True)[0])
+                if sampled_world in sampled_ids:
+                    continue
+                sampled_ids.add(sampled_world)
+                world, evidence = self.utils.id_world_to_bin(sampled_world)
 
             prob_world = self.utils.em.get_sampling_prob(evidence)
             program, id_program = self.utils.map_world_to_prog(world)
