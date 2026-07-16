@@ -1,0 +1,79 @@
+=== Dataset ===
+Total rows: 2339  (worlds=1629, programs=710)
+Configs: 15 (['ccs', 'cmm', 'cms', 'css', 'mcs', 'mms', 'mss', 'scm', 'scs', 'smc', 'smm', 'sms', 'ssc', 'ssm', 'sss'])
+Predictors used: 31
+  - em_var
+  - n_annots
+  - n_rules
+  - annots_minus_em
+  - lit_is_negated
+  - lit_head_def
+  - lit_head_strict
+  - lit_body_count
+  - lit_is_fact
+  - lit_is_ann_fact
+  - lit_complement_body
+  - lit_complement_head
+  - af_pct_annotated
+  - af_avg_annot_vars
+  - af_avg_connectors
+  - af_avg_body_size
+  - af_max_body_size
+  - am_n_arguments
+  - am_n_defeaters
+  - am_n_trees
+  - am_avg_def_rules
+  - am_avg_arg_lines
+  - am_avg_height_lines
+  - em_n_arcs
+  - em_treewidth
+  - em_avg_in_degree
+  - em_max_in_degree
+  - em_entropy
+  - af_n_em_vars_used
+  - af_avg_complexity
+  - af_max_complexity
+
+=== Cross-validated accuracy by depth ===
+  depth= 1: 0.779 ± 0.022
+  depth= 2: 0.779 ± 0.022
+  depth= 3: 0.881 ± 0.014  <-- best
+  depth= 4: 0.871 ± 0.024
+  depth= 5: 0.854 ± 0.014
+  depth= 6: 0.837 ± 0.008
+  depth= 7: 0.856 ± 0.020
+  depth= 8: 0.858 ± 0.027
+  depth= 9: 0.862 ± 0.023
+  depth=10: 0.864 ± 0.022
+
+=== Feature importances (non-zero) ===
+  em_n_arcs                  0.6350
+  em_entropy                 0.1712
+  n_annots                   0.1280
+  af_avg_complexity          0.0596
+  af_n_em_vars_used          0.0054
+  annots_minus_em            0.0009
+
+=== Decision rules ===
+|--- em_n_arcs <= 15.50
+|   |--- n_annots <= 13.50
+|   |   |--- em_entropy <= 3.88
+|   |   |   |--- class: 1
+|   |   |--- em_entropy >  3.88
+|   |   |   |--- class: 0
+|   |--- n_annots >  13.50
+|   |   |--- af_n_em_vars_used <= 16.50
+|   |   |   |--- class: 1
+|   |   |--- af_n_em_vars_used >  16.50
+|   |   |   |--- class: 0
+|--- em_n_arcs >  15.50
+|   |--- em_entropy <= 6.15
+|   |   |--- af_avg_complexity <= 3.20
+|   |   |   |--- class: 1
+|   |   |--- af_avg_complexity >  3.20
+|   |   |   |--- class: 0
+|   |--- em_entropy >  6.15
+|   |   |--- annots_minus_em <= -5.00
+|   |   |   |--- class: 0
+|   |   |--- annots_minus_em >  -5.00
+|   |   |   |--- class: 0

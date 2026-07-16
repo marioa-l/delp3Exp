@@ -1,0 +1,1064 @@
+Decision tree expressed with categorical labels
+================================================
+
+IF em_deg_centrality_avg in {low}:
+  IF em_entropy_per_var in {low}:
+    IF af_pct_annotated in {low, medium}:
+      IF af_bipartite_density in {low}:
+        IF am_attack_reciprocity in {low, medium}:
+          IF lit_head_def_rate in {low}:
+            IF em_in_degree_gini in {low, medium}:
+              IF lit_is_negated in {0}:
+                IF am_attack_closeness_max in {low}:
+                  IF em_closeness_max in {low}:
+                    -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+                  ELSE  (em_closeness_max in {medium, high}):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                ELSE  (am_attack_closeness_max in {medium, high}):
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1)
+              ELSE  (lit_is_negated in {1}):
+                IF em_deg_centrality_std in {low}:
+                  IF lit_is_ann_fact in {0}:
+                    -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+                  ELSE  (lit_is_ann_fact in {1}):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                ELSE  (em_deg_centrality_std in {medium, high}):
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1)
+            ELSE  (em_in_degree_gini in {high}):
+              -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+          ELSE  (lit_head_def_rate in {medium, high}):
+            IF em_avg_shortest_path in {low, medium}:
+              IF am_attack_deg_avg in {low, medium}:
+                IF am_attack_closeness_avg in {low, medium}:
+                  IF am_attack_avg_path in {low, medium}:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                  ELSE  (am_attack_avg_path in {high}):
+                    -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+                ELSE  (am_attack_closeness_avg in {high}):
+                  IF em_closeness_max in {low}:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                  ELSE  (em_closeness_max in {medium, high}):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+              ELSE  (am_attack_deg_avg in {high}):
+                IF em_deg_centrality_max in {low}:
+                  IF am_attack_clustering in {low}:
+                    -> recommend PROGRAMS  (n_progs=0, n_worlds=0)
+                  ELSE  (am_attack_clustering in {medium}):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                ELSE  (em_deg_centrality_max in {medium, high}):
+                  IF em_closeness_avg in {low}:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                  ELSE  (em_closeness_avg in {medium, high}):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+            ELSE  (em_avg_shortest_path in {high}):
+              IF em_deg_centrality_std in {low}:
+                IF em_treewidth_ratio in {low}:
+                  IF em_eigenvector_avg in {low}:
+                    -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+                  ELSE  (em_eigenvector_avg in {medium, high}):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                ELSE  (em_treewidth_ratio in {medium, high}):
+                  IF am_avg_arg_lines in {low}:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                  ELSE  (am_avg_arg_lines in {medium, high}):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+              ELSE  (em_deg_centrality_std in {medium, high}):
+                IF am_attack_deg_max in {low, medium}:
+                  -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+                ELSE  (am_attack_deg_max in {high}):
+                  IF lit_complement_head_rate in {low, medium}:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                  ELSE  (lit_complement_head_rate in {high}):
+                    -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+        ELSE  (am_attack_reciprocity in {high}):
+          IF am_attack_eigenvector_max in {low}:
+            IF em_betweenness_max in {low, medium}:
+              -> recommend WORLDS  (n_progs=0, n_worlds=1)
+            ELSE  (em_betweenness_max in {high}):
+              IF lit_is_negated in {0}:
+                -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+              ELSE  (lit_is_negated in {1}):
+                -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+          ELSE  (am_attack_eigenvector_max in {medium, high}):
+            IF am_avg_def_rules in {low}:
+              -> recommend WORLDS  (n_progs=0, n_worlds=1)
+            ELSE  (am_avg_def_rules in {medium, high}):
+              IF am_attack_deg_avg in {low, medium}:
+                -> recommend WORLDS  (n_progs=0, n_worlds=1)
+              ELSE  (am_attack_deg_avg in {high}):
+                IF em_eigenvector_avg in {low}:
+                  IF em_betweenness_max in {low, medium}:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=0)
+                  ELSE  (em_betweenness_max in {high}):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                ELSE  (em_eigenvector_avg in {medium, high}):
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1)
+      ELSE  (af_bipartite_density in {medium}):
+        IF af_var_coverage in {low, medium}:
+          IF em_deg_centrality_max in {low}:
+            IF lit_head_strict_rate in {low}:
+              IF lit_is_fact in {0}:
+                IF af_pct_annotated in {low}:
+                  IF am_avg_height_lines in {low}:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                  ELSE  (am_avg_height_lines in {medium, high}):
+                    -> recommend PROGRAMS  (n_progs=0, n_worlds=0)
+                ELSE  (af_pct_annotated in {medium, high}):
+                  IF lit_head_def_rate in {low, medium}:
+                    -> recommend PROGRAMS  (n_progs=0, n_worlds=0)
+                  ELSE  (lit_head_def_rate in {high}):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+              ELSE  (lit_is_fact in {1}):
+                IF am_attack_reciprocity in {low, medium}:
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                ELSE  (am_attack_reciprocity in {high}):
+                  IF am_attack_closeness_max in {low, medium}:
+                    -> recommend PROGRAMS  (n_progs=0, n_worlds=0)
+                  ELSE  (am_attack_closeness_max in {high}):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+            ELSE  (lit_head_strict_rate in {medium}):
+              IF em_clustering_coef in {low}:
+                -> recommend WORLDS  (n_progs=0, n_worlds=1)
+              ELSE  (em_clustering_coef in {medium, high}):
+                -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+          ELSE  (em_deg_centrality_max in {medium, high}):
+            -> recommend WORLDS  (n_progs=0, n_worlds=1)
+        ELSE  (af_var_coverage in {high}):
+          IF am_attack_deg_max in {low, medium}:
+            IF am_attack_betweenness_avg in {low, medium}:
+              IF am_attack_deg_avg in {low, medium}:
+                IF am_attack_eigenvector_max in {low}:
+                  IF lit_is_fact in {0}:
+                    -> recommend PROGRAMS  (n_progs=0, n_worlds=0)
+                  ELSE  (lit_is_fact in {1}):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=0)
+                ELSE  (am_attack_eigenvector_max in {medium, high}):
+                  IF em_closeness_max in {low, medium}:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=0)
+                  ELSE  (em_closeness_max in {high}):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+              ELSE  (am_attack_deg_avg in {high}):
+                IF em_closeness_max in {low}:
+                  -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+                ELSE  (em_closeness_max in {medium, high}):
+                  IF lit_is_ann_fact in {0}:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                  ELSE  (lit_is_ann_fact in {1}):
+                    -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+            ELSE  (am_attack_betweenness_avg in {high}):
+              IF am_avg_def_rules in {low}:
+                IF lit_body_rate in {low}:
+                  IF em_closeness_avg in {low}:
+                    -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+                  ELSE  (em_closeness_avg in {medium, high}):
+                    -> recommend PROGRAMS  (n_progs=0, n_worlds=0)
+                ELSE  (lit_body_rate in {medium, high}):
+                  IF em_closeness_max in {low}:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                  ELSE  (em_closeness_max in {medium, high}):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+              ELSE  (am_avg_def_rules in {medium, high}):
+                IF lit_is_fact in {0}:
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                ELSE  (lit_is_fact in {1}):
+                  IF am_avg_def_rules in {low, medium}:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                  ELSE  (am_avg_def_rules in {high}):
+                    -> recommend PROGRAMS  (n_progs=0, n_worlds=0)
+          ELSE  (am_attack_deg_max in {high}):
+            IF em_max_indeg_ratio in {low}:
+              IF em_deg_centrality_std in {low}:
+                IF em_avg_shortest_path in {low, medium}:
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                ELSE  (em_avg_shortest_path in {high}):
+                  IF am_attack_betweenness_avg in {low, medium}:
+                    -> recommend PROGRAMS  (n_progs=0, n_worlds=0)
+                  ELSE  (am_attack_betweenness_avg in {high}):
+                    -> recommend PROGRAMS  (n_progs=0, n_worlds=0)
+              ELSE  (em_deg_centrality_std in {medium, high}):
+                IF am_attack_deg_avg in {low, medium}:
+                  IF am_avg_def_rules in {low}:
+                    -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+                  ELSE  (am_avg_def_rules in {medium, high}):
+                    -> recommend PROGRAMS  (n_progs=0, n_worlds=0)
+                ELSE  (am_attack_deg_avg in {high}):
+                  IF em_closeness_max in {low}:
+                    -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+                  ELSE  (em_closeness_max in {medium, high}):
+                    -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+            ELSE  (em_max_indeg_ratio in {medium, high}):
+              IF am_attack_closeness_avg in {low}:
+                -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+              ELSE  (am_attack_closeness_avg in {medium, high}):
+                IF em_betweenness_avg in {low}:
+                  IF lit_is_fact in {0}:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                  ELSE  (lit_is_fact in {1}):
+                    -> recommend PROGRAMS  (n_progs=0, n_worlds=0)
+                ELSE  (em_betweenness_avg in {medium, high}):
+                  IF lit_body_rate in {low}:
+                    -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+                  ELSE  (lit_body_rate in {medium, high}):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+    ELSE  (af_pct_annotated in {high}):
+      IF af_rule_to_var_ratio in {low}:
+        IF em_betweenness_avg in {low, medium}:
+          IF am_attack_closeness_avg in {low, medium}:
+            -> recommend WORLDS  (n_progs=0, n_worlds=1)
+          ELSE  (am_attack_closeness_avg in {high}):
+            IF lit_head_def_rate in {low}:
+              -> recommend WORLDS  (n_progs=0, n_worlds=1)
+            ELSE  (lit_head_def_rate in {medium, high}):
+              -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+        ELSE  (em_betweenness_avg in {high}):
+          -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+      ELSE  (af_rule_to_var_ratio in {medium, high}):
+        IF em_in_degree_gini in {low, medium}:
+          IF am_attack_closeness_max in {low}:
+            IF em_closeness_avg in {low}:
+              -> recommend WORLDS  (n_progs=0, n_worlds=1)
+            ELSE  (em_closeness_avg in {medium, high}):
+              -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+          ELSE  (am_attack_closeness_max in {medium, high}):
+            IF lit_body_rate in {low}:
+              IF lit_head_def_rate in {low, medium}:
+                IF am_attack_closeness_max in {low, medium}:
+                  IF am_attack_deg_max in {low}:
+                    -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+                  ELSE  (am_attack_deg_max in {medium, high}):
+                    -> recommend PROGRAMS  (n_progs=0, n_worlds=0)
+                ELSE  (am_attack_closeness_max in {high}):
+                  IF em_deg_centrality_max in {low}:
+                    -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+                  ELSE  (em_deg_centrality_max in {medium, high}):
+                    -> recommend PROGRAMS  (n_progs=0, n_worlds=0)
+              ELSE  (lit_head_def_rate in {high}):
+                IF em_avg_shortest_path in {low, medium}:
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                ELSE  (em_avg_shortest_path in {high}):
+                  IF lit_is_negated in {0}:
+                    -> recommend PROGRAMS  (n_progs=0, n_worlds=0)
+                  ELSE  (lit_is_negated in {1}):
+                    -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+            ELSE  (lit_body_rate in {medium, high}):
+              IF em_betweenness_max in {low, medium}:
+                IF am_attack_clustering in {low}:
+                  IF am_tree_density in {low, medium}:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                  ELSE  (am_tree_density in {high}):
+                    -> recommend PROGRAMS  (n_progs=0, n_worlds=0)
+                ELSE  (am_attack_clustering in {medium}):
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1)
+              ELSE  (em_betweenness_max in {high}):
+                -> recommend WORLDS  (n_progs=0, n_worlds=1)
+        ELSE  (em_in_degree_gini in {high}):
+          -> recommend WORLDS  (n_progs=0, n_worlds=1)
+  ELSE  (em_entropy_per_var in {medium}):
+    IF am_attack_eigenvector_max in {low}:
+      IF lit_is_ann_fact in {0}:
+        -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+      ELSE  (lit_is_ann_fact in {1}):
+        IF em_avg_shortest_path in {low, medium}:
+          -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+        ELSE  (em_avg_shortest_path in {high}):
+          -> recommend WORLDS  (n_progs=0, n_worlds=1)
+    ELSE  (am_attack_eigenvector_max in {medium, high}):
+      IF af_pct_annotated in {low}:
+        IF am_avg_def_rules in {low}:
+          -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+        ELSE  (am_avg_def_rules in {medium, high}):
+          -> recommend WORLDS  (n_progs=0, n_worlds=1)
+      ELSE  (af_pct_annotated in {medium, high}):
+        IF lit_complement_head_rate in {low, medium}:
+          IF em_treewidth_ratio in {low}:
+            IF am_attack_deg_max in {low}:
+              IF lit_is_ann_fact in {0}:
+                -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+              ELSE  (lit_is_ann_fact in {1}):
+                IF am_avg_def_rules in {low, medium}:
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                ELSE  (am_avg_def_rules in {high}):
+                  IF af_avg_connectors in {low}:
+                    -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+                  ELSE  (af_avg_connectors in {medium, high}):
+                    -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+            ELSE  (am_attack_deg_max in {medium, high}):
+              -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+          ELSE  (em_treewidth_ratio in {medium, high}):
+            IF lit_is_fact in {0}:
+              -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+            ELSE  (lit_is_fact in {1}):
+              IF em_clustering_coef in {low}:
+                -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+              ELSE  (em_clustering_coef in {medium, high}):
+                IF af_avg_complexity in {low}:
+                  IF am_attack_closeness_avg in {low, medium}:
+                    -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+                  ELSE  (am_attack_closeness_avg in {high}):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                ELSE  (af_avg_complexity in {medium, high}):
+                  -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+        ELSE  (lit_complement_head_rate in {high}):
+          IF em_avg_shortest_path in {low, medium}:
+            IF af_avg_complexity in {low}:
+              IF am_attack_deg_avg in {low}:
+                -> recommend WORLDS  (n_progs=0, n_worlds=1)
+              ELSE  (am_attack_deg_avg in {medium, high}):
+                -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+            ELSE  (af_avg_complexity in {medium, high}):
+              -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+          ELSE  (em_avg_shortest_path in {high}):
+            IF am_attack_eigenvector_max in {low, medium}:
+              -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+            ELSE  (am_attack_eigenvector_max in {high}):
+              -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+ELSE  (em_deg_centrality_avg in {medium, high}):
+  IF space_orientation in {balanced, programs-favored}:
+    IF em_clustering_coef in {low}:
+      IF lit_is_ann_fact in {0}:
+        IF af_rule_to_var_ratio in {low}:
+          IF em_closeness_avg in {low}:
+            -> recommend WORLDS  (n_progs=0, n_worlds=1)
+          ELSE  (em_closeness_avg in {medium, high}):
+            IF lit_is_fact in {0}:
+              IF am_avg_def_rules in {low}:
+                IF am_attack_avg_path in {low, medium}:
+                  IF em_in_degree_gini in {low}:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                  ELSE  (em_in_degree_gini in {medium, high}):
+                    -> recommend PROGRAMS  (n_progs=0, n_worlds=0)
+                ELSE  (am_attack_avg_path in {high}):
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1)
+              ELSE  (am_avg_def_rules in {medium, high}):
+                IF am_attack_eigenvector_max in {low, medium}:
+                  IF am_attack_deg_avg in {low, medium}:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=0)
+                  ELSE  (am_attack_deg_avg in {high}):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                ELSE  (am_attack_eigenvector_max in {high}):
+                  IF af_avg_complexity in {low}:
+                    -> recommend PROGRAMS  (n_progs=0, n_worlds=0)
+                  ELSE  (af_avg_complexity in {medium, high}):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=0)
+            ELSE  (lit_is_fact in {1}):
+              IF am_avg_def_rules in {low, medium}:
+                IF em_deg_centrality_std in {low}:
+                  -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+                ELSE  (em_deg_centrality_std in {medium, high}):
+                  IF am_defeat_ratio in {low, medium}:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                  ELSE  (am_defeat_ratio in {high}):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=0)
+              ELSE  (am_avg_def_rules in {high}):
+                IF am_avg_height_lines in {low}:
+                  -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+                ELSE  (am_avg_height_lines in {medium, high}):
+                  IF am_attack_deg_avg in {low, medium}:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                  ELSE  (am_attack_deg_avg in {high}):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+        ELSE  (af_rule_to_var_ratio in {medium, high}):
+          IF am_avg_def_rules in {low, medium}:
+            IF lit_head_def_rate in {low, medium}:
+              IF am_attack_betweenness_avg in {low}:
+                IF lit_is_negated in {0}:
+                  -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+                ELSE  (lit_is_negated in {1}):
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1)
+              ELSE  (am_attack_betweenness_avg in {medium, high}):
+                IF em_deg_centrality_avg in {low, medium}:
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                ELSE  (em_deg_centrality_avg in {high}):
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1)
+            ELSE  (lit_head_def_rate in {high}):
+              IF am_avg_arg_lines in {low}:
+                -> recommend WORLDS  (n_progs=0, n_worlds=1)
+              ELSE  (am_avg_arg_lines in {medium, high}):
+                -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+          ELSE  (am_avg_def_rules in {high}):
+            IF lit_is_negated in {0}:
+              IF em_eigenvector_avg in {low, medium}:
+                -> recommend WORLDS  (n_progs=0, n_worlds=1)
+              ELSE  (em_eigenvector_avg in {high}):
+                IF em_in_degree_gini in {low}:
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                ELSE  (em_in_degree_gini in {medium, high}):
+                  -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+            ELSE  (lit_is_negated in {1}):
+              IF em_in_degree_gini in {low}:
+                -> recommend WORLDS  (n_progs=0, n_worlds=1)
+              ELSE  (em_in_degree_gini in {medium, high}):
+                -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+      ELSE  (lit_is_ann_fact in {1}):
+        IF am_avg_def_rules in {low, medium}:
+          -> recommend WORLDS  (n_progs=0, n_worlds=1)
+        ELSE  (am_avg_def_rules in {high}):
+          IF em_closeness_avg in {low}:
+            -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+          ELSE  (em_closeness_avg in {medium, high}):
+            -> recommend WORLDS  (n_progs=0, n_worlds=1)
+    ELSE  (em_clustering_coef in {medium, high}):
+      IF em_closeness_max in {low}:
+        IF lit_is_fact in {0}:
+          -> recommend WORLDS  (n_progs=0, n_worlds=1)
+        ELSE  (lit_is_fact in {1}):
+          IF af_avg_complexity in {low}:
+            -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+          ELSE  (af_avg_complexity in {medium, high}):
+            -> recommend WORLDS  (n_progs=0, n_worlds=1)
+      ELSE  (em_closeness_max in {medium, high}):
+        IF em_in_degree_gini in {low, medium}:
+          IF lit_is_negated in {0}:
+            IF am_attack_closeness_avg in {low, medium}:
+              IF em_in_degree_gini in {low}:
+                IF lit_is_ann_fact in {0}:
+                  IF am_attack_deg_max in {low}:
+                    -> recommend PROGRAMS  (n_progs=0, n_worlds=0)
+                  ELSE  (am_attack_deg_max in {medium, high}):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                ELSE  (lit_is_ann_fact in {1}):
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1)
+              ELSE  (em_in_degree_gini in {medium, high}):
+                IF em_max_indeg_ratio in {low}:
+                  -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+                ELSE  (em_max_indeg_ratio in {medium, high}):
+                  IF am_defeat_ratio in {low, medium}:
+                    -> recommend PROGRAMS  (n_progs=0, n_worlds=0)
+                  ELSE  (am_defeat_ratio in {high}):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+            ELSE  (am_attack_closeness_avg in {high}):
+              IF space_orientation in {balanced}:
+                IF af_bipartite_density in {low}:
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                ELSE  (af_bipartite_density in {medium}):
+                  -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+              ELSE  (space_orientation in {programs-favored, worlds-favored}):
+                IF em_closeness_max in {low, medium}:
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                ELSE  (em_closeness_max in {high}):
+                  IF am_attack_eigenvector_avg in {low, medium}:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                  ELSE  (am_attack_eigenvector_avg in {high}):
+                    -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+          ELSE  (lit_is_negated in {1}):
+            IF em_deg_centrality_avg in {low, medium}:
+              -> recommend WORLDS  (n_progs=0, n_worlds=1)
+            ELSE  (em_deg_centrality_avg in {high}):
+              IF lit_is_fact in {0}:
+                IF em_betweenness_avg in {low}:
+                  IF af_avg_connectors in {low, medium}:
+                    -> recommend PROGRAMS  (n_progs=0, n_worlds=0)
+                  ELSE  (af_avg_connectors in {high}):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                ELSE  (em_betweenness_avg in {medium, high}):
+                  IF am_avg_def_rules in {low, medium}:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                  ELSE  (am_avg_def_rules in {high}):
+                    -> recommend PROGRAMS  (n_progs=0, n_worlds=0)
+              ELSE  (lit_is_fact in {1}):
+                IF em_in_degree_gini in {low}:
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                ELSE  (em_in_degree_gini in {medium, high}):
+                  -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+        ELSE  (em_in_degree_gini in {high}):
+          IF am_attack_eigenvector_max in {low, medium}:
+            -> recommend WORLDS  (n_progs=0, n_worlds=1)
+          ELSE  (am_attack_eigenvector_max in {high}):
+            -> recommend WORLDS  (n_progs=0, n_worlds=1)
+  ELSE  (space_orientation in {worlds-favored}):
+    IF am_attack_eigenvector_avg in {low, medium}:
+      IF am_avg_arg_lines in {low}:
+        IF lit_is_fact in {0}:
+          IF am_attack_closeness_avg in {low, medium}:
+            -> recommend WORLDS  (n_progs=0, n_worlds=1)
+          ELSE  (am_attack_closeness_avg in {high}):
+            IF lit_is_negated in {0}:
+              IF lit_complement_head_rate in {low}:
+                -> recommend WORLDS  (n_progs=0, n_worlds=1)
+              ELSE  (lit_complement_head_rate in {medium, high}):
+                -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+            ELSE  (lit_is_negated in {1}):
+              IF em_eigenvector_avg in {low, medium}:
+                -> recommend WORLDS  (n_progs=0, n_worlds=1)
+              ELSE  (em_eigenvector_avg in {high}):
+                -> recommend WORLDS  (n_progs=0, n_worlds=1)
+        ELSE  (lit_is_fact in {1}):
+          IF em_avg_shortest_path in {low, medium}:
+            -> recommend WORLDS  (n_progs=0, n_worlds=1)
+          ELSE  (em_avg_shortest_path in {high}):
+            -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+      ELSE  (am_avg_arg_lines in {medium, high}):
+        -> recommend WORLDS  (n_progs=0, n_worlds=1)
+    ELSE  (am_attack_eigenvector_avg in {high}):
+      IF af_avg_connectors in {low, medium}:
+        IF em_deg_centrality_avg in {low, medium}:
+          IF am_attack_avg_path in {low, medium}:
+            IF lit_head_def_rate in {low}:
+              IF am_attack_closeness_avg in {low, medium}:
+                IF lit_body_rate in {low}:
+                  IF am_avg_def_rules in {low}:
+                    -> recommend PROGRAMS  (n_progs=0, n_worlds=0)
+                  ELSE  (am_avg_def_rules in {medium, high}):
+                    -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+                ELSE  (lit_body_rate in {medium, high}):
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1)
+              ELSE  (am_attack_closeness_avg in {high}):
+                IF am_attack_reciprocity in {low, medium}:
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1)
+                ELSE  (am_attack_reciprocity in {high}):
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1)
+            ELSE  (lit_head_def_rate in {medium, high}):
+              IF em_max_indeg_ratio in {low}:
+                -> recommend WORLDS  (n_progs=0, n_worlds=1)
+              ELSE  (em_max_indeg_ratio in {medium, high}):
+                -> recommend WORLDS  (n_progs=0, n_worlds=1)
+          ELSE  (am_attack_avg_path in {high}):
+            -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+        ELSE  (em_deg_centrality_avg in {high}):
+          IF am_avg_def_rules in {low, medium}:
+            -> recommend WORLDS  (n_progs=0, n_worlds=1)
+          ELSE  (am_avg_def_rules in {high}):
+            IF lit_is_ann_fact in {0}:
+              -> recommend WORLDS  (n_progs=0, n_worlds=1)
+            ELSE  (lit_is_ann_fact in {1}):
+              IF em_clustering_coef in {low}:
+                -> recommend WORLDS  (n_progs=0, n_worlds=1)
+              ELSE  (em_clustering_coef in {medium, high}):
+                -> recommend PROGRAMS  (n_progs=1, n_worlds=0)
+      ELSE  (af_avg_connectors in {high}):
+        IF em_betweenness_max in {low}:
+          -> recommend WORLDS  (n_progs=0, n_worlds=1)
+        ELSE  (em_betweenness_max in {medium, high}):
+          -> recommend WORLDS  (n_progs=0, n_worlds=1)
+
+
+Export (raw sklearn rule text):
+|--- em_deg_centrality_avg <= 0.50
+|   |--- em_entropy_per_var <= 0.50
+|   |   |--- af_pct_annotated <= 1.50
+|   |   |   |--- af_bipartite_density <= 0.50
+|   |   |   |   |--- am_attack_reciprocity <= 1.50
+|   |   |   |   |   |--- lit_head_def_rate <= 0.50
+|   |   |   |   |   |   |--- em_in_degree_gini <= 1.50
+|   |   |   |   |   |   |   |--- lit_is_negated <= 0.50
+|   |   |   |   |   |   |   |   |--- am_attack_closeness_max <= 0.50
+|   |   |   |   |   |   |   |   |   |--- em_closeness_max <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- em_closeness_max >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- am_attack_closeness_max >  0.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- lit_is_negated >  0.50
+|   |   |   |   |   |   |   |   |--- em_deg_centrality_std <= 0.50
+|   |   |   |   |   |   |   |   |   |--- lit_is_ann_fact <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- lit_is_ann_fact >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- em_deg_centrality_std >  0.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |--- em_in_degree_gini >  1.50
+|   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |--- lit_head_def_rate >  0.50
+|   |   |   |   |   |   |--- em_avg_shortest_path <= 1.50
+|   |   |   |   |   |   |   |--- am_attack_deg_avg <= 1.50
+|   |   |   |   |   |   |   |   |--- am_attack_closeness_avg <= 1.50
+|   |   |   |   |   |   |   |   |   |--- am_attack_avg_path <= 1.00
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- am_attack_avg_path >  1.00
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- am_attack_closeness_avg >  1.50
+|   |   |   |   |   |   |   |   |   |--- em_closeness_max <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- em_closeness_max >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- am_attack_deg_avg >  1.50
+|   |   |   |   |   |   |   |   |--- em_deg_centrality_max <= 0.50
+|   |   |   |   |   |   |   |   |   |--- am_attack_clustering <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- am_attack_clustering >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- em_deg_centrality_max >  0.50
+|   |   |   |   |   |   |   |   |   |--- em_closeness_avg <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- em_closeness_avg >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |--- em_avg_shortest_path >  1.50
+|   |   |   |   |   |   |   |--- em_deg_centrality_std <= 0.50
+|   |   |   |   |   |   |   |   |--- em_treewidth_ratio <= 0.50
+|   |   |   |   |   |   |   |   |   |--- em_eigenvector_avg <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- em_eigenvector_avg >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- em_treewidth_ratio >  0.50
+|   |   |   |   |   |   |   |   |   |--- am_avg_arg_lines <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- am_avg_arg_lines >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- em_deg_centrality_std >  0.50
+|   |   |   |   |   |   |   |   |--- am_attack_deg_max <= 1.00
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- am_attack_deg_max >  1.00
+|   |   |   |   |   |   |   |   |   |--- lit_complement_head_rate <= 1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- lit_complement_head_rate >  1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |--- am_attack_reciprocity >  1.50
+|   |   |   |   |   |--- am_attack_eigenvector_max <= 0.50
+|   |   |   |   |   |   |--- em_betweenness_max <= 1.00
+|   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |--- em_betweenness_max >  1.00
+|   |   |   |   |   |   |   |--- lit_is_negated <= 0.50
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- lit_is_negated >  0.50
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |--- am_attack_eigenvector_max >  0.50
+|   |   |   |   |   |   |--- am_avg_def_rules <= 0.50
+|   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |--- am_avg_def_rules >  0.50
+|   |   |   |   |   |   |   |--- am_attack_deg_avg <= 1.50
+|   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- am_attack_deg_avg >  1.50
+|   |   |   |   |   |   |   |   |--- em_eigenvector_avg <= 0.50
+|   |   |   |   |   |   |   |   |   |--- em_betweenness_max <= 1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- em_betweenness_max >  1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- em_eigenvector_avg >  0.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |--- af_bipartite_density >  0.50
+|   |   |   |   |--- af_var_coverage <= 1.50
+|   |   |   |   |   |--- em_deg_centrality_max <= 0.50
+|   |   |   |   |   |   |--- lit_head_strict_rate <= 0.50
+|   |   |   |   |   |   |   |--- lit_is_fact <= 0.50
+|   |   |   |   |   |   |   |   |--- af_pct_annotated <= 0.50
+|   |   |   |   |   |   |   |   |   |--- am_avg_height_lines <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- am_avg_height_lines >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- af_pct_annotated >  0.50
+|   |   |   |   |   |   |   |   |   |--- lit_head_def_rate <= 1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- lit_head_def_rate >  1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- lit_is_fact >  0.50
+|   |   |   |   |   |   |   |   |--- am_attack_reciprocity <= 1.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- am_attack_reciprocity >  1.50
+|   |   |   |   |   |   |   |   |   |--- am_attack_closeness_max <= 1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- am_attack_closeness_max >  1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |--- lit_head_strict_rate >  0.50
+|   |   |   |   |   |   |   |--- em_clustering_coef <= 0.50
+|   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- em_clustering_coef >  0.50
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |--- em_deg_centrality_max >  0.50
+|   |   |   |   |   |   |--- class: 1
+|   |   |   |   |--- af_var_coverage >  1.50
+|   |   |   |   |   |--- am_attack_deg_max <= 1.50
+|   |   |   |   |   |   |--- am_attack_betweenness_avg <= 1.50
+|   |   |   |   |   |   |   |--- am_attack_deg_avg <= 1.50
+|   |   |   |   |   |   |   |   |--- am_attack_eigenvector_max <= 0.50
+|   |   |   |   |   |   |   |   |   |--- lit_is_fact <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- lit_is_fact >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- am_attack_eigenvector_max >  0.50
+|   |   |   |   |   |   |   |   |   |--- em_closeness_max <= 1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- em_closeness_max >  1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- am_attack_deg_avg >  1.50
+|   |   |   |   |   |   |   |   |--- em_closeness_max <= 0.50
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- em_closeness_max >  0.50
+|   |   |   |   |   |   |   |   |   |--- lit_is_ann_fact <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- lit_is_ann_fact >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |--- am_attack_betweenness_avg >  1.50
+|   |   |   |   |   |   |   |--- am_avg_def_rules <= 0.50
+|   |   |   |   |   |   |   |   |--- lit_body_rate <= 0.50
+|   |   |   |   |   |   |   |   |   |--- em_closeness_avg <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- em_closeness_avg >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- lit_body_rate >  0.50
+|   |   |   |   |   |   |   |   |   |--- em_closeness_max <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- em_closeness_max >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- am_avg_def_rules >  0.50
+|   |   |   |   |   |   |   |   |--- lit_is_fact <= 0.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- lit_is_fact >  0.50
+|   |   |   |   |   |   |   |   |   |--- am_avg_def_rules <= 1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- am_avg_def_rules >  1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |--- am_attack_deg_max >  1.50
+|   |   |   |   |   |   |--- em_max_indeg_ratio <= 0.50
+|   |   |   |   |   |   |   |--- em_deg_centrality_std <= 0.50
+|   |   |   |   |   |   |   |   |--- em_avg_shortest_path <= 1.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- em_avg_shortest_path >  1.50
+|   |   |   |   |   |   |   |   |   |--- am_attack_betweenness_avg <= 1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- am_attack_betweenness_avg >  1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- em_deg_centrality_std >  0.50
+|   |   |   |   |   |   |   |   |--- am_attack_deg_avg <= 1.50
+|   |   |   |   |   |   |   |   |   |--- am_avg_def_rules <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- am_avg_def_rules >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- am_attack_deg_avg >  1.50
+|   |   |   |   |   |   |   |   |   |--- em_closeness_max <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- em_closeness_max >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |--- em_max_indeg_ratio >  0.50
+|   |   |   |   |   |   |   |--- am_attack_closeness_avg <= 0.50
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- am_attack_closeness_avg >  0.50
+|   |   |   |   |   |   |   |   |--- em_betweenness_avg <= 0.50
+|   |   |   |   |   |   |   |   |   |--- lit_is_fact <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- lit_is_fact >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- em_betweenness_avg >  0.50
+|   |   |   |   |   |   |   |   |   |--- lit_body_rate <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- lit_body_rate >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |--- af_pct_annotated >  1.50
+|   |   |   |--- af_rule_to_var_ratio <= 0.50
+|   |   |   |   |--- em_betweenness_avg <= 1.50
+|   |   |   |   |   |--- am_attack_closeness_avg <= 1.50
+|   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |--- am_attack_closeness_avg >  1.50
+|   |   |   |   |   |   |--- lit_head_def_rate <= 0.50
+|   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |--- lit_head_def_rate >  0.50
+|   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |--- em_betweenness_avg >  1.50
+|   |   |   |   |   |--- class: 0
+|   |   |   |--- af_rule_to_var_ratio >  0.50
+|   |   |   |   |--- em_in_degree_gini <= 1.50
+|   |   |   |   |   |--- am_attack_closeness_max <= 0.50
+|   |   |   |   |   |   |--- em_closeness_avg <= 0.50
+|   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |--- em_closeness_avg >  0.50
+|   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |--- am_attack_closeness_max >  0.50
+|   |   |   |   |   |   |--- lit_body_rate <= 0.50
+|   |   |   |   |   |   |   |--- lit_head_def_rate <= 1.50
+|   |   |   |   |   |   |   |   |--- am_attack_closeness_max <= 1.50
+|   |   |   |   |   |   |   |   |   |--- am_attack_deg_max <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- am_attack_deg_max >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- am_attack_closeness_max >  1.50
+|   |   |   |   |   |   |   |   |   |--- em_deg_centrality_max <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- em_deg_centrality_max >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- lit_head_def_rate >  1.50
+|   |   |   |   |   |   |   |   |--- em_avg_shortest_path <= 1.00
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- em_avg_shortest_path >  1.00
+|   |   |   |   |   |   |   |   |   |--- lit_is_negated <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- lit_is_negated >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |--- lit_body_rate >  0.50
+|   |   |   |   |   |   |   |--- em_betweenness_max <= 1.50
+|   |   |   |   |   |   |   |   |--- am_attack_clustering <= 0.50
+|   |   |   |   |   |   |   |   |   |--- am_tree_density <= 1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- am_tree_density >  1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- am_attack_clustering >  0.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- em_betweenness_max >  1.50
+|   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |--- em_in_degree_gini >  1.50
+|   |   |   |   |   |--- class: 1
+|   |--- em_entropy_per_var >  0.50
+|   |   |--- am_attack_eigenvector_max <= 0.50
+|   |   |   |--- lit_is_ann_fact <= 0.50
+|   |   |   |   |--- class: 0
+|   |   |   |--- lit_is_ann_fact >  0.50
+|   |   |   |   |--- em_avg_shortest_path <= 1.50
+|   |   |   |   |   |--- class: 0
+|   |   |   |   |--- em_avg_shortest_path >  1.50
+|   |   |   |   |   |--- class: 1
+|   |   |--- am_attack_eigenvector_max >  0.50
+|   |   |   |--- af_pct_annotated <= 0.50
+|   |   |   |   |--- am_avg_def_rules <= 0.50
+|   |   |   |   |   |--- class: 0
+|   |   |   |   |--- am_avg_def_rules >  0.50
+|   |   |   |   |   |--- class: 1
+|   |   |   |--- af_pct_annotated >  0.50
+|   |   |   |   |--- lit_complement_head_rate <= 1.50
+|   |   |   |   |   |--- em_treewidth_ratio <= 0.50
+|   |   |   |   |   |   |--- am_attack_deg_max <= 0.50
+|   |   |   |   |   |   |   |--- lit_is_ann_fact <= 0.50
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- lit_is_ann_fact >  0.50
+|   |   |   |   |   |   |   |   |--- am_avg_def_rules <= 1.00
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- am_avg_def_rules >  1.00
+|   |   |   |   |   |   |   |   |   |--- af_avg_connectors <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- af_avg_connectors >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |--- am_attack_deg_max >  0.50
+|   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |--- em_treewidth_ratio >  0.50
+|   |   |   |   |   |   |--- lit_is_fact <= 0.50
+|   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |--- lit_is_fact >  0.50
+|   |   |   |   |   |   |   |--- em_clustering_coef <= 0.50
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- em_clustering_coef >  0.50
+|   |   |   |   |   |   |   |   |--- af_avg_complexity <= 0.50
+|   |   |   |   |   |   |   |   |   |--- am_attack_closeness_avg <= 1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- am_attack_closeness_avg >  1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- af_avg_complexity >  0.50
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |--- lit_complement_head_rate >  1.50
+|   |   |   |   |   |--- em_avg_shortest_path <= 1.50
+|   |   |   |   |   |   |--- af_avg_complexity <= 0.50
+|   |   |   |   |   |   |   |--- am_attack_deg_avg <= 0.50
+|   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- am_attack_deg_avg >  0.50
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |--- af_avg_complexity >  0.50
+|   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |--- em_avg_shortest_path >  1.50
+|   |   |   |   |   |   |--- am_attack_eigenvector_max <= 1.50
+|   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |--- am_attack_eigenvector_max >  1.50
+|   |   |   |   |   |   |   |--- class: 0
+|--- em_deg_centrality_avg >  0.50
+|   |--- space_orientation <= 1.50
+|   |   |--- em_clustering_coef <= 0.50
+|   |   |   |--- lit_is_ann_fact <= 0.50
+|   |   |   |   |--- af_rule_to_var_ratio <= 0.50
+|   |   |   |   |   |--- em_closeness_avg <= 0.50
+|   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |--- em_closeness_avg >  0.50
+|   |   |   |   |   |   |--- lit_is_fact <= 0.50
+|   |   |   |   |   |   |   |--- am_avg_def_rules <= 0.50
+|   |   |   |   |   |   |   |   |--- am_attack_avg_path <= 1.50
+|   |   |   |   |   |   |   |   |   |--- em_in_degree_gini <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- em_in_degree_gini >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- am_attack_avg_path >  1.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- am_avg_def_rules >  0.50
+|   |   |   |   |   |   |   |   |--- am_attack_eigenvector_max <= 1.50
+|   |   |   |   |   |   |   |   |   |--- am_attack_deg_avg <= 1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- am_attack_deg_avg >  1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- am_attack_eigenvector_max >  1.50
+|   |   |   |   |   |   |   |   |   |--- af_avg_complexity <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- af_avg_complexity >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |--- lit_is_fact >  0.50
+|   |   |   |   |   |   |   |--- am_avg_def_rules <= 1.50
+|   |   |   |   |   |   |   |   |--- em_deg_centrality_std <= 0.50
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- em_deg_centrality_std >  0.50
+|   |   |   |   |   |   |   |   |   |--- am_defeat_ratio <= 1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- am_defeat_ratio >  1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- am_avg_def_rules >  1.50
+|   |   |   |   |   |   |   |   |--- am_avg_height_lines <= 0.50
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- am_avg_height_lines >  0.50
+|   |   |   |   |   |   |   |   |   |--- am_attack_deg_avg <= 1.00
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- am_attack_deg_avg >  1.00
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |--- af_rule_to_var_ratio >  0.50
+|   |   |   |   |   |--- am_avg_def_rules <= 1.50
+|   |   |   |   |   |   |--- lit_head_def_rate <= 1.50
+|   |   |   |   |   |   |   |--- am_attack_betweenness_avg <= 0.50
+|   |   |   |   |   |   |   |   |--- lit_is_negated <= 0.50
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- lit_is_negated >  0.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- am_attack_betweenness_avg >  0.50
+|   |   |   |   |   |   |   |   |--- em_deg_centrality_avg <= 1.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- em_deg_centrality_avg >  1.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |--- lit_head_def_rate >  1.50
+|   |   |   |   |   |   |   |--- am_avg_arg_lines <= 0.50
+|   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- am_avg_arg_lines >  0.50
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |--- am_avg_def_rules >  1.50
+|   |   |   |   |   |   |--- lit_is_negated <= 0.50
+|   |   |   |   |   |   |   |--- em_eigenvector_avg <= 1.50
+|   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- em_eigenvector_avg >  1.50
+|   |   |   |   |   |   |   |   |--- em_in_degree_gini <= 0.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- em_in_degree_gini >  0.50
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |--- lit_is_negated >  0.50
+|   |   |   |   |   |   |   |--- em_in_degree_gini <= 0.50
+|   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- em_in_degree_gini >  0.50
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |--- lit_is_ann_fact >  0.50
+|   |   |   |   |--- am_avg_def_rules <= 1.50
+|   |   |   |   |   |--- class: 1
+|   |   |   |   |--- am_avg_def_rules >  1.50
+|   |   |   |   |   |--- em_closeness_avg <= 0.50
+|   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |--- em_closeness_avg >  0.50
+|   |   |   |   |   |   |--- class: 1
+|   |   |--- em_clustering_coef >  0.50
+|   |   |   |--- em_closeness_max <= 0.50
+|   |   |   |   |--- lit_is_fact <= 0.50
+|   |   |   |   |   |--- class: 1
+|   |   |   |   |--- lit_is_fact >  0.50
+|   |   |   |   |   |--- af_avg_complexity <= 0.50
+|   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |--- af_avg_complexity >  0.50
+|   |   |   |   |   |   |--- class: 1
+|   |   |   |--- em_closeness_max >  0.50
+|   |   |   |   |--- em_in_degree_gini <= 1.50
+|   |   |   |   |   |--- lit_is_negated <= 0.50
+|   |   |   |   |   |   |--- am_attack_closeness_avg <= 1.50
+|   |   |   |   |   |   |   |--- em_in_degree_gini <= 0.50
+|   |   |   |   |   |   |   |   |--- lit_is_ann_fact <= 0.50
+|   |   |   |   |   |   |   |   |   |--- am_attack_deg_max <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- am_attack_deg_max >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- lit_is_ann_fact >  0.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- em_in_degree_gini >  0.50
+|   |   |   |   |   |   |   |   |--- em_max_indeg_ratio <= 0.50
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- em_max_indeg_ratio >  0.50
+|   |   |   |   |   |   |   |   |   |--- am_defeat_ratio <= 1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- am_defeat_ratio >  1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |--- am_attack_closeness_avg >  1.50
+|   |   |   |   |   |   |   |--- space_orientation <= 0.50
+|   |   |   |   |   |   |   |   |--- af_bipartite_density <= 0.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- af_bipartite_density >  0.50
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- space_orientation >  0.50
+|   |   |   |   |   |   |   |   |--- em_closeness_max <= 1.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- em_closeness_max >  1.50
+|   |   |   |   |   |   |   |   |   |--- am_attack_eigenvector_avg <= 1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- am_attack_eigenvector_avg >  1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |--- lit_is_negated >  0.50
+|   |   |   |   |   |   |--- em_deg_centrality_avg <= 1.50
+|   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |--- em_deg_centrality_avg >  1.50
+|   |   |   |   |   |   |   |--- lit_is_fact <= 0.50
+|   |   |   |   |   |   |   |   |--- em_betweenness_avg <= 0.50
+|   |   |   |   |   |   |   |   |   |--- af_avg_connectors <= 1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- af_avg_connectors >  1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- em_betweenness_avg >  0.50
+|   |   |   |   |   |   |   |   |   |--- am_avg_def_rules <= 1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- am_avg_def_rules >  1.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- lit_is_fact >  0.50
+|   |   |   |   |   |   |   |   |--- em_in_degree_gini <= 0.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- em_in_degree_gini >  0.50
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |--- em_in_degree_gini >  1.50
+|   |   |   |   |   |--- am_attack_eigenvector_max <= 1.50
+|   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |--- am_attack_eigenvector_max >  1.50
+|   |   |   |   |   |   |--- class: 1
+|   |--- space_orientation >  1.50
+|   |   |--- am_attack_eigenvector_avg <= 1.50
+|   |   |   |--- am_avg_arg_lines <= 0.50
+|   |   |   |   |--- lit_is_fact <= 0.50
+|   |   |   |   |   |--- am_attack_closeness_avg <= 1.50
+|   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |--- am_attack_closeness_avg >  1.50
+|   |   |   |   |   |   |--- lit_is_negated <= 0.50
+|   |   |   |   |   |   |   |--- lit_complement_head_rate <= 0.50
+|   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- lit_complement_head_rate >  0.50
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |--- lit_is_negated >  0.50
+|   |   |   |   |   |   |   |--- em_eigenvector_avg <= 1.50
+|   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- em_eigenvector_avg >  1.50
+|   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |--- lit_is_fact >  0.50
+|   |   |   |   |   |--- em_avg_shortest_path <= 1.00
+|   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |--- em_avg_shortest_path >  1.00
+|   |   |   |   |   |   |--- class: 0
+|   |   |   |--- am_avg_arg_lines >  0.50
+|   |   |   |   |--- class: 1
+|   |   |--- am_attack_eigenvector_avg >  1.50
+|   |   |   |--- af_avg_connectors <= 1.00
+|   |   |   |   |--- em_deg_centrality_avg <= 1.50
+|   |   |   |   |   |--- am_attack_avg_path <= 1.50
+|   |   |   |   |   |   |--- lit_head_def_rate <= 0.50
+|   |   |   |   |   |   |   |--- am_attack_closeness_avg <= 1.50
+|   |   |   |   |   |   |   |   |--- lit_body_rate <= 0.50
+|   |   |   |   |   |   |   |   |   |--- am_avg_def_rules <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- am_avg_def_rules >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- lit_body_rate >  0.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- am_attack_closeness_avg >  1.50
+|   |   |   |   |   |   |   |   |--- am_attack_reciprocity <= 1.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- am_attack_reciprocity >  1.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |--- lit_head_def_rate >  0.50
+|   |   |   |   |   |   |   |--- em_max_indeg_ratio <= 0.50
+|   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- em_max_indeg_ratio >  0.50
+|   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |--- am_attack_avg_path >  1.50
+|   |   |   |   |   |   |--- class: 0
+|   |   |   |   |--- em_deg_centrality_avg >  1.50
+|   |   |   |   |   |--- am_avg_def_rules <= 1.50
+|   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |--- am_avg_def_rules >  1.50
+|   |   |   |   |   |   |--- lit_is_ann_fact <= 0.50
+|   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |--- lit_is_ann_fact >  0.50
+|   |   |   |   |   |   |   |--- em_clustering_coef <= 0.50
+|   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- em_clustering_coef >  0.50
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |--- af_avg_connectors >  1.00
+|   |   |   |   |--- em_betweenness_max <= 0.50
+|   |   |   |   |   |--- class: 1
+|   |   |   |   |--- em_betweenness_max >  0.50
+|   |   |   |   |   |--- class: 1

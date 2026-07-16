@@ -1,0 +1,110 @@
+=== Dataset overview ===
+Total rows: 2357
+  ccs: 98 rows | worlds=98 programs=0 | mean quality_diff=+0.786 ± 0.257
+  cmm: 180 rows | worlds=125 programs=55 | mean quality_diff=-0.001 ± 0.082
+  cms: 184 rows | worlds=184 programs=0 | mean quality_diff=+0.500 ± 0.335
+  css: 98 rows | worlds=98 programs=0 | mean quality_diff=+0.560 ± 0.375
+  mcs: 109 rows | worlds=109 programs=0 | mean quality_diff=+0.716 ± 0.285
+  mms: 201 rows | worlds=201 programs=0 | mean quality_diff=+0.442 ± 0.343
+  mss: 121 rows | worlds=121 programs=0 | mean quality_diff=+0.511 ± 0.381
+  scm: 126 rows | worlds=35 programs=91 | mean quality_diff=-0.058 ± 0.250
+  scs: 116 rows | worlds=114 programs=1 | mean quality_diff=+0.134 ± 0.223
+  smc: 217 rows | worlds=1 programs=216 | mean quality_diff=-0.676 ± 0.327
+  smm: 211 rows | worlds=134 programs=77 | mean quality_diff=+0.242 ± 0.371
+  sms: 219 rows | worlds=142 programs=65 | mean quality_diff=+0.185 ± 0.367
+  ssc: 155 rows | worlds=4 programs=151 | mean quality_diff=-0.468 ± 0.295
+  ssm: 155 rows | worlds=125 programs=30 | mean quality_diff=+0.333 ± 0.411
+  sss: 167 rows | worlds=138 programs=24 | mean quality_diff=+0.314 ± 0.418
+
+=== Spearman correlations with winner_binary (|r| sorted) ===
+  em_var                          r=-0.644  p=0.0000
+  em_n_arcs                       r=-0.596  p=0.0000
+  annots_minus_em                 r=+0.587  p=0.0000
+  em_entropy                      r=-0.580  p=0.0000
+  em_avg_in_degree                r=-0.462  p=0.0000
+  n_annots                        r=+0.458  p=0.0000
+  af_max_body_size                r=+0.419  p=0.0000
+  am_avg_arg_lines                r=+0.410  p=0.0000
+  em_treewidth                    r=-0.409  p=0.0000
+  am_avg_height_lines             r=+0.405  p=0.0000
+  n_rules                         r=+0.401  p=0.0000
+  af_avg_body_size                r=+0.399  p=0.0000
+  am_n_arguments                  r=+0.396  p=0.0000
+  am_n_trees                      r=+0.393  p=0.0000
+  am_n_defeaters                  r=+0.392  p=0.0000
+  em_max_in_degree                r=-0.324  p=0.0000
+  af_n_em_vars_used               r=-0.152  p=0.0000
+  am_avg_def_rules                r=+0.124  p=0.0000
+  af_max_complexity               r=+0.121  p=0.0000
+  exact_width                     r=-0.117  p=0.0000
+  lit_body_count                  r=+0.098  p=0.0000
+  af_pct_annotated                r=+0.096  p=0.0000
+  lit_is_ann_fact                 r=+0.074  p=0.0003
+  af_avg_complexity               r=+0.055  p=0.0078
+  af_avg_connectors               r=+0.055  p=0.0078
+  af_avg_annot_vars               r=+0.049  p=0.0171
+  lit_is_negated                  r=-0.032  p=0.1218
+  lit_head_strict                 r=+0.016  p=0.4335
+  lit_head_def                    r=+0.013  p=0.5157
+  lit_complement_head             r=+0.013  p=0.5389
+  lit_is_fact                     r=-0.004  p=0.8342
+  lit_complement_body             r=+nan  p=nan
+
+=== Spearman correlations with quality_diff (|r| sorted) ===
+  em_var                          r=-0.673  p=0.0000
+  annots_minus_em                 r=+0.633  p=0.0000
+  em_n_arcs                       r=-0.617  p=0.0000
+  em_entropy                      r=-0.612  p=0.0000
+  n_annots                        r=+0.507  p=0.0000
+  am_avg_arg_lines                r=+0.455  p=0.0000
+  af_max_body_size                r=+0.450  p=0.0000
+  am_avg_height_lines             r=+0.448  p=0.0000
+  em_avg_in_degree                r=-0.447  p=0.0000
+  n_rules                         r=+0.438  p=0.0000
+  am_n_defeaters                  r=+0.438  p=0.0000
+  af_avg_body_size                r=+0.436  p=0.0000
+  am_n_arguments                  r=+0.434  p=0.0000
+  am_n_trees                      r=+0.434  p=0.0000
+  em_treewidth                    r=-0.397  p=0.0000
+  em_max_in_degree                r=-0.300  p=0.0000
+  af_n_em_vars_used               r=-0.201  p=0.0000
+  af_pct_annotated                r=+0.153  p=0.0000
+  lit_is_ann_fact                 r=+0.119  p=0.0000
+  af_max_complexity               r=+0.119  p=0.0000
+  lit_body_count                  r=+0.111  p=0.0000
+  am_avg_def_rules                r=+0.106  p=0.0000
+  exact_width                     r=-0.098  p=0.0000
+  af_avg_complexity               r=+0.058  p=0.0049
+  af_avg_connectors               r=+0.058  p=0.0049
+  af_avg_annot_vars               r=+0.042  p=0.0398
+  lit_is_negated                  r=-0.040  p=0.0497
+  lit_is_fact                     r=-0.031  p=0.1385
+  lit_head_def                    r=+0.026  p=0.2060
+  lit_complement_head             r=+0.018  p=0.3763
+  lit_head_strict                 r=-0.005  p=0.8246
+  lit_complement_body             r=+nan  p=nan
+
+=== Decision Tree CV Accuracy ===
+  depth=1: 0.701 ± 0.229
+  depth=2: 0.796 ± 0.124
+  depth=3: 0.770 ± 0.147
+  depth=4: 0.772 ± 0.148
+  depth=5: 0.662 ± 0.219
+  depth=6: 0.667 ± 0.205
+  depth=7: 0.693 ± 0.164
+  depth=8: 0.687 ± 0.181
+  depth=9: 0.684 ± 0.181
+  depth=10: 0.688 ± 0.180
+  -> Best depth: 2 (acc=0.796)
+
+=== Decision Tree Rules ===
+|--- em_entropy <= 6.15
+|   |--- annots_minus_em <= 12.50
+|   |   |--- class: 1
+|   |--- annots_minus_em >  12.50
+|   |   |--- class: 1
+|--- em_entropy >  6.15
+|   |--- annots_minus_em <= -5.00
+|   |   |--- class: 0
+|   |--- annots_minus_em >  -5.00
+|   |   |--- class: 0

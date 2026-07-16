@@ -1,0 +1,38 @@
+=== Comparison decision tree ===
+Input CSV: results_5min/all_results.csv
+Rows: 2339  configs: 15
+Base features: 64
+Pairwise comparison features kept (variance >= 0.05): 594
+
+=== Trees saved ===
+  depth= 3  CV acc=0.846
+  depth= 5  CV acc=0.836
+  depth=10  CV acc=0.853
+
+=== Validation ===
+Best comparison tree 5-fold CV: depth=10 acc=0.853
+Comparison tree LOCO          : 0.730 ± 0.252
+Baseline raw 5-fold CV         : depth=8 acc=0.879
+Baseline raw LOCO              : 0.712 ± 0.307
+
+=== Top comparisons by importance (best depth tree) ===
+  af_avg_body_size < af_rule_to_var_ratio                       0.4657
+  am_n_arguments < em_entropy                                   0.1700
+  af_pct_annotated < am_attack_in_degree_gini                   0.0466
+  am_n_defeaters < em_n_arcs                                    0.0234
+  am_n_trees < n_annots                                         0.0171
+  af_var_coverage < am_attack_in_degree_gini                    0.0150
+  af_var_usage_gini < em_closeness_avg                          0.0129
+  af_avg_body_size < af_avg_var_usage                           0.0115
+  af_max_complexity < em_diameter                               0.0108
+  am_n_trees < em_diameter                                      0.0105
+  af_avg_connectors < em_clustering_coef                        0.0103
+  am_attack_deg_std < em_eigenvector_avg                        0.0102
+  am_attack_closeness_avg < em_betweenness_max                  0.0078
+  em_clustering_coef < em_eigenvector_avg                       0.0075
+  af_max_complexity < em_entropy                                0.0066
+  am_attack_closeness_max < em_closeness_avg                    0.0065
+  af_bipartite_density < am_attack_deg_avg                      0.0062
+  af_avg_var_usage < af_max_body_size                           0.0060
+  af_max_body_size < em_max_in_degree                           0.0059
+  am_attack_closeness_max < em_deg_centrality_max               0.0055

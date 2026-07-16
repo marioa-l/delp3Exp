@@ -1,0 +1,50 @@
+Decision tree (depth=3, CV acc=0.828)
+================================================
+
+IF em_deg_centrality_avg in {low}:
+  IF em_entropy_per_var in {low}:
+    IF af_pct_annotated in {low, medium}:
+      -> recommend WORLDS  (n_progs=162, n_worlds=384, total=546, purity=70%)
+    ELSE  (af_pct_annotated in {high}):
+      -> recommend PROGRAMS  (n_progs=91, n_worlds=35, total=126, purity=72%)
+  ELSE  (em_entropy_per_var in {medium}):
+    IF am_attack_eigenvector_max in {low}:
+      -> recommend PROGRAMS  (n_progs=8, n_worlds=1, total=9, purity=89%)
+    ELSE  (am_attack_eigenvector_max in {medium, high}):
+      -> recommend PROGRAMS  (n_progs=359, n_worlds=4, total=363, purity=99%)
+ELSE  (em_deg_centrality_avg in {medium, high}):
+  IF space_orientation in {balanced, programs-favored}:
+    IF em_clustering_coef in {low}:
+      -> recommend WORLDS  (n_progs=37, n_worlds=135, total=172, purity=78%)
+    ELSE  (em_clustering_coef in {medium, high}):
+      -> recommend WORLDS  (n_progs=47, n_worlds=68, total=115, purity=59%)
+  ELSE  (space_orientation in {worlds-favored}):
+    IF am_attack_eigenvector_avg in {low, medium}:
+      -> recommend WORLDS  (n_progs=2, n_worlds=913, total=915, purity=100%)
+    ELSE  (am_attack_eigenvector_avg in {high}):
+      -> recommend WORLDS  (n_progs=4, n_worlds=89, total=93, purity=96%)
+
+
+Export (raw sklearn rule text):
+|--- em_deg_centrality_avg <= 0.50
+|   |--- em_entropy_per_var <= 0.50
+|   |   |--- af_pct_annotated <= 1.50
+|   |   |   |--- class: 1
+|   |   |--- af_pct_annotated >  1.50
+|   |   |   |--- class: 0
+|   |--- em_entropy_per_var >  0.50
+|   |   |--- am_attack_eigenvector_max <= 0.50
+|   |   |   |--- class: 0
+|   |   |--- am_attack_eigenvector_max >  0.50
+|   |   |   |--- class: 0
+|--- em_deg_centrality_avg >  0.50
+|   |--- space_orientation <= 1.50
+|   |   |--- em_clustering_coef <= 0.50
+|   |   |   |--- class: 1
+|   |   |--- em_clustering_coef >  0.50
+|   |   |   |--- class: 0
+|   |--- space_orientation >  1.50
+|   |   |--- am_attack_eigenvector_avg <= 1.50
+|   |   |   |--- class: 1
+|   |   |--- am_attack_eigenvector_avg >  1.50
+|   |   |   |--- class: 1

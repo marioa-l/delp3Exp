@@ -1,0 +1,93 @@
+=== Abstract decision tree summary ===
+Input CSV: results_5min/all_results.csv
+Rows: 2339  configs: 15
+Abstract features: 55  bins: 3
+
+=== Trees saved ===
+  depth= 3  CV acc=0.828
+
+=== Validation ===
+5-fold CV (abstract tree, depth=10): 0.847
+5-fold CV (random forest):                  0.897 ± 0.013
+LOCO (abstract tree):                        0.785 ± 0.241
+LOCO (random forest):                        0.839 ± 0.222
+
+=== Baseline (raw features) ===
+5-fold CV (raw tree, depth=4):  0.874
+LOCO (raw tree):                            0.694 ± 0.340
+
+=== Feature importance (RF, abstract) ===
+  em_deg_centrality_avg                0.0965
+  em_density                           0.0804
+  em_entropy_per_var                   0.0770
+  af_rule_to_var_ratio                 0.0655
+  space_orientation                    0.0485
+  em_eigenvector_avg                   0.0442
+  em_deg_centrality_std                0.0430
+  em_deg_centrality_max                0.0229
+  am_avg_arg_lines                     0.0217
+  am_avg_height_lines                  0.0216
+  am_attack_betweenness_avg            0.0194
+  em_avg_shortest_path                 0.0193
+  am_avg_def_rules                     0.0193
+  am_attack_eigenvector_max            0.0189
+  lit_head_def_rate                    0.0186
+  em_closeness_avg                     0.0182
+  af_var_coverage                      0.0174
+  em_closeness_max                     0.0167
+  af_avg_complexity                    0.0162
+  af_avg_connectors                    0.0162
+
+=== Binning thresholds ===
+  af_avg_annot_vars               constant
+  af_avg_complexity               quantile: [-inf, 3.0, 3.125, inf]
+  af_avg_connectors               quantile: [-inf, 1.0, 1.125, inf]
+  af_bipartite_density            theoretical: [0.0, 0.1, 0.3, 1.0]
+  af_em_coverage                  theoretical: [0.0, 0.33, 0.66, 1.0]
+  af_pct_annotated                theoretical: [0.0, 0.3, 0.7, 1.0]
+  af_rule_to_var_ratio            quantile: [-inf, 1.333, 3.083, inf]
+  af_var_coverage                 theoretical: [0.0, 0.33, 0.66, 1.0]
+  af_var_usage_gini               theoretical: [0.0, 0.33, 0.66, 1.0]
+  am_arg_density                  theoretical: [0.0, 0.5, 1.5, inf]
+  am_attack_avg_path              quantile: [-inf, 1.515, 1.581, inf]
+  am_attack_betweenness_avg       quantile: [-inf, 0.0, 0.001, inf]
+  am_attack_betweenness_max       quantile: [-inf, 0.004, 0.012, inf]
+  am_attack_closeness_avg         quantile: [-inf, 0.034, 0.05, inf]
+  am_attack_closeness_max         quantile: [-inf, 0.13, 0.167, inf]
+  am_attack_clustering            theoretical: [0.0, 0.1, 0.3, 1.0]
+  am_attack_deg_avg               quantile: [-inf, 0.034, 0.052, inf]
+  am_attack_deg_max               quantile: [-inf, 0.171, 0.231, inf]
+  am_attack_deg_std               quantile: [-inf, 0.049, 0.071, inf]
+  am_attack_density               theoretical: [0.0, 0.1, 0.3, 1.0]
+  am_attack_eigenvector_avg       quantile: [-inf, 0.035, 0.081, inf]
+  am_attack_eigenvector_max       quantile: [-inf, 0.386, 0.501, inf]
+  am_attack_in_degree_gini        theoretical: [0.0, 0.33, 0.66, 1.0]
+  am_attack_reciprocity           theoretical: [0.0, 0.1, 0.5, 1.0]
+  am_avg_arg_lines                quantile: [-inf, 1.273, 5.878, inf]
+  am_avg_def_rules                quantile: [-inf, 1.275, 1.462, inf]
+  am_avg_height_lines             quantile: [-inf, 2.857, 6.211, inf]
+  am_defeat_ratio                 theoretical: [0.0, 0.5, 1.5, inf]
+  am_tree_density                 theoretical: [0.0, 0.33, 0.66, 1.0]
+  em_avg_shortest_path            quantile: [-inf, 2.556, 2.982, inf]
+  em_betweenness_avg              quantile: [-inf, 0.008, 0.015, inf]
+  em_betweenness_max              quantile: [-inf, 0.04, 0.073, inf]
+  em_closeness_avg                quantile: [-inf, 0.265, 0.305, inf]
+  em_closeness_max                quantile: [-inf, 0.408, 0.46, inf]
+  em_clustering_coef              theoretical: [0.0, 0.1, 0.3, 1.0]
+  em_deg_centrality_avg           quantile: [-inf, 0.118, 0.167, inf]
+  em_deg_centrality_max           theoretical: [0.0, 0.33, 0.66, 1.0]
+  em_deg_centrality_std           quantile: [-inf, 0.071, 0.097, inf]
+  em_density                      theoretical: [0.0, 0.33, 0.66, 1.0]
+  em_eigenvector_avg              quantile: [-inf, 0.059, 0.083, inf]
+  em_eigenvector_max              constant
+  em_entropy_per_var              theoretical: [0.0, 0.5, 0.9, 1.0]
+  em_graph_density                theoretical: [0.0, 0.1, 0.3, 1.0]
+  em_in_degree_gini               theoretical: [0.0, 0.33, 0.66, 1.0]
+  em_max_indeg_ratio              theoretical: [0.0, 0.2, 0.4, 1.0]
+  em_treewidth_ratio              theoretical: [0.0, 0.15, 0.3, 1.0]
+  lit_body_rate                   theoretical: [0.0, 0.05, 0.15, 1.0]
+  lit_complement_body_rate        theoretical: [0.0, 0.05, 0.15, 1.0]
+  lit_complement_head_rate        theoretical: [0.0, 0.05, 0.15, 1.0]
+  lit_head_def_rate               theoretical: [0.0, 0.05, 0.15, 1.0]
+  lit_head_strict_rate            theoretical: [0.0, 0.05, 0.15, 1.0]
+  space_orientation               categorical

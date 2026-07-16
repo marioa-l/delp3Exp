@@ -1,0 +1,69 @@
+{
+    "status": {
+        "a_4": {
+            "yes": 2407,
+            "no": 0,
+            "undecided": 0,
+            "unknown": 1914,
+            "pyes": 0.9534082755140489,
+            "pno": 0.0,
+            "pundecided": 0.0,
+            "punknown": 0.007147213371903465,
+            "time": 174.94066262245178,
+            "delp_calls": 4321,
+            "percY": 312043.48,
+            "percN": 0.0,
+            "percU": 0.0,
+            "percUNK": 248130.96,
+            "l": 0.9534082755140489,
+            "u": 1.0,
+            "flag": "INTEREST"
+        },
+        "~a_5": {
+            "yes": 1209,
+            "no": 0,
+            "undecided": 888,
+            "unknown": 2273,
+            "pyes": 0.8643637711709815,
+            "pno": 0.0,
+            "pundecided": 0.000686979268916083,
+            "punknown": 0.09220255492356531,
+            "time": 175.78515577316284,
+            "delp_calls": 4370,
+            "percY": 156734.76,
+            "percN": 0.0,
+            "percU": 115120.32,
+            "percUNK": 294671.72,
+            "l": 0.8643637711709815,
+            "u": 1.0,
+            "flag": "INTEREST"
+        },
+        "a_8": {
+            "yes": 2211,
+            "no": 1113,
+            "undecided": 837,
+            "unknown": 112,
+            "pyes": 0.8288369124916007,
+            "pno": 0.12228213834839348,
+            "pundecided": 4.849808628822774e-05,
+            "punknown": 2.1698925158215684e-06,
+            "time": 175.21415615081787,
+            "delp_calls": 4273,
+            "percY": 286634.04,
+            "percN": 144289.32,
+            "percU": 108508.68,
+            "percUNK": 14519.68,
+            "l": 0.8288369124916007,
+            "u": 0.8777178616516065,
+            "flag": "INTEREST"
+        }
+    },
+    "data": {
+        "n_samples": 12964,
+        "time": 900.1713042259216,
+        "repeated_programs": 0,
+        "inconsistent_programs": 0,
+        "worlds_consulted": 10415,
+        "delp_calls": 12964
+    }
+}

@@ -1,0 +1,92 @@
+=== Dataset ===
+Total rows: 2339
+Tree: depth=3, CV accuracy=0.881
+Any-mismatch (pred != winner):     277
+Real mismatches (margin > 0.01): 81
+Correct (incl. trivial ties):       2258
+
+=== Mismatches per config ===
+        total  real_mm   pct
+config                      
+ccs        98        0   0.0
+cmm       180       26  14.4
+cms       184        0   0.0
+css        98        0   0.0
+mcs       109        0   0.0
+mms       201        0   0.0
+mss       121        0   0.0
+scm       126       26  20.6
+scs       115        0   0.0
+smc       217        0   0.0
+smm       211       17   8.1
+sms       207        1   0.5
+ssc       155        4   2.6
+ssm       155        5   3.2
+sss       162        2   1.2
+
+=== Real mismatches (top 30 by margin) ===
+config    model literal  annots_minus_em   exact_width  worlds_quality  progs_quality predicted   winner   margin
+   smm  69model   ~d_12               -6  6.848573e-02        1.000000       0.000700  programs   worlds 0.999300
+   smm  69model     a_8               -6  3.399410e-03        1.000000       0.003625  programs   worlds 0.996375
+   sss  65model   ~d_16                0  9.000000e-02        1.000000       0.010000  programs   worlds 0.990000
+   smm   5model     a_3              -10 -1.554312e-15        1.000000       0.065889  programs   worlds 0.934111
+   smm   5model     a_8              -10  1.061792e-01        1.000000       0.068169  programs   worlds 0.931831
+   scm  30model     a_9                0  8.445835e-02        1.000000       0.128027  programs   worlds 0.871973
+   smm  33model     a_9              -10  1.321165e-14        1.000000       0.164989  programs   worlds 0.835011
+   smm  43model     a_6               -8  5.695444e-14        1.000000       0.167000  programs   worlds 0.833000
+   scm  30model     a_0                0  3.077770e-02        1.000000       0.192788  programs   worlds 0.807212
+   smm  85model    d_17               -5  4.662937e-15        1.000000       0.193871  programs   worlds 0.806129
+   smm  85model     a_8               -5  2.070222e-01        1.000000       0.217179  programs   worlds 0.782821
+   scm  30model    ~a_9                0  8.445835e-02        1.000000       0.240213  programs   worlds 0.759787
+   cmm   0model   ~a_13               26  1.087344e-01        0.004290       0.569467    worlds programs 0.565177
+   scm  54model     a_4               -1  2.692165e-02        0.596779       0.105653  programs   worlds 0.491126
+   cmm 157model     a_4               23  1.080247e-13        0.084372       0.529935    worlds programs 0.445563
+   cmm  55model    a_11               31  2.220446e-15        0.025493       0.468802    worlds programs 0.443309
+   scm  46model    d_13                7  6.994405e-15        0.493523       0.050414  programs   worlds 0.443109
+   smm  39model    ~a_8              -10  4.828520e-03        1.000000       0.605146  programs   worlds 0.394854
+   smm  39model    ~a_7              -10  9.658940e-15        1.000000       0.606108  programs   worlds 0.393892
+   scm  28model   ~d_16                8  2.210013e-02        0.390996       0.015898  programs   worlds 0.375098
+   smm  39model     a_4              -10  8.792314e-02        1.000000       0.664536  programs   worlds 0.335464
+   scm   6model    d_13                7  1.253275e-01        0.470000       0.153552  programs   worlds 0.316447
+   ssm  37model    ~a_6                0  1.000000e-02        0.009998       0.281227    worlds programs 0.271228
+   ssm   0model    ~a_6               -2  6.000000e-02        0.025862       0.226971    worlds programs 0.201108
+   smm  26model     a_8               -4  1.946261e-02        1.000000       0.827333  programs   worlds 0.172667
+   smm  26model     a_6               -4  7.771561e-15        1.000000       0.884722  programs   worlds 0.115278
+   ssm  37model     a_9                0  1.000000e-02        0.124003       0.221081    worlds programs 0.097078
+   scm  54model    ~a_8               -1  9.443522e-02        0.103189       0.019020  programs   worlds 0.084169
+   scm  26model     a_7               15  7.440089e-02        0.089380       0.006334  programs   worlds 0.083046
+   cmm   6model   ~a_17               32  1.701197e-01        0.003450       0.077133    worlds programs 0.073683
+
+=== Mann–Whitney U: correct vs real mismatches ===
+feature                    median corr  median mism        p
+  em_var                        12.000       18.000    0.000 *
+  n_annots                      25.000       25.000    0.546  
+  n_rules                       31.000       31.000    0.200  
+  annots_minus_em                9.000        7.000    0.140  
+  lit_is_negated                 0.000        0.000    0.407  
+  lit_head_def                   1.000        1.000    0.682  
+  lit_head_strict                0.000        0.000    0.122  
+  lit_body_count                 0.000        0.000    0.415  
+  lit_is_fact                    0.000        0.000    0.279  
+  lit_is_ann_fact                0.000        0.000    0.754  
+  lit_complement_body            0.000        0.000    1.000  
+  lit_complement_head            0.000        0.000    0.793  
+  af_pct_annotated               0.441        0.433    0.766  
+  af_avg_annot_vars              2.000        2.000    0.000 *
+  af_avg_connectors              1.077        1.196    0.000 *
+  af_avg_body_size               2.143        2.143    0.296  
+  af_max_body_size               3.000        3.000    0.475  
+  am_n_arguments                14.000       14.000    0.218  
+  am_n_defeaters                22.000       22.000    0.252  
+  am_n_trees                    12.000       12.000    0.256  
+  am_avg_def_rules               1.364        1.328    0.132  
+  am_avg_arg_lines               1.556        1.500    0.080  
+  am_avg_height_lines            3.000        3.000    0.064  
+  em_n_arcs                     12.000       18.000    0.000 *
+  em_treewidth                   3.000        3.000    0.936  
+  em_avg_in_degree               1.000        1.000    0.419  
+  em_max_in_degree               3.000        3.000    0.442  
+  em_entropy                     3.704        4.796    0.000 *
+  af_n_em_vars_used             12.000       18.000    0.000 *
+  af_avg_complexity              3.077        3.196    0.000 *
+  af_max_complexity              4.000        4.000    0.000 *

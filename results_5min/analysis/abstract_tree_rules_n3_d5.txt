@@ -1,0 +1,182 @@
+Decision tree (depth=5, CV acc=0.815)
+================================================
+
+IF em_deg_centrality_avg in {low}:
+  IF em_entropy_per_var in {low}:
+    IF af_pct_annotated in {low, medium}:
+      IF af_bipartite_density in {low}:
+        IF am_attack_reciprocity in {low, medium}:
+          -> recommend WORLDS  (n_progs=24, n_worlds=45, total=69, purity=65%)
+        ELSE  (am_attack_reciprocity in {high}):
+          -> recommend WORLDS  (n_progs=6, n_worlds=80, total=86, purity=93%)
+      ELSE  (af_bipartite_density in {medium}):
+        IF af_var_coverage in {low, medium}:
+          -> recommend PROGRAMS  (n_progs=28, n_worlds=23, total=51, purity=55%)
+        ELSE  (af_var_coverage in {high}):
+          -> recommend WORLDS  (n_progs=104, n_worlds=236, total=340, purity=69%)
+    ELSE  (af_pct_annotated in {high}):
+      IF af_rule_to_var_ratio in {low}:
+        IF em_betweenness_max in {low, medium}:
+          -> recommend WORLDS  (n_progs=1, n_worlds=10, total=11, purity=91%)
+        ELSE  (em_betweenness_max in {high}):
+          -> recommend PROGRAMS  (n_progs=2, n_worlds=0, total=2, purity=100%)
+      ELSE  (af_rule_to_var_ratio in {medium, high}):
+        IF em_in_degree_gini in {low, medium}:
+          -> recommend PROGRAMS  (n_progs=88, n_worlds=24, total=112, purity=79%)
+        ELSE  (em_in_degree_gini in {high}):
+          -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+  ELSE  (em_entropy_per_var in {medium}):
+    IF am_attack_eigenvector_max in {low}:
+      IF lit_is_ann_fact in {0}:
+        -> recommend PROGRAMS  (n_progs=7, n_worlds=0, total=7, purity=100%)
+      ELSE  (lit_is_ann_fact in {1}):
+        IF em_betweenness_avg in {low, medium}:
+          -> recommend PROGRAMS  (n_progs=1, n_worlds=0, total=1, purity=100%)
+        ELSE  (em_betweenness_avg in {high}):
+          -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+    ELSE  (am_attack_eigenvector_max in {medium, high}):
+      IF af_pct_annotated in {low}:
+        IF am_avg_def_rules in {low}:
+          -> recommend PROGRAMS  (n_progs=11, n_worlds=0, total=11, purity=100%)
+        ELSE  (am_avg_def_rules in {medium, high}):
+          -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+      ELSE  (af_pct_annotated in {medium, high}):
+        IF am_attack_reciprocity in {low}:
+          -> recommend PROGRAMS  (n_progs=17, n_worlds=1, total=18, purity=94%)
+        ELSE  (am_attack_reciprocity in {medium, high}):
+          -> recommend PROGRAMS  (n_progs=331, n_worlds=2, total=333, purity=99%)
+ELSE  (em_deg_centrality_avg in {medium, high}):
+  IF space_orientation in {balanced, programs-favored}:
+    IF em_clustering_coef in {low}:
+      IF lit_is_ann_fact in {0}:
+        IF af_rule_to_var_ratio in {low}:
+          -> recommend WORLDS  (n_progs=30, n_worlds=73, total=103, purity=71%)
+        ELSE  (af_rule_to_var_ratio in {medium, high}):
+          -> recommend WORLDS  (n_progs=6, n_worlds=38, total=44, purity=86%)
+      ELSE  (lit_is_ann_fact in {1}):
+        IF am_avg_def_rules in {low, medium}:
+          -> recommend WORLDS  (n_progs=0, n_worlds=21, total=21, purity=100%)
+        ELSE  (am_avg_def_rules in {high}):
+          -> recommend WORLDS  (n_progs=1, n_worlds=3, total=4, purity=75%)
+    ELSE  (em_clustering_coef in {medium, high}):
+      IF em_closeness_max in {low}:
+        IF em_betweenness_avg in {low, medium}:
+          -> recommend WORLDS  (n_progs=0, n_worlds=11, total=11, purity=100%)
+        ELSE  (em_betweenness_avg in {high}):
+          -> recommend WORLDS  (n_progs=1, n_worlds=2, total=3, purity=67%)
+      ELSE  (em_closeness_max in {medium, high}):
+        IF em_in_degree_gini in {low, medium}:
+          -> recommend WORLDS  (n_progs=46, n_worlds=50, total=96, purity=52%)
+        ELSE  (em_in_degree_gini in {high}):
+          -> recommend WORLDS  (n_progs=0, n_worlds=5, total=5, purity=100%)
+  ELSE  (space_orientation in {worlds-favored}):
+    IF am_attack_eigenvector_avg in {low, medium}:
+      IF am_avg_arg_lines in {low}:
+        IF lit_is_fact in {0}:
+          -> recommend WORLDS  (n_progs=1, n_worlds=76, total=77, purity=99%)
+        ELSE  (lit_is_fact in {1}):
+          -> recommend WORLDS  (n_progs=1, n_worlds=3, total=4, purity=75%)
+      ELSE  (am_avg_arg_lines in {medium, high}):
+        -> recommend WORLDS  (n_progs=0, n_worlds=834, total=834, purity=100%)
+    ELSE  (am_attack_eigenvector_avg in {high}):
+      IF af_bipartite_density in {low}:
+        IF em_deg_centrality_avg in {low, medium}:
+          -> recommend WORLDS  (n_progs=3, n_worlds=10, total=13, purity=77%)
+        ELSE  (em_deg_centrality_avg in {high}):
+          -> recommend WORLDS  (n_progs=1, n_worlds=22, total=23, purity=96%)
+      ELSE  (af_bipartite_density in {medium}):
+        IF am_attack_clustering in {low}:
+          -> recommend WORLDS  (n_progs=0, n_worlds=52, total=52, purity=100%)
+        ELSE  (am_attack_clustering in {medium}):
+          -> recommend WORLDS  (n_progs=0, n_worlds=5, total=5, purity=100%)
+
+
+Export (raw sklearn rule text):
+|--- em_deg_centrality_avg <= 0.50
+|   |--- em_entropy_per_var <= 0.50
+|   |   |--- af_pct_annotated <= 1.50
+|   |   |   |--- af_bipartite_density <= 0.50
+|   |   |   |   |--- am_attack_reciprocity <= 1.50
+|   |   |   |   |   |--- class: 0
+|   |   |   |   |--- am_attack_reciprocity >  1.50
+|   |   |   |   |   |--- class: 1
+|   |   |   |--- af_bipartite_density >  0.50
+|   |   |   |   |--- af_var_coverage <= 1.50
+|   |   |   |   |   |--- class: 0
+|   |   |   |   |--- af_var_coverage >  1.50
+|   |   |   |   |   |--- class: 0
+|   |   |--- af_pct_annotated >  1.50
+|   |   |   |--- af_rule_to_var_ratio <= 0.50
+|   |   |   |   |--- em_betweenness_max <= 1.50
+|   |   |   |   |   |--- class: 1
+|   |   |   |   |--- em_betweenness_max >  1.50
+|   |   |   |   |   |--- class: 0
+|   |   |   |--- af_rule_to_var_ratio >  0.50
+|   |   |   |   |--- em_in_degree_gini <= 1.50
+|   |   |   |   |   |--- class: 0
+|   |   |   |   |--- em_in_degree_gini >  1.50
+|   |   |   |   |   |--- class: 1
+|   |--- em_entropy_per_var >  0.50
+|   |   |--- am_attack_eigenvector_max <= 0.50
+|   |   |   |--- lit_is_ann_fact <= 0.50
+|   |   |   |   |--- class: 0
+|   |   |   |--- lit_is_ann_fact >  0.50
+|   |   |   |   |--- em_betweenness_avg <= 1.00
+|   |   |   |   |   |--- class: 0
+|   |   |   |   |--- em_betweenness_avg >  1.00
+|   |   |   |   |   |--- class: 1
+|   |   |--- am_attack_eigenvector_max >  0.50
+|   |   |   |--- af_pct_annotated <= 0.50
+|   |   |   |   |--- am_avg_def_rules <= 0.50
+|   |   |   |   |   |--- class: 0
+|   |   |   |   |--- am_avg_def_rules >  0.50
+|   |   |   |   |   |--- class: 1
+|   |   |   |--- af_pct_annotated >  0.50
+|   |   |   |   |--- am_attack_reciprocity <= 0.50
+|   |   |   |   |   |--- class: 0
+|   |   |   |   |--- am_attack_reciprocity >  0.50
+|   |   |   |   |   |--- class: 0
+|--- em_deg_centrality_avg >  0.50
+|   |--- space_orientation <= 1.50
+|   |   |--- em_clustering_coef <= 0.50
+|   |   |   |--- lit_is_ann_fact <= 0.50
+|   |   |   |   |--- af_rule_to_var_ratio <= 0.50
+|   |   |   |   |   |--- class: 1
+|   |   |   |   |--- af_rule_to_var_ratio >  0.50
+|   |   |   |   |   |--- class: 1
+|   |   |   |--- lit_is_ann_fact >  0.50
+|   |   |   |   |--- am_avg_def_rules <= 1.50
+|   |   |   |   |   |--- class: 1
+|   |   |   |   |--- am_avg_def_rules >  1.50
+|   |   |   |   |   |--- class: 1
+|   |   |--- em_clustering_coef >  0.50
+|   |   |   |--- em_closeness_max <= 0.50
+|   |   |   |   |--- em_betweenness_avg <= 1.50
+|   |   |   |   |   |--- class: 1
+|   |   |   |   |--- em_betweenness_avg >  1.50
+|   |   |   |   |   |--- class: 0
+|   |   |   |--- em_closeness_max >  0.50
+|   |   |   |   |--- em_in_degree_gini <= 1.50
+|   |   |   |   |   |--- class: 0
+|   |   |   |   |--- em_in_degree_gini >  1.50
+|   |   |   |   |   |--- class: 1
+|   |--- space_orientation >  1.50
+|   |   |--- am_attack_eigenvector_avg <= 1.50
+|   |   |   |--- am_avg_arg_lines <= 0.50
+|   |   |   |   |--- lit_is_fact <= 0.50
+|   |   |   |   |   |--- class: 1
+|   |   |   |   |--- lit_is_fact >  0.50
+|   |   |   |   |   |--- class: 1
+|   |   |   |--- am_avg_arg_lines >  0.50
+|   |   |   |   |--- class: 1
+|   |   |--- am_attack_eigenvector_avg >  1.50
+|   |   |   |--- af_bipartite_density <= 0.50
+|   |   |   |   |--- em_deg_centrality_avg <= 1.50
+|   |   |   |   |   |--- class: 1
+|   |   |   |   |--- em_deg_centrality_avg >  1.50
+|   |   |   |   |   |--- class: 1
+|   |   |   |--- af_bipartite_density >  0.50
+|   |   |   |   |--- am_attack_clustering <= 0.50
+|   |   |   |   |   |--- class: 1
+|   |   |   |   |--- am_attack_clustering >  0.50
+|   |   |   |   |   |--- class: 1

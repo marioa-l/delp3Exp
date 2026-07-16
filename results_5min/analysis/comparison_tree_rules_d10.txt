@@ -1,0 +1,638 @@
+Comparison-only decision tree (depth=10, CV acc=0.853)
+======================================================================
+
+IF af_avg_body_size < af_rule_to_var_ratio:
+  IF em_n_arcs < n_annots:
+    IF am_attack_closeness_avg < em_graph_density:
+      IF af_max_body_size < em_entropy:
+        IF am_attack_reciprocity < em_eigenvector_max:
+          IF em_eigenvector_max < lit_body_count:
+            -> recommend WORLDS  (n_progs=0, n_worlds=30, total=30, purity=100%)
+          ELSE  (em_eigenvector_max >= lit_body_count):
+            -> recommend WORLDS  (n_progs=0, n_worlds=82, total=82, purity=100%)
+        ELSE  (am_attack_reciprocity >= em_eigenvector_max):
+          IF af_max_complexity < lit_head_def:
+            -> recommend WORLDS  (n_progs=1, n_worlds=1, total=2, purity=50%)
+          ELSE  (af_max_complexity >= lit_head_def):
+            -> recommend WORLDS  (n_progs=0, n_worlds=5, total=5, purity=100%)
+      ELSE  (af_max_body_size >= em_entropy):
+        -> recommend WORLDS  (n_progs=0, n_worlds=763, total=763, purity=100%)
+    ELSE  (am_attack_closeness_avg >= em_graph_density):
+      IF af_pct_annotated < lit_is_negated:
+        -> recommend PROGRAMS  (n_progs=1, n_worlds=0, total=1, purity=100%)
+      ELSE  (af_pct_annotated >= lit_is_negated):
+        -> recommend WORLDS  (n_progs=0, n_worlds=18, total=18, purity=100%)
+  ELSE  (em_n_arcs >= n_annots):
+    IF am_attack_betweenness_avg < em_clustering_coef:
+      -> recommend PROGRAMS  (n_progs=2, n_worlds=0, total=2, purity=100%)
+    ELSE  (am_attack_betweenness_avg >= em_clustering_coef):
+      -> recommend WORLDS  (n_progs=0, n_worlds=2, total=2, purity=100%)
+ELSE  (af_avg_body_size >= af_rule_to_var_ratio):
+  IF am_n_arguments < em_entropy:
+    IF af_avg_body_size < af_avg_var_usage:
+      -> recommend WORLDS  (n_progs=0, n_worlds=4, total=4, purity=100%)
+    ELSE  (af_avg_body_size >= af_avg_var_usage):
+      IF am_attack_diameter < am_avg_arg_lines:
+        IF af_rule_to_var_ratio < em_eigenvector_max:
+          -> recommend PROGRAMS  (n_progs=3, n_worlds=0, total=3, purity=100%)
+        ELSE  (af_rule_to_var_ratio >= em_eigenvector_max):
+          -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+      ELSE  (am_attack_diameter >= am_avg_arg_lines):
+        IF lit_complement_head < lit_head_strict:
+          IF em_avg_shortest_path < em_treewidth:
+            IF af_rule_to_var_ratio < am_attack_in_degree_gini:
+              IF em_eigenvector_max < lit_head_strict:
+                -> recommend PROGRAMS  (n_progs=3, n_worlds=0, total=3, purity=100%)
+              ELSE  (em_eigenvector_max >= lit_head_strict):
+                -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+            ELSE  (af_rule_to_var_ratio >= am_attack_in_degree_gini):
+              IF lit_is_fact < lit_is_negated:
+                -> recommend PROGRAMS  (n_progs=2, n_worlds=0, total=2, purity=100%)
+              ELSE  (lit_is_fact >= lit_is_negated):
+                -> recommend PROGRAMS  (n_progs=18, n_worlds=0, total=18, purity=100%)
+          ELSE  (em_avg_shortest_path >= em_treewidth):
+            IF af_avg_connectors < em_betweenness_max:
+              -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+            ELSE  (af_avg_connectors >= em_betweenness_max):
+              IF af_rule_to_var_ratio < am_attack_in_degree_gini:
+                -> recommend PROGRAMS  (n_progs=1, n_worlds=0, total=1, purity=100%)
+              ELSE  (af_rule_to_var_ratio >= am_attack_in_degree_gini):
+                -> recommend PROGRAMS  (n_progs=1, n_worlds=0, total=1, purity=100%)
+        ELSE  (lit_complement_head >= lit_head_strict):
+          IF am_attack_avg_path < am_avg_arg_lines:
+            IF am_attack_reciprocity < em_in_degree_gini:
+              -> recommend PROGRAMS  (n_progs=14, n_worlds=0, total=14, purity=100%)
+            ELSE  (am_attack_reciprocity >= em_in_degree_gini):
+              -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+          ELSE  (am_attack_avg_path >= am_avg_arg_lines):
+            -> recommend PROGRAMS  (n_progs=306, n_worlds=0, total=306, purity=100%)
+  ELSE  (am_n_arguments >= em_entropy):
+    IF af_pct_annotated < am_attack_in_degree_gini:
+      IF am_n_trees < n_annots:
+        IF am_n_defeaters < em_n_arcs:
+          IF am_n_trees < em_diameter:
+            IF am_attack_deg_std < em_graph_density:
+              IF am_attack_deg_avg < lit_is_fact:
+                IF em_avg_in_degree < lit_head_strict:
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+                ELSE  (em_avg_in_degree >= lit_head_strict):
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+              ELSE  (am_attack_deg_avg >= lit_is_fact):
+                IF af_avg_annot_vars < lit_head_def:
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+                ELSE  (af_avg_annot_vars >= lit_head_def):
+                  -> recommend PROGRAMS  (n_progs=3, n_worlds=0, total=3, purity=100%)
+            ELSE  (am_attack_deg_std >= em_graph_density):
+              IF am_attack_closeness_max < em_clustering_coef:
+                -> recommend PROGRAMS  (n_progs=1, n_worlds=0, total=1, purity=100%)
+              ELSE  (am_attack_closeness_max >= em_clustering_coef):
+                -> recommend WORLDS  (n_progs=0, n_worlds=30, total=30, purity=100%)
+          ELSE  (am_n_trees >= em_diameter):
+            IF af_bipartite_density < am_attack_deg_avg:
+              -> recommend PROGRAMS  (n_progs=13, n_worlds=0, total=13, purity=100%)
+            ELSE  (af_bipartite_density >= am_attack_deg_avg):
+              IF af_pct_annotated < am_attack_eigenvector_max:
+                IF af_avg_var_usage < am_avg_arg_lines:
+                  IF af_var_usage_gini < em_closeness_avg:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=16, total=16, purity=100%)
+                  ELSE  (af_var_usage_gini >= em_closeness_avg):
+                    -> recommend PROGRAMS  (n_progs=3, n_worlds=1, total=4, purity=75%)
+                ELSE  (af_avg_var_usage >= am_avg_arg_lines):
+                  IF af_max_complexity < em_entropy:
+                    -> recommend PROGRAMS  (n_progs=36, n_worlds=26, total=62, purity=58%)
+                  ELSE  (af_max_complexity >= em_entropy):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=8, total=8, purity=100%)
+              ELSE  (af_pct_annotated >= am_attack_eigenvector_max):
+                -> recommend WORLDS  (n_progs=0, n_worlds=9, total=9, purity=100%)
+        ELSE  (am_n_defeaters >= em_n_arcs):
+          IF af_var_usage_gini < em_closeness_avg:
+            IF am_attack_closeness_max < em_closeness_avg:
+              IF af_avg_body_size < af_avg_var_usage:
+                IF af_avg_var_usage < af_max_body_size:
+                  IF af_var_coverage < am_attack_in_degree_gini:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=6, total=6, purity=100%)
+                  ELSE  (af_var_coverage >= am_attack_in_degree_gini):
+                    -> recommend WORLDS  (n_progs=13, n_worlds=14, total=27, purity=52%)
+                ELSE  (af_avg_var_usage >= af_max_body_size):
+                  -> recommend WORLDS  (n_progs=0, n_worlds=14, total=14, purity=100%)
+              ELSE  (af_avg_body_size >= af_avg_var_usage):
+                IF af_max_complexity < em_treewidth:
+                  IF lit_complement_head < lit_head_def:
+                    -> recommend WORLDS  (n_progs=17, n_worlds=89, total=106, purity=84%)
+                  ELSE  (lit_complement_head >= lit_head_def):
+                    -> recommend WORLDS  (n_progs=1, n_worlds=34, total=35, purity=97%)
+                ELSE  (af_max_complexity >= em_treewidth):
+                  IF am_n_trees < em_var:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=46, total=46, purity=100%)
+                  ELSE  (am_n_trees >= em_var):
+                    -> recommend WORLDS  (n_progs=1, n_worlds=5, total=6, purity=83%)
+            ELSE  (am_attack_closeness_max >= em_closeness_avg):
+              IF af_var_coverage < am_attack_eigenvector_max:
+                -> recommend WORLDS  (n_progs=0, n_worlds=6, total=6, purity=100%)
+              ELSE  (af_var_coverage >= am_attack_eigenvector_max):
+                IF em_diameter < em_entropy:
+                  IF af_avg_connectors < em_eigenvector_max:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=2, total=2, purity=100%)
+                  ELSE  (af_avg_connectors >= em_eigenvector_max):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=2, total=2, purity=100%)
+                ELSE  (em_diameter >= em_entropy):
+                  IF am_attack_reciprocity < em_closeness_max:
+                    -> recommend PROGRAMS  (n_progs=10, n_worlds=2, total=12, purity=83%)
+                  ELSE  (am_attack_reciprocity >= em_closeness_max):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=2, total=2, purity=100%)
+          ELSE  (af_var_usage_gini >= em_closeness_avg):
+            IF lit_body_count < lit_head_strict:
+              IF am_attack_betweenness_max < em_clustering_coef:
+                -> recommend WORLDS  (n_progs=0, n_worlds=4, total=4, purity=100%)
+              ELSE  (am_attack_betweenness_max >= em_clustering_coef):
+                -> recommend PROGRAMS  (n_progs=1, n_worlds=0, total=1, purity=100%)
+            ELSE  (lit_body_count >= lit_head_strict):
+              -> recommend WORLDS  (n_progs=0, n_worlds=67, total=67, purity=100%)
+      ELSE  (am_n_trees >= n_annots):
+        IF af_var_coverage < am_attack_in_degree_gini:
+          IF am_attack_deg_std < em_eigenvector_avg:
+            IF af_avg_connectors < em_clustering_coef:
+              -> recommend PROGRAMS  (n_progs=6, n_worlds=0, total=6, purity=100%)
+            ELSE  (af_avg_connectors >= em_clustering_coef):
+              IF af_var_usage_gini < em_deg_centrality_max:
+                IF em_betweenness_max < lit_head_strict:
+                  -> recommend WORLDS  (n_progs=0, n_worlds=8, total=8, purity=100%)
+                ELSE  (em_betweenness_max >= lit_head_strict):
+                  -> recommend WORLDS  (n_progs=0, n_worlds=16, total=16, purity=100%)
+              ELSE  (af_var_usage_gini >= em_deg_centrality_max):
+                IF em_deg_centrality_avg < lit_is_ann_fact:
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+                ELSE  (em_deg_centrality_avg >= lit_is_ann_fact):
+                  IF em_avg_in_degree < lit_body_count:
+                    -> recommend PROGRAMS  (n_progs=1, n_worlds=0, total=1, purity=100%)
+                  ELSE  (em_avg_in_degree >= lit_body_count):
+                    -> recommend PROGRAMS  (n_progs=1, n_worlds=0, total=1, purity=100%)
+          ELSE  (am_attack_deg_std >= em_eigenvector_avg):
+            IF am_attack_density < em_betweenness_avg:
+              IF af_pct_annotated < lit_is_negated:
+                -> recommend WORLDS  (n_progs=0, n_worlds=2, total=2, purity=100%)
+              ELSE  (af_pct_annotated >= lit_is_negated):
+                -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+            ELSE  (am_attack_density >= em_betweenness_avg):
+              IF af_max_complexity < lit_body_count:
+                IF af_avg_body_size < em_max_in_degree:
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+                ELSE  (af_avg_body_size >= em_max_in_degree):
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+              ELSE  (af_max_complexity >= lit_body_count):
+                IF em_entropy < lit_head_def:
+                  IF am_attack_eigenvector_avg < em_deg_centrality_std:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+                  ELSE  (am_attack_eigenvector_avg >= em_deg_centrality_std):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+                ELSE  (em_entropy >= lit_head_def):
+                  IF af_rule_to_var_ratio < am_avg_def_rules:
+                    -> recommend PROGRAMS  (n_progs=41, n_worlds=4, total=45, purity=91%)
+                  ELSE  (af_rule_to_var_ratio >= am_avg_def_rules):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+        ELSE  (af_var_coverage >= am_attack_in_degree_gini):
+          IF af_max_complexity < em_diameter:
+            IF af_max_body_size < em_max_in_degree:
+              -> recommend WORLDS  (n_progs=0, n_worlds=18, total=18, purity=100%)
+            ELSE  (af_max_body_size >= em_max_in_degree):
+              IF af_avg_annot_vars < em_max_in_degree:
+                IF em_eigenvector_max < lit_is_fact:
+                  IF em_closeness_avg < em_deg_centrality_max:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=10, total=10, purity=100%)
+                  ELSE  (em_closeness_avg >= em_deg_centrality_max):
+                    -> recommend WORLDS  (n_progs=2, n_worlds=6, total=8, purity=75%)
+                ELSE  (em_eigenvector_max >= lit_is_fact):
+                  IF af_max_body_size < af_max_complexity:
+                    -> recommend WORLDS  (n_progs=10, n_worlds=35, total=45, purity=78%)
+                  ELSE  (af_max_body_size >= af_max_complexity):
+                    -> recommend WORLDS  (n_progs=50, n_worlds=71, total=121, purity=59%)
+              ELSE  (af_avg_annot_vars >= em_max_in_degree):
+                IF am_attack_closeness_avg < em_betweenness_max:
+                  IF am_attack_deg_std < em_betweenness_max:
+                    -> recommend WORLDS  (n_progs=10, n_worlds=48, total=58, purity=83%)
+                  ELSE  (am_attack_deg_std >= em_betweenness_max):
+                    -> recommend WORLDS  (n_progs=10, n_worlds=10, total=20, purity=50%)
+                ELSE  (am_attack_closeness_avg >= em_betweenness_max):
+                  IF am_attack_avg_path < am_avg_def_rules:
+                    -> recommend WORLDS  (n_progs=1, n_worlds=2, total=3, purity=67%)
+                  ELSE  (am_attack_avg_path >= am_avg_def_rules):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=31, total=31, purity=100%)
+          ELSE  (af_max_complexity >= em_diameter):
+            IF em_clustering_coef < em_eigenvector_avg:
+              IF em_max_in_degree < em_treewidth:
+                IF af_var_coverage < lit_body_count:
+                  IF em_deg_centrality_avg < lit_is_fact:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+                  ELSE  (em_deg_centrality_avg >= lit_is_fact):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+                ELSE  (af_var_coverage >= lit_body_count):
+                  -> recommend PROGRAMS  (n_progs=4, n_worlds=0, total=4, purity=100%)
+              ELSE  (em_max_in_degree >= em_treewidth):
+                IF em_eigenvector_max < lit_head_strict:
+                  -> recommend PROGRAMS  (n_progs=1, n_worlds=0, total=1, purity=100%)
+                ELSE  (em_eigenvector_max >= lit_head_strict):
+                  -> recommend WORLDS  (n_progs=0, n_worlds=14, total=14, purity=100%)
+            ELSE  (em_clustering_coef >= em_eigenvector_avg):
+              IF af_max_body_size < lit_body_count:
+                -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+              ELSE  (af_max_body_size >= lit_body_count):
+                IF am_attack_betweenness_avg < am_attack_clustering:
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+                ELSE  (am_attack_betweenness_avg >= am_attack_clustering):
+                  IF em_avg_in_degree < lit_is_negated:
+                    -> recommend WORLDS  (n_progs=1, n_worlds=1, total=2, purity=50%)
+                  ELSE  (em_avg_in_degree >= lit_is_negated):
+                    -> recommend PROGRAMS  (n_progs=20, n_worlds=0, total=20, purity=100%)
+    ELSE  (af_pct_annotated >= am_attack_in_degree_gini):
+      IF af_max_var_usage < am_n_trees:
+        IF af_var_coverage < lit_is_ann_fact:
+          IF em_clustering_coef < em_eigenvector_avg:
+            -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+          ELSE  (em_clustering_coef >= em_eigenvector_avg):
+            -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+        ELSE  (af_var_coverage >= lit_is_ann_fact):
+          IF em_entropy < lit_head_def:
+            IF af_avg_connectors < em_treewidth:
+              -> recommend WORLDS  (n_progs=0, n_worlds=2, total=2, purity=100%)
+            ELSE  (af_avg_connectors >= em_treewidth):
+              -> recommend PROGRAMS  (n_progs=1, n_worlds=0, total=1, purity=100%)
+          ELSE  (em_entropy >= lit_head_def):
+            IF em_avg_in_degree < lit_head_def:
+              IF em_eigenvector_max < lit_is_ann_fact:
+                -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+              ELSE  (em_eigenvector_max >= lit_is_ann_fact):
+                IF em_max_in_degree < lit_body_count:
+                  IF am_attack_clustering < lit_is_negated:
+                    -> recommend PROGRAMS  (n_progs=1, n_worlds=0, total=1, purity=100%)
+                  ELSE  (am_attack_clustering >= lit_is_negated):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+                ELSE  (em_max_in_degree >= lit_body_count):
+                  IF am_attack_closeness_max < em_clustering_coef:
+                    -> recommend PROGRAMS  (n_progs=2, n_worlds=1, total=3, purity=67%)
+                  ELSE  (am_attack_closeness_max >= em_clustering_coef):
+                    -> recommend PROGRAMS  (n_progs=40, n_worlds=0, total=40, purity=100%)
+            ELSE  (em_avg_in_degree >= lit_head_def):
+              IF af_max_complexity < em_diameter:
+                IF em_deg_centrality_avg < lit_is_ann_fact:
+                  IF af_avg_body_size < af_avg_connectors:
+                    -> recommend PROGRAMS  (n_progs=7, n_worlds=2, total=9, purity=78%)
+                  ELSE  (af_avg_body_size >= af_avg_connectors):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=2, total=2, purity=100%)
+                ELSE  (em_deg_centrality_avg >= lit_is_ann_fact):
+                  -> recommend WORLDS  (n_progs=0, n_worlds=3, total=3, purity=100%)
+              ELSE  (af_max_complexity >= em_diameter):
+                IF af_max_complexity < lit_body_count:
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+                ELSE  (af_max_complexity >= lit_body_count):
+                  IF am_attack_closeness_max < em_clustering_coef:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+                  ELSE  (am_attack_closeness_max >= em_clustering_coef):
+                    -> recommend PROGRAMS  (n_progs=23, n_worlds=3, total=26, purity=88%)
+      ELSE  (af_max_var_usage >= am_n_trees):
+        IF af_avg_var_usage < em_diameter:
+          IF am_attack_closeness_max < em_deg_centrality_max:
+            IF em_entropy < em_treewidth:
+              -> recommend WORLDS  (n_progs=0, n_worlds=2, total=2, purity=100%)
+            ELSE  (em_entropy >= em_treewidth):
+              IF em_avg_in_degree < lit_is_negated:
+                IF am_attack_closeness_avg < em_betweenness_max:
+                  IF af_avg_connectors < em_max_in_degree:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=2, total=2, purity=100%)
+                  ELSE  (af_avg_connectors >= em_max_in_degree):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+                ELSE  (am_attack_closeness_avg >= em_betweenness_max):
+                  IF em_avg_in_degree < lit_head_def:
+                    -> recommend PROGRAMS  (n_progs=4, n_worlds=2, total=6, purity=67%)
+                  ELSE  (em_avg_in_degree >= lit_head_def):
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+              ELSE  (em_avg_in_degree >= lit_is_negated):
+                IF lit_head_strict < lit_is_fact:
+                  -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+                ELSE  (lit_head_strict >= lit_is_fact):
+                  IF em_avg_shortest_path < lit_head_def:
+                    -> recommend WORLDS  (n_progs=0, n_worlds=1, total=1, purity=100%)
+                  ELSE  (em_avg_shortest_path >= lit_head_def):
+                    -> recommend PROGRAMS  (n_progs=23, n_worlds=5, total=28, purity=82%)
+          ELSE  (am_attack_closeness_max >= em_deg_centrality_max):
+            -> recommend WORLDS  (n_progs=0, n_worlds=6, total=6, purity=100%)
+        ELSE  (af_avg_var_usage >= em_diameter):
+          -> recommend WORLDS  (n_progs=0, n_worlds=7, total=7, purity=100%)
+
+
+Export (raw sklearn rule text — feature names use 'A_LT_B' for 'A < B'):
+|--- af_avg_body_size_LT_af_rule_to_var_ratio <= 0.50
+|   |--- am_n_arguments_LT_em_entropy <= 0.50
+|   |   |--- af_pct_annotated_LT_am_attack_in_degree_gini <= 0.50
+|   |   |   |--- af_max_var_usage_LT_am_n_trees <= 0.50
+|   |   |   |   |--- af_avg_var_usage_LT_em_diameter <= 0.50
+|   |   |   |   |   |--- class: 1
+|   |   |   |   |--- af_avg_var_usage_LT_em_diameter >  0.50
+|   |   |   |   |   |--- am_attack_closeness_max_LT_em_deg_centrality_max <= 0.50
+|   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |--- am_attack_closeness_max_LT_em_deg_centrality_max >  0.50
+|   |   |   |   |   |   |--- em_entropy_LT_em_treewidth <= 0.50
+|   |   |   |   |   |   |   |--- em_avg_in_degree_LT_lit_is_negated <= 0.50
+|   |   |   |   |   |   |   |   |--- lit_head_strict_LT_lit_is_fact <= 0.50
+|   |   |   |   |   |   |   |   |   |--- em_avg_shortest_path_LT_lit_head_def <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- em_avg_shortest_path_LT_lit_head_def >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- lit_head_strict_LT_lit_is_fact >  0.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- em_avg_in_degree_LT_lit_is_negated >  0.50
+|   |   |   |   |   |   |   |   |--- am_attack_closeness_avg_LT_em_betweenness_max <= 0.50
+|   |   |   |   |   |   |   |   |   |--- em_avg_in_degree_LT_lit_head_def <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- em_avg_in_degree_LT_lit_head_def >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- am_attack_closeness_avg_LT_em_betweenness_max >  0.50
+|   |   |   |   |   |   |   |   |   |--- af_avg_connectors_LT_em_max_in_degree <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- af_avg_connectors_LT_em_max_in_degree >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |--- em_entropy_LT_em_treewidth >  0.50
+|   |   |   |   |   |   |   |--- class: 1
+|   |   |   |--- af_max_var_usage_LT_am_n_trees >  0.50
+|   |   |   |   |--- af_var_coverage_LT_lit_is_ann_fact <= 0.50
+|   |   |   |   |   |--- em_entropy_LT_lit_head_def <= 0.50
+|   |   |   |   |   |   |--- em_avg_in_degree_LT_lit_head_def <= 0.50
+|   |   |   |   |   |   |   |--- af_max_complexity_LT_em_diameter <= 0.50
+|   |   |   |   |   |   |   |   |--- af_max_complexity_LT_lit_body_count <= 0.50
+|   |   |   |   |   |   |   |   |   |--- am_attack_closeness_max_LT_em_clustering_coef <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- am_attack_closeness_max_LT_em_clustering_coef >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- af_max_complexity_LT_lit_body_count >  0.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- af_max_complexity_LT_em_diameter >  0.50
+|   |   |   |   |   |   |   |   |--- em_deg_centrality_avg_LT_lit_is_ann_fact <= 0.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- em_deg_centrality_avg_LT_lit_is_ann_fact >  0.50
+|   |   |   |   |   |   |   |   |   |--- af_avg_body_size_LT_af_avg_connectors <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- af_avg_body_size_LT_af_avg_connectors >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |--- em_avg_in_degree_LT_lit_head_def >  0.50
+|   |   |   |   |   |   |   |--- em_eigenvector_max_LT_lit_is_ann_fact <= 0.50
+|   |   |   |   |   |   |   |   |--- em_max_in_degree_LT_lit_body_count <= 0.50
+|   |   |   |   |   |   |   |   |   |--- am_attack_closeness_max_LT_em_clustering_coef <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- am_attack_closeness_max_LT_em_clustering_coef >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- em_max_in_degree_LT_lit_body_count >  0.50
+|   |   |   |   |   |   |   |   |   |--- am_attack_clustering_LT_lit_is_negated <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- am_attack_clustering_LT_lit_is_negated >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- em_eigenvector_max_LT_lit_is_ann_fact >  0.50
+|   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |--- em_entropy_LT_lit_head_def >  0.50
+|   |   |   |   |   |   |--- af_avg_connectors_LT_em_treewidth <= 0.50
+|   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |--- af_avg_connectors_LT_em_treewidth >  0.50
+|   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |--- af_var_coverage_LT_lit_is_ann_fact >  0.50
+|   |   |   |   |   |--- em_clustering_coef_LT_em_eigenvector_avg <= 0.50
+|   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |--- em_clustering_coef_LT_em_eigenvector_avg >  0.50
+|   |   |   |   |   |   |--- class: 1
+|   |   |--- af_pct_annotated_LT_am_attack_in_degree_gini >  0.50
+|   |   |   |--- am_n_trees_LT_n_annots <= 0.50
+|   |   |   |   |--- af_var_coverage_LT_am_attack_in_degree_gini <= 0.50
+|   |   |   |   |   |--- af_max_complexity_LT_em_diameter <= 0.50
+|   |   |   |   |   |   |--- em_clustering_coef_LT_em_eigenvector_avg <= 0.50
+|   |   |   |   |   |   |   |--- af_max_body_size_LT_lit_body_count <= 0.50
+|   |   |   |   |   |   |   |   |--- am_attack_betweenness_avg_LT_am_attack_clustering <= 0.50
+|   |   |   |   |   |   |   |   |   |--- em_avg_in_degree_LT_lit_is_negated <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- em_avg_in_degree_LT_lit_is_negated >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- am_attack_betweenness_avg_LT_am_attack_clustering >  0.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- af_max_body_size_LT_lit_body_count >  0.50
+|   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |--- em_clustering_coef_LT_em_eigenvector_avg >  0.50
+|   |   |   |   |   |   |   |--- em_max_in_degree_LT_em_treewidth <= 0.50
+|   |   |   |   |   |   |   |   |--- em_eigenvector_max_LT_lit_head_strict <= 0.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- em_eigenvector_max_LT_lit_head_strict >  0.50
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- em_max_in_degree_LT_em_treewidth >  0.50
+|   |   |   |   |   |   |   |   |--- af_var_coverage_LT_lit_body_count <= 0.50
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- af_var_coverage_LT_lit_body_count >  0.50
+|   |   |   |   |   |   |   |   |   |--- em_deg_centrality_avg_LT_lit_is_fact <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- em_deg_centrality_avg_LT_lit_is_fact >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |--- af_max_complexity_LT_em_diameter >  0.50
+|   |   |   |   |   |   |--- af_max_body_size_LT_em_max_in_degree <= 0.50
+|   |   |   |   |   |   |   |--- af_avg_annot_vars_LT_em_max_in_degree <= 0.50
+|   |   |   |   |   |   |   |   |--- am_attack_closeness_avg_LT_em_betweenness_max <= 0.50
+|   |   |   |   |   |   |   |   |   |--- am_attack_avg_path_LT_am_avg_def_rules <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- am_attack_avg_path_LT_am_avg_def_rules >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- am_attack_closeness_avg_LT_em_betweenness_max >  0.50
+|   |   |   |   |   |   |   |   |   |--- am_attack_deg_std_LT_em_betweenness_max <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- am_attack_deg_std_LT_em_betweenness_max >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- af_avg_annot_vars_LT_em_max_in_degree >  0.50
+|   |   |   |   |   |   |   |   |--- em_eigenvector_max_LT_lit_is_fact <= 0.50
+|   |   |   |   |   |   |   |   |   |--- af_max_body_size_LT_af_max_complexity <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- af_max_body_size_LT_af_max_complexity >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- em_eigenvector_max_LT_lit_is_fact >  0.50
+|   |   |   |   |   |   |   |   |   |--- em_closeness_avg_LT_em_deg_centrality_max <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- em_closeness_avg_LT_em_deg_centrality_max >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |--- af_max_body_size_LT_em_max_in_degree >  0.50
+|   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |--- af_var_coverage_LT_am_attack_in_degree_gini >  0.50
+|   |   |   |   |   |--- am_attack_deg_std_LT_em_eigenvector_avg <= 0.50
+|   |   |   |   |   |   |--- am_attack_density_LT_em_betweenness_avg <= 0.50
+|   |   |   |   |   |   |   |--- af_max_complexity_LT_lit_body_count <= 0.50
+|   |   |   |   |   |   |   |   |--- em_entropy_LT_lit_head_def <= 0.50
+|   |   |   |   |   |   |   |   |   |--- af_rule_to_var_ratio_LT_am_avg_def_rules <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- af_rule_to_var_ratio_LT_am_avg_def_rules >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- em_entropy_LT_lit_head_def >  0.50
+|   |   |   |   |   |   |   |   |   |--- am_attack_eigenvector_avg_LT_em_deg_centrality_std <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- am_attack_eigenvector_avg_LT_em_deg_centrality_std >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- af_max_complexity_LT_lit_body_count >  0.50
+|   |   |   |   |   |   |   |   |--- af_avg_body_size_LT_em_max_in_degree <= 0.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- af_avg_body_size_LT_em_max_in_degree >  0.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |--- am_attack_density_LT_em_betweenness_avg >  0.50
+|   |   |   |   |   |   |   |--- af_pct_annotated_LT_lit_is_negated <= 0.50
+|   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- af_pct_annotated_LT_lit_is_negated >  0.50
+|   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |--- am_attack_deg_std_LT_em_eigenvector_avg >  0.50
+|   |   |   |   |   |   |--- af_avg_connectors_LT_em_clustering_coef <= 0.50
+|   |   |   |   |   |   |   |--- af_var_usage_gini_LT_em_deg_centrality_max <= 0.50
+|   |   |   |   |   |   |   |   |--- em_deg_centrality_avg_LT_lit_is_ann_fact <= 0.50
+|   |   |   |   |   |   |   |   |   |--- em_avg_in_degree_LT_lit_body_count <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- em_avg_in_degree_LT_lit_body_count >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- em_deg_centrality_avg_LT_lit_is_ann_fact >  0.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- af_var_usage_gini_LT_em_deg_centrality_max >  0.50
+|   |   |   |   |   |   |   |   |--- em_betweenness_max_LT_lit_head_strict <= 0.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- em_betweenness_max_LT_lit_head_strict >  0.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |--- af_avg_connectors_LT_em_clustering_coef >  0.50
+|   |   |   |   |   |   |   |--- class: 0
+|   |   |   |--- am_n_trees_LT_n_annots >  0.50
+|   |   |   |   |--- am_n_defeaters_LT_em_n_arcs <= 0.50
+|   |   |   |   |   |--- af_var_usage_gini_LT_em_closeness_avg <= 0.50
+|   |   |   |   |   |   |--- lit_body_count_LT_lit_head_strict <= 0.50
+|   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |--- lit_body_count_LT_lit_head_strict >  0.50
+|   |   |   |   |   |   |   |--- am_attack_betweenness_max_LT_em_clustering_coef <= 0.50
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- am_attack_betweenness_max_LT_em_clustering_coef >  0.50
+|   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |--- af_var_usage_gini_LT_em_closeness_avg >  0.50
+|   |   |   |   |   |   |--- am_attack_closeness_max_LT_em_closeness_avg <= 0.50
+|   |   |   |   |   |   |   |--- af_var_coverage_LT_am_attack_eigenvector_max <= 0.50
+|   |   |   |   |   |   |   |   |--- em_diameter_LT_em_entropy <= 0.50
+|   |   |   |   |   |   |   |   |   |--- am_attack_reciprocity_LT_em_closeness_max <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- am_attack_reciprocity_LT_em_closeness_max >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- em_diameter_LT_em_entropy >  0.50
+|   |   |   |   |   |   |   |   |   |--- af_avg_connectors_LT_em_eigenvector_max <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- af_avg_connectors_LT_em_eigenvector_max >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- af_var_coverage_LT_am_attack_eigenvector_max >  0.50
+|   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |--- am_attack_closeness_max_LT_em_closeness_avg >  0.50
+|   |   |   |   |   |   |   |--- af_avg_body_size_LT_af_avg_var_usage <= 0.50
+|   |   |   |   |   |   |   |   |--- af_max_complexity_LT_em_treewidth <= 0.50
+|   |   |   |   |   |   |   |   |   |--- am_n_trees_LT_em_var <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- am_n_trees_LT_em_var >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- af_max_complexity_LT_em_treewidth >  0.50
+|   |   |   |   |   |   |   |   |   |--- lit_complement_head_LT_lit_head_def <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- lit_complement_head_LT_lit_head_def >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- af_avg_body_size_LT_af_avg_var_usage >  0.50
+|   |   |   |   |   |   |   |   |--- af_avg_var_usage_LT_af_max_body_size <= 0.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- af_avg_var_usage_LT_af_max_body_size >  0.50
+|   |   |   |   |   |   |   |   |   |--- af_var_coverage_LT_am_attack_in_degree_gini <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- af_var_coverage_LT_am_attack_in_degree_gini >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |--- am_n_defeaters_LT_em_n_arcs >  0.50
+|   |   |   |   |   |--- am_n_trees_LT_em_diameter <= 0.50
+|   |   |   |   |   |   |--- af_bipartite_density_LT_am_attack_deg_avg <= 0.50
+|   |   |   |   |   |   |   |--- af_pct_annotated_LT_am_attack_eigenvector_max <= 0.50
+|   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- af_pct_annotated_LT_am_attack_eigenvector_max >  0.50
+|   |   |   |   |   |   |   |   |--- af_avg_var_usage_LT_am_avg_arg_lines <= 0.50
+|   |   |   |   |   |   |   |   |   |--- af_max_complexity_LT_em_entropy <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |   |--- af_max_complexity_LT_em_entropy >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- af_avg_var_usage_LT_am_avg_arg_lines >  0.50
+|   |   |   |   |   |   |   |   |   |--- af_var_usage_gini_LT_em_closeness_avg <= 0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |   |--- af_var_usage_gini_LT_em_closeness_avg >  0.50
+|   |   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |--- af_bipartite_density_LT_am_attack_deg_avg >  0.50
+|   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |--- am_n_trees_LT_em_diameter >  0.50
+|   |   |   |   |   |   |--- am_attack_deg_std_LT_em_graph_density <= 0.50
+|   |   |   |   |   |   |   |--- am_attack_closeness_max_LT_em_clustering_coef <= 0.50
+|   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- am_attack_closeness_max_LT_em_clustering_coef >  0.50
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |--- am_attack_deg_std_LT_em_graph_density >  0.50
+|   |   |   |   |   |   |   |--- am_attack_deg_avg_LT_lit_is_fact <= 0.50
+|   |   |   |   |   |   |   |   |--- af_avg_annot_vars_LT_lit_head_def <= 0.50
+|   |   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |   |--- af_avg_annot_vars_LT_lit_head_def >  0.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- am_attack_deg_avg_LT_lit_is_fact >  0.50
+|   |   |   |   |   |   |   |   |--- em_avg_in_degree_LT_lit_head_strict <= 0.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |   |--- em_avg_in_degree_LT_lit_head_strict >  0.50
+|   |   |   |   |   |   |   |   |   |--- class: 1
+|   |--- am_n_arguments_LT_em_entropy >  0.50
+|   |   |--- af_avg_body_size_LT_af_avg_var_usage <= 0.50
+|   |   |   |--- am_attack_diameter_LT_am_avg_arg_lines <= 0.50
+|   |   |   |   |--- lit_complement_head_LT_lit_head_strict <= 0.50
+|   |   |   |   |   |--- am_attack_avg_path_LT_am_avg_arg_lines <= 0.50
+|   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |--- am_attack_avg_path_LT_am_avg_arg_lines >  0.50
+|   |   |   |   |   |   |--- am_attack_reciprocity_LT_em_in_degree_gini <= 0.50
+|   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |--- am_attack_reciprocity_LT_em_in_degree_gini >  0.50
+|   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |--- lit_complement_head_LT_lit_head_strict >  0.50
+|   |   |   |   |   |--- em_avg_shortest_path_LT_em_treewidth <= 0.50
+|   |   |   |   |   |   |--- af_avg_connectors_LT_em_betweenness_max <= 0.50
+|   |   |   |   |   |   |   |--- af_rule_to_var_ratio_LT_am_attack_in_degree_gini <= 0.50
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- af_rule_to_var_ratio_LT_am_attack_in_degree_gini >  0.50
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |--- af_avg_connectors_LT_em_betweenness_max >  0.50
+|   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |--- em_avg_shortest_path_LT_em_treewidth >  0.50
+|   |   |   |   |   |   |--- af_rule_to_var_ratio_LT_am_attack_in_degree_gini <= 0.50
+|   |   |   |   |   |   |   |--- lit_is_fact_LT_lit_is_negated <= 0.50
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |   |--- lit_is_fact_LT_lit_is_negated >  0.50
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |   |   |   |--- af_rule_to_var_ratio_LT_am_attack_in_degree_gini >  0.50
+|   |   |   |   |   |   |   |--- em_eigenvector_max_LT_lit_head_strict <= 0.50
+|   |   |   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |   |   |--- em_eigenvector_max_LT_lit_head_strict >  0.50
+|   |   |   |   |   |   |   |   |--- class: 0
+|   |   |   |--- am_attack_diameter_LT_am_avg_arg_lines >  0.50
+|   |   |   |   |--- af_rule_to_var_ratio_LT_em_eigenvector_max <= 0.50
+|   |   |   |   |   |--- class: 1
+|   |   |   |   |--- af_rule_to_var_ratio_LT_em_eigenvector_max >  0.50
+|   |   |   |   |   |--- class: 0
+|   |   |--- af_avg_body_size_LT_af_avg_var_usage >  0.50
+|   |   |   |--- class: 1
+|--- af_avg_body_size_LT_af_rule_to_var_ratio >  0.50
+|   |--- em_n_arcs_LT_n_annots <= 0.50
+|   |   |--- am_attack_betweenness_avg_LT_em_clustering_coef <= 0.50
+|   |   |   |--- class: 1
+|   |   |--- am_attack_betweenness_avg_LT_em_clustering_coef >  0.50
+|   |   |   |--- class: 0
+|   |--- em_n_arcs_LT_n_annots >  0.50
+|   |   |--- am_attack_closeness_avg_LT_em_graph_density <= 0.50
+|   |   |   |--- af_pct_annotated_LT_lit_is_negated <= 0.50
+|   |   |   |   |--- class: 1
+|   |   |   |--- af_pct_annotated_LT_lit_is_negated >  0.50
+|   |   |   |   |--- class: 0
+|   |   |--- am_attack_closeness_avg_LT_em_graph_density >  0.50
+|   |   |   |--- af_max_body_size_LT_em_entropy <= 0.50
+|   |   |   |   |--- class: 1
+|   |   |   |--- af_max_body_size_LT_em_entropy >  0.50
+|   |   |   |   |--- am_attack_reciprocity_LT_em_eigenvector_max <= 0.50
+|   |   |   |   |   |--- af_max_complexity_LT_lit_head_def <= 0.50
+|   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |--- af_max_complexity_LT_lit_head_def >  0.50
+|   |   |   |   |   |   |--- class: 0
+|   |   |   |   |--- am_attack_reciprocity_LT_em_eigenvector_max >  0.50
+|   |   |   |   |   |--- em_eigenvector_max_LT_lit_body_count <= 0.50
+|   |   |   |   |   |   |--- class: 1
+|   |   |   |   |   |--- em_eigenvector_max_LT_lit_body_count >  0.50
+|   |   |   |   |   |   |--- class: 1

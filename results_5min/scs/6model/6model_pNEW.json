@@ -1,0 +1,69 @@
+{
+    "status": {
+        "d_14": {
+            "yes": 3827,
+            "no": 0,
+            "undecided": 630,
+            "unknown": 293,
+            "pyes": 0.9117893520307994,
+            "pno": 0.0,
+            "pundecided": 0.07770080342278193,
+            "punknown": 0.010389340206669598,
+            "time": 185.11925745010376,
+            "delp_calls": 4750,
+            "percY": 546036.36,
+            "percN": 0.0,
+            "percU": 89888.4,
+            "percUNK": 41805.24,
+            "l": 0.9117893520307994,
+            "u": 1.0,
+            "flag": "INTEREST"
+        },
+        "a_5": {
+            "yes": 1498,
+            "no": 0,
+            "undecided": 3147,
+            "unknown": 133,
+            "pyes": 0.9742517661144723,
+            "pno": 0.0,
+            "pundecided": 0.02445438439865232,
+            "punknown": 1.4962298413167707e-05,
+            "time": 184.98399806022644,
+            "delp_calls": 4778,
+            "percY": 213734.64,
+            "percN": 0.0,
+            "percU": 449013.96,
+            "percUNK": 18976.44,
+            "l": 0.9742517661144723,
+            "u": 1.0,
+            "flag": "INTEREST"
+        },
+        "a_7": {
+            "yes": 1418,
+            "no": 232,
+            "undecided": 2991,
+            "unknown": 99,
+            "pyes": 0.9487724113624333,
+            "pno": 9.1923355936e-06,
+            "pundecided": 0.024485830076233662,
+            "punknown": 7.791279075360002e-05,
+            "time": 184.78239035606384,
+            "delp_calls": 4740,
+            "percY": 202320.24,
+            "percN": 33101.76,
+            "percU": 426755.88,
+            "percUNK": 14125.32,
+            "l": 0.9487724113624333,
+            "u": 0.9999908076644064,
+            "flag": "INTEREST"
+        }
+    },
+    "data": {
+        "n_samples": 14268,
+        "time": 900.0856325626373,
+        "repeated_programs": 0,
+        "inconsistent_programs": 0,
+        "worlds_consulted": 12066,
+        "delp_calls": 14268
+    }
+}

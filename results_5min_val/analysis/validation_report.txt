@@ -1,0 +1,54 @@
+=== Tree validation on unseen models ===
+Input CSV: results_5min_val/all_results.csv
+Rows: 668  configs: 15
+
+Comparison tree accuracy: 0.750
+Abstract tree accuracy:   0.707
+
+=== Accuracy per configuration ===
+  config       n      cmp      abs
+  ccs         39    1.000    1.000
+  cmm         18    0.611    0.611
+  cms         54    0.796    0.796
+  css         39    0.744    0.744
+  mcs         40    0.975    0.975
+  mms         65    0.708    0.708
+  mss         39    0.795    0.795
+  scm         31    0.806    0.806
+  scs         38    0.711    0.711
+  smc         59    0.966    1.000
+  smm         57    0.211    0.211
+  sms         55    0.873    0.509
+  ssc         43    0.930    1.000
+  ssm         44    0.205    0.136
+  sss         47    0.957    0.723
+
+=== Accuracy per region (comparison tree) ===
+  A           n=306   acc=0.817  pred=worlds
+  A_tiny      n=4     acc=1.000  pred=programs
+  B           n=97    acc=1.000  pred=programs
+  B_tiny      n=1     acc=0.000  pred=worlds
+  C           n=229   acc=0.546  pred=worlds
+  D           n=31    acc=0.806  pred=programs
+
+=== Accuracy per region (abstract tree) ===
+  abs_leaf_10           n=47    acc=0.872  pred=worlds
+  abs_leaf_11           n=38    acc=0.105  pred=programs
+  abs_leaf_13           n=289   acc=0.830  pred=worlds
+  abs_leaf_14           n=42    acc=0.738  pred=worlds
+  abs_leaf_3            n=119   acc=0.244  pred=worlds
+  abs_leaf_4            n=31    acc=0.806  pred=programs
+  abs_leaf_6            n=4     acc=1.000  pred=programs
+  abs_leaf_7            n=98    acc=1.000  pred=programs
+
+=== Confusion (comparison tree) ===
+predicted  programs  worlds
+actual                     
+programs        126     161
+worlds            6     375
+
+=== Confusion (abstract tree) ===
+predicted  programs  worlds
+actual                     
+programs        131     156
+worlds           40     341

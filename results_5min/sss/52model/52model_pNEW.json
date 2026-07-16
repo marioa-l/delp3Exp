@@ -1,0 +1,50 @@
+{
+    "status": {
+        "a_5": {
+            "yes": 950,
+            "no": 0,
+            "undecided": 1831,
+            "unknown": 0,
+            "pyes": 0.803253434185082,
+            "pno": 0.0,
+            "pundecided": 0.025790298411717726,
+            "punknown": 0.0,
+            "time": 163.32714581489563,
+            "delp_calls": 4713,
+            "percY": 90155.0,
+            "percN": 0.0,
+            "percU": 173761.9,
+            "percUNK": 0.0,
+            "l": 0.803253434185082,
+            "u": 1.0,
+            "flag": "INTEREST"
+        },
+        "a_9": {
+            "yes": 982,
+            "no": 659,
+            "undecided": 1200,
+            "unknown": 0,
+            "pyes": 0.8032137835393971,
+            "pno": 0.0009586370794986583,
+            "pundecided": 0.02487131197790399,
+            "punknown": 0.0,
+            "time": 164.52946257591248,
+            "delp_calls": 4777,
+            "percY": 93191.8,
+            "percN": 62539.1,
+            "percU": 113880.0,
+            "percUNK": 0.0,
+            "l": 0.8032137835393971,
+            "u": 0.9990413629205014,
+            "flag": "INTEREST"
+        }
+    },
+    "data": {
+        "n_samples": 9490,
+        "time": 600.079607963562,
+        "repeated_programs": 0,
+        "inconsistent_programs": 3868,
+        "worlds_consulted": 128,
+        "delp_calls": 9490
+    }
+}
