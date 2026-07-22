@@ -132,7 +132,16 @@ class Programs:
     def start_sampling(
         self, percentile_samples: int, info: str, max_seconds: int = None,
         mode: str = "random",
+        stop_at_exact: dict = None,
+        stop_epsilon: float = 1e-6,
     ) -> list:
+        """
+        `stop_at_exact` is an optional mapping ``{literal: (exact_l, exact_u)}``.
+        When provided, per-literal sampling exits early as soon as the running
+        (l, u) matches the exact bounds within `stop_epsilon`. The observed
+        wall-clock ``time_to_exact`` is stored in
+        ``self.results["status"][lit]``.
+        """
         """To run exact compute of the interval or select randomly a subset of all
         possible programs (combining the values of its annotations) to perform an
         approximation of the exact interval"""
@@ -185,6 +194,9 @@ class Programs:
             for lit in lit_to_query:
                 print(f"  -> Evaluando literal: {lit}  (mode={mode})")
                 self.known_evidences = []  # reset
+                exact_target = None
+                if stop_at_exact is not None and lit in stop_at_exact:
+                    exact_target = stop_at_exact[lit]
                 (
                     lit_time,
                     lit_inconsistent,
@@ -192,10 +204,14 @@ class Programs:
                     lit_worlds,
                     lit_history,
                     lit_delp_calls,
+                    lit_time_to_exact,
                 ) = self.consult_single_literal_time(
                     self.local_n_programs, self.adapted_annots, lit, max_seconds,
                     mode, annotation_marginals,
+                    stop_at_exact=exact_target,
+                    stop_epsilon=stop_epsilon,
                 )
+                self.results["status"][lit]["time_to_exact"] = lit_time_to_exact
 
                 total_time += lit_time
                 total_inconsistent += lit_inconsistent
@@ -276,6 +292,8 @@ class Programs:
         max_seconds: int,
         mode: str = "random",
         annotation_marginals: dict = None,
+        stop_at_exact: tuple = None,
+        stop_epsilon: float = 1e-6,
     ) -> tuple:
         """
         Iterate sampling programs until the time budget is exhausted.
@@ -294,6 +312,7 @@ class Programs:
         inconsistent_programs = 0
         prefiltered = 0
         sampled_count = 0
+        time_to_exact = None
 
         while True:
             current_time = time.time() - initial_time
@@ -350,14 +369,24 @@ class Programs:
 
             s = self.results["status"][lit]
             s["delp_calls"] = delp_calls
+            elapsed_now = time.time() - initial_time
+            l_now = s["pyes"]
+            u_now = 1.0 - s["pno"]
             lit_history.append(
                 {
-                    "time": time.time() - initial_time,
+                    "time": elapsed_now,
                     "calls": delp_calls,
-                    "l": s["pyes"],
-                    "u": 1.0 - s["pno"],
+                    "l": l_now,
+                    "u": u_now,
                 }
             )
+            # Stop as soon as the running interval matches the exact one.
+            if stop_at_exact is not None:
+                ex_l, ex_u = stop_at_exact
+                if (abs(l_now - ex_l) < stop_epsilon
+                        and abs(u_now - ex_u) < stop_epsilon):
+                    time_to_exact = elapsed_now
+                    break
 
         execution_time = time.time() - initial_time
         return (
@@ -367,6 +396,7 @@ class Programs:
             len(self.known_evidences),
             lit_history,
             delp_calls,
+            time_to_exact,
         )
 
     def consult_programs(

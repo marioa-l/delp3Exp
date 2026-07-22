@@ -93,7 +93,15 @@ class Worlds:
         self, percentile_samples: int, source: str, info: str,
         max_seconds: int = None, mode: str = "random",
         dgraph_path: str = None,
+        stop_at_exact: dict = None,
+        stop_epsilon: float = 1e-6,
     ) -> dict:
+        """
+        `stop_at_exact` is an optional mapping ``{literal: (exact_l, exact_u)}``.
+        When set, per-literal sampling stops as soon as the running interval
+        matches the exact bounds within `stop_epsilon`. The observed
+        `time_to_exact` is stored in ``self.results["status"][lit]``.
+        """
         print(f"--- Sampleando modelo/programa: {self.utils.model_path} ---")
         """Permite samplear por porcentaje o por tiempo (en segundos)"""
         n_worlds = self.utils.get_n_worlds()
@@ -128,9 +136,18 @@ class Worlds:
                 self.known_progs = (
                     KnownSamples()
                 )  # Reset cache para aislar el experimento
-                lit_n_samples, lit_time, lit_history, lit_delp_calls, lit_rep_worlds = (
-                    self.consult_single_literal_time(n_worlds, lit, max_seconds, mode)
+                exact_target = None
+                if stop_at_exact is not None and lit in stop_at_exact:
+                    exact_target = stop_at_exact[lit]
+                (lit_n_samples, lit_time, lit_history, lit_delp_calls,
+                 lit_rep_worlds, lit_time_to_exact) = (
+                    self.consult_single_literal_time(
+                        n_worlds, lit, max_seconds, mode,
+                        stop_at_exact=exact_target,
+                        stop_epsilon=stop_epsilon,
+                    )
                 )
+                self.results["status"][lit]["time_to_exact"] = lit_time_to_exact
 
                 total_n_samples += lit_n_samples
                 total_time += lit_time
@@ -189,6 +206,8 @@ class Worlds:
     def consult_single_literal_time(
         self, n_worlds: int, lit: str, max_seconds: int,
         mode: str = "random",
+        stop_at_exact: tuple = None,
+        stop_epsilon: float = 1e-6,
     ) -> tuple:
         """
         Iterate sampling worlds until the time budget is exhausted.
@@ -207,6 +226,7 @@ class Worlds:
         delp_calls = 0
         sampled_count = 0
         sampled_ids = set()
+        time_to_exact = None  # populated when the running interval matches exact
 
         # Buffer for BN-drawn worlds when using the heuristic.
         bn_buffer = []
@@ -273,18 +293,29 @@ class Worlds:
             s = self.results["status"][lit]
             s["delp_calls"] = delp_calls
             # l = pyes, u = 1 - pno
+            elapsed_now = time.time() - initial_time
+            l_now = s["pyes"]
+            u_now = 1.0 - s["pno"]
             lit_history.append(
                 {
-                    "time": time.time() - initial_time,
+                    "time": elapsed_now,
                     "calls": delp_calls,
-                    "l": s["pyes"],
-                    "u": 1.0 - s["pno"],
+                    "l": l_now,
+                    "u": u_now,
                 }
             )
+            # Stop as soon as the running interval matches the exact one.
+            if stop_at_exact is not None:
+                ex_l, ex_u = stop_at_exact
+                if (abs(l_now - ex_l) < stop_epsilon
+                        and abs(u_now - ex_u) < stop_epsilon):
+                    time_to_exact = elapsed_now
+                    break
 
         execution_time = time.time() - initial_time
         repeated_worlds = sampled_count - len(sampled_ids)
-        return sampled_count, execution_time, lit_history, delp_calls, repeated_worlds
+        return (sampled_count, execution_time, lit_history, delp_calls,
+                repeated_worlds, time_to_exact)
 
     def consult_worlds(self, worlds: list, lit_to_query: list) -> float:
         """To iterate over sampled worlds consulting for literals"""
