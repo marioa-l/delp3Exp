@@ -1,0 +1,64 @@
+=== Dataset ===
+Total rows: 2349  (worlds=1296, programs=1053)
+Configs: 15 (['ccs', 'cmm', 'cms', 'css', 'mcs', 'mms', 'mss', 'scm', 'scs', 'smc', 'smm', 'sms', 'ssc', 'ssm', 'sss'])
+Predictors used: 31
+  - em_var
+  - n_annots
+  - n_rules
+  - annots_minus_em
+  - lit_is_negated
+  - lit_head_def
+  - lit_head_strict
+  - lit_body_count
+  - lit_is_fact
+  - lit_is_ann_fact
+  - lit_complement_body
+  - lit_complement_head
+  - af_pct_annotated
+  - af_avg_annot_vars
+  - af_avg_connectors
+  - af_avg_body_size
+  - af_max_body_size
+  - am_n_arguments
+  - am_n_defeaters
+  - am_n_trees
+  - am_avg_def_rules
+  - am_avg_arg_lines
+  - am_avg_height_lines
+  - em_n_arcs
+  - em_treewidth
+  - em_avg_in_degree
+  - em_max_in_degree
+  - em_entropy
+  - af_n_em_vars_used
+  - af_avg_complexity
+  - af_max_complexity
+
+=== Cross-validated accuracy by depth ===
+  depth= 1: 0.802 ± 0.012
+  depth= 2: 0.826 ± 0.008  <-- best
+  depth= 3: 0.824 ± 0.009
+  depth= 4: 0.822 ± 0.006
+  depth= 5: 0.819 ± 0.010
+  depth= 6: 0.803 ± 0.015
+  depth= 7: 0.802 ± 0.012
+  depth= 8: 0.796 ± 0.011
+  depth= 9: 0.799 ± 0.011
+  depth=10: 0.792 ± 0.008
+
+=== Feature importances (non-zero) ===
+  em_n_arcs                  0.8208
+  annots_minus_em            0.1489
+  af_pct_annotated           0.0303
+
+=== Decision rules ===
+|--- em_n_arcs <= 13.50
+|   |--- af_pct_annotated <= 0.43
+|   |   |--- class: 1
+|   |--- af_pct_annotated >  0.43
+|   |   |--- class: 1
+|--- em_n_arcs >  13.50
+|   |--- annots_minus_em <= 22.50
+|   |   |--- class: 0
+|   |--- annots_minus_em >  22.50
+|   |   |--- class: 1
