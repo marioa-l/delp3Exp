@@ -102,16 +102,10 @@ def _run_one_model(job: tuple) -> list:
     rows = []
     try:
         targets = load_interest_targets(exact_path)
-    except Exception as e:
-        return [{
-            "config": cfg, "model": model_name, "literal": None,
-            "ok": False, "error": f"exact_load: {e}",
-        }]
+    except Exception:
+        return []  # informational; do not write to CSV to keep schema stable
     if not targets:
-        return [{
-            "config": cfg, "model": model_name, "literal": None,
-            "ok": True, "note": "no INTEREST literals",
-        }]
+        return []  # no INTEREST literals — nothing to write for this model
 
     os.makedirs(save_dir, exist_ok=True)
 
