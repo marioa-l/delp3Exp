@@ -1,0 +1,56 @@
+=== Ground-truth validation (time-to-exact) ===
+Input CSV: results_tte/all_results.csv
+Total rows in CSV : 2357
+Unresolved rows   : 575 (excluded)
+Rows evaluated    : 1782
+
+Comparison tree accuracy : 0.910
+Abstract tree accuracy   : 0.509
+
+=== Accuracy per configuration ===
+  config       n      cmp      abs
+  ccs         98    1.000    0.622
+  cms        184    1.000    0.500
+  css         98    1.000    0.520
+  mcs        109    1.000    0.569
+  mms        201    1.000    0.602
+  mss        121    1.000    0.554
+  scm         19    1.000    0.000
+  scs        116    1.000    0.569
+  smc         76    0.000    1.000
+  smm        211    0.720    0.280
+  sms        219    1.000    0.557
+  ssc          8    0.000    1.000
+  ssm        155    0.890    0.110
+  sss        167    0.994    0.629
+
+=== Accuracy per region (comparison tree) ===
+  unknown     n=1782  acc=0.910  pred=worlds
+
+=== Accuracy per region (abstract tree) ===
+  abs_leaf_10           n=746   acc=1.000  pred=worlds
+  abs_leaf_11           n=567   acc=0.002  pred=programs
+  abs_leaf_6            n=9     acc=0.111  pred=programs
+  abs_leaf_7            n=460   acc=0.346  pred=programs
+
+=== Ground-truth winner distribution ===
+  programs      n=161
+  worlds        n=1621
+
+=== Confusion (comparison tree) ===
+predicted  worlds
+actual           
+programs      161
+worlds       1621
+
+=== Confusion (abstract tree) ===
+predicted  programs  worlds
+actual                     
+programs        161       0
+worlds          875     746
+
+=== Where both samplers reached exact ===
+  n = 380
+  median gap (|t_p - t_w|)  : 57.64 s
+  median t_worlds           : 26.77 s
+  median t_programs         : 72.90 s
