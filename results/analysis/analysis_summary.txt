@@ -1,0 +1,60 @@
+=== Dataset overview ===
+Total rows: 64
+  sms: 22 rows | worlds=17 programs=5 | mean quality_diff=+0.189 ± 0.386
+  ssc: 17 rows | worlds=1 programs=16 | mean quality_diff=-0.385 ± 0.302
+  ssm: 13 rows | worlds=6 programs=7 | mean quality_diff=-0.179 ± 0.462
+  sss: 12 rows | worlds=12 programs=0 | mean quality_diff=+0.856 ± 0.271
+
+=== Spearman correlations with winner_binary (|r| sorted) ===
+  annots_minus_em                 r=+0.698  p=0.0000
+  em_var                          r=-0.677  p=0.0000
+  exact_width                     r=-0.435  p=0.0003
+  af_pct_annotated                r=-0.348  p=0.0049
+  n_annots                        r=-0.311  p=0.0123
+  af_avg_annot_vars               r=+0.307  p=0.0137
+  af_avg_connectors               r=+0.263  p=0.0355
+  lit_is_fact                     r=+0.238  p=0.0582
+  lit_body_count                  r=+0.238  p=0.0584
+  lit_complement_head             r=-0.188  p=0.1362
+  lit_is_negated                  r=-0.154  p=0.2255
+  lit_is_ann_fact                 r=+0.119  p=0.3493
+  lit_head_def                    r=-0.106  p=0.4052
+  lit_head_strict                 r=+0.033  p=0.7986
+  n_rules                         r=+0.011  p=0.9317
+  af_avg_body_size                r=+0.011  p=0.9317
+  lit_complement_body             r=+nan  p=nan
+  af_max_body_size                r=+nan  p=nan
+
+=== Spearman correlations with quality_diff (|r| sorted) ===
+  annots_minus_em                 r=+0.751  p=0.0000
+  em_var                          r=-0.708  p=0.0000
+  exact_width                     r=-0.390  p=0.0014
+  af_pct_annotated                r=-0.369  p=0.0027
+  n_annots                        r=-0.283  p=0.0236
+  af_avg_connectors               r=+0.247  p=0.0494
+  af_avg_annot_vars               r=+0.226  p=0.0727
+  lit_is_ann_fact                 r=+0.200  p=0.1127
+  lit_body_count                  r=+0.183  p=0.1487
+  lit_complement_head             r=-0.150  p=0.2376
+  lit_is_fact                     r=+0.113  p=0.3728
+  lit_is_negated                  r=-0.109  p=0.3911
+  n_rules                         r=+0.054  p=0.6712
+  af_avg_body_size                r=+0.054  p=0.6712
+  lit_head_def                    r=-0.044  p=0.7297
+  lit_head_strict                 r=+0.032  p=0.8039
+  lit_complement_body             r=+nan  p=nan
+  af_max_body_size                r=+nan  p=nan
+
+=== Decision Tree CV Accuracy ===
+  depth=1: 0.732 ± 0.164
+  depth=2: 0.732 ± 0.132
+  depth=3: 0.731 ± 0.169
+  depth=4: 0.731 ± 0.154
+  depth=5: 0.717 ± 0.112
+  -> Best depth: 1 (acc=0.732)
+
+=== Decision Tree Rules ===
+|--- annots_minus_em <= -6.00
+|   |--- class: 0
+|--- annots_minus_em >  -6.00
+|   |--- class: 1

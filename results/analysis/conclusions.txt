@@ -1,0 +1,127 @@
+DeLP3E Sampling Recommendation — Key conclusions
+==================================================
+Dataset:    results_5min/all_results.csv (2 339 rows · 15 configs · 5-min budget per literal)
+Pipeline:   sampling/abstract_tree.py --n_bins 3 --depths 3,5
+
+
+1. The abstraction hypothesis is validated
+-------------------------------------------
+We replaced raw numeric thresholds (e.g. "em_n_arcs <= 15.5") by abstract
+categorical levels of scale-invariant features (e.g. "em_density = low").
+
+   5-fold CV  | Raw tree (depth 4):  0.874
+              | Abstract tree (d=3): 0.828
+              | Abstract tree (d=5): ~0.82-0.83  (no significant gain over d=3)
+              | Abstract tree (d=10):0.847
+              | Abstract RF:         0.897
+
+   LOCO       | Raw tree:            0.694 +/- 0.34
+              | Abstract tree (best):0.785 +/- 0.24
+              | Abstract RF:         0.839 +/- 0.22
+
+The 5-fold CV gap between raw and abstract is only about 3 points, while the
+LOCO gap goes the OTHER way: abstract features generalise to unseen
+configurations almost 10 points better. This is the central finding: rules
+expressed in abstract terms generalise across model families, while rules
+expressed at numeric thresholds do not.
+
+
+2. The decision rules are short and interpretable
+--------------------------------------------------
+The depth-3 abstract tree is shown below. Sample counts come from the
+training set; class purity is the percentage of the majority class in each
+leaf.
+
+   IF em_deg_centrality_avg = low:
+     IF em_entropy_per_var = low:
+       IF af_pct_annotated in {low, medium}  -> WORLDS   (n=546, purity 70%)
+       ELSE  (af_pct_annotated = high)       -> PROGRAMS (n=126, purity 72%)
+     ELSE  (em_entropy_per_var = medium):
+       IF am_attack_eigenvector_max = low    -> PROGRAMS (n=9,   purity 89%)
+       ELSE  (medium or high)                -> PROGRAMS (n=363, purity 99%)
+   ELSE  (em_deg_centrality_avg >= medium):
+     IF space_orientation in {balanced, progs-favored}:
+       IF em_clustering_coef = low           -> WORLDS   (n=172, purity 78%)
+       ELSE  (medium or high)                -> WORLDS   (n=115, purity 59%)
+     ELSE  (space_orientation = worlds-favored):
+       IF am_attack_eigenvector_avg <= medium -> WORLDS  (n=915, purity 100%)
+       ELSE  (high)                           -> WORLDS  (n=93,  purity 96%)
+
+Three rules dominate the predictions:
+
+  - The "easy wins" rule (1 008 cases, 99% pure)
+       em_deg_centrality_avg >= medium AND space_orientation = worlds-favored
+                 -> recommend WORLDS
+
+  - The "central / inferentially rich BN" rule (363 cases, 99% pure)
+       em_deg_centrality_avg = low AND em_entropy_per_var = medium AND
+       am_attack_eigenvector_max >= medium
+                 -> recommend PROGRAMS
+
+  - The "sparse / decoupled" rule (546 cases, 70% pure)
+       em_deg_centrality_avg = low AND em_entropy_per_var = low AND
+       af_pct_annotated in {low, medium}
+                 -> recommend WORLDS
+
+
+3. Which families of features actually carry the signal
+--------------------------------------------------------
+Random Forest feature importance (abstract space, top 10):
+
+   em_deg_centrality_avg     9.7 %
+   em_density                8.0 %
+   em_entropy_per_var        7.7 %
+   af_rule_to_var_ratio      6.6 %
+   space_orientation         4.9 %
+   em_eigenvector_avg        4.4 %
+   em_deg_centrality_std     4.3 %
+   em_deg_centrality_max     2.3 %
+   am_avg_arg_lines          2.2 %
+   am_avg_height_lines       2.2 %
+
+Five of the top six predictors describe the BN. The argumentation model
+contributes secondarily through am_avg_arg_lines, am_avg_height_lines and
+am_attack_eigenvector_*. The annotation framework contributes via
+af_rule_to_var_ratio and af_pct_annotated.
+
+Practical reading: knowing the BN well (its density, its centrality
+profile, its normalised entropy) and the asymmetry of the search space
+is sufficient to choose the right approximation in the vast majority of
+cases.
+
+
+4. Generalisation gap
+----------------------
+Leave-one-config-out cross-validation reveals where the abstract tree
+struggles. Standard deviation is large (~0.24) which means a few configs
+yield close to 100% accuracy and a few drop below 50%. We did not break
+down per config in this run, but the result already supports two
+operational claims:
+
+  - On average the abstract tree predicts at least 78% accuracy on a
+    configuration it never saw.
+  - The Random Forest version recovers another 5 points (~84%), suggesting
+    that the residual variance can be absorbed by ensembling the same
+    abstract features.
+
+
+5. Limitations and next steps
+------------------------------
+  - Several quantile bins are very narrow (e.g. am_attack_betweenness_avg
+    has thresholds at 0.0 and 0.001). For some features, almost all
+    samples fall into a single category, which weakens their splitting
+    power. A higher n_bins setting (5 or 7) may help, at the cost of
+    interpretability.
+
+  - Two features (af_avg_annot_vars, em_eigenvector_max) were detected as
+    constant in this dataset. They should be excluded from the predictor
+    list to avoid noisy splits.
+
+  - The configurations we have are still highly correlated (15 codes
+    sharing a small space of generator parameters). Adding new
+    generators to the dataset would harden the LOCO validation.
+
+  - Rules involving Random Forest cannot be presented as a clean tree.
+    For the paper we will rely on the depth-3 / depth-5 abstract trees
+    as the explanatory artefact, while reporting RF accuracy as the
+    upper bound achievable with the same abstract features.

@@ -1,0 +1,31 @@
+=== Dataset ===
+Total rows: 64
+Any-mismatch (pred != winner): 11
+Real mismatches (margin > 0.01): 4
+Correct (incl. ties w/ margin <= 0.01): 60
+
+=== Real mismatches (detailed) ===
+config  model literal  annots_minus_em  exact_width  worlds_quality  progs_quality predicted   winner   margin
+   ssm 0model    ~a_6               -2     0.060000        0.001569       0.072476    worlds programs 0.070907
+   ssm 0model    ~a_7               -2     0.060000        0.000731       0.593658    worlds programs 0.592926
+   ssm 3model     a_8               -4     0.094688        0.106751       0.128666    worlds programs 0.021914
+   ssm 7model     a_6               -2     0.060000        0.001091       0.837561    worlds programs 0.836471
+
+=== Mann–Whitney U test: correct vs real mismatches ===
+  annots_minus_em            median corr= -2.000  mism= -2.000  p=0.900 
+  em_var                     median corr= 12.000  mism= 18.000  p=0.306 
+  n_annots                   median corr= 13.000  mism= 16.000  p=0.005 *
+  exact_width                median corr=  0.055  mism=  0.060  p=0.771 
+  lit_is_negated             median corr=  0.000  mism=  0.500  p=0.962 
+  lit_head_def               median corr=  1.000  mism=  1.500  p=0.556 
+  lit_head_strict            median corr=  0.000  mism=  0.000  p=0.390 
+  lit_body_count             median corr=  0.000  mism=  0.000  p=0.116 
+  lit_is_fact                median corr=  0.000  mism=  0.000  p=0.453 
+  lit_is_ann_fact            median corr=  0.000  mism=  0.000  p=0.172 
+  lit_complement_body        median corr=  0.000  mism=  0.000  p=1.000 
+  lit_complement_head        median corr=  0.000  mism=  1.000  p=0.581 
+  af_pct_annotated           median corr=  0.480  mism=  0.517  p=0.027 *
+  af_avg_annot_vars          median corr=  1.000  mism=  1.000  p=0.143 
+  af_avg_connectors          median corr=  0.080  mism=  0.062  p=0.267 
+  af_avg_body_size           median corr=  2.077  mism=  2.171  p=0.050 
+  af_max_body_size           median corr=  3.000  mism=  3.000  p=1.000 
