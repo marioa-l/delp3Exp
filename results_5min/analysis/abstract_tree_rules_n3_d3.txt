@@ -2,12 +2,12 @@ Decision tree (depth=3, CV acc=0.828)
 ================================================
 
 IF em_deg_centrality_avg in {low}:
-  IF em_entropy_per_var in {low}:
+  IF em_density in {high}:
     IF af_pct_annotated in {low, medium}:
       -> recommend WORLDS  (n_progs=162, n_worlds=384, total=546, purity=70%)
     ELSE  (af_pct_annotated in {high}):
       -> recommend PROGRAMS  (n_progs=91, n_worlds=35, total=126, purity=72%)
-  ELSE  (em_entropy_per_var in {medium}):
+  ELSE  (em_density in {missing}):
     IF am_attack_eigenvector_max in {low}:
       -> recommend PROGRAMS  (n_progs=8, n_worlds=1, total=9, purity=89%)
     ELSE  (am_attack_eigenvector_max in {medium, high}):
@@ -27,12 +27,12 @@ ELSE  (em_deg_centrality_avg in {medium, high}):
 
 Export (raw sklearn rule text):
 |--- em_deg_centrality_avg <= 0.50
-|   |--- em_entropy_per_var <= 0.50
+|   |--- em_density <= 0.50
 |   |   |--- af_pct_annotated <= 1.50
 |   |   |   |--- class: 1
 |   |   |--- af_pct_annotated >  1.50
 |   |   |   |--- class: 0
-|   |--- em_entropy_per_var >  0.50
+|   |--- em_density >  0.50
 |   |   |--- am_attack_eigenvector_max <= 0.50
 |   |   |   |--- class: 0
 |   |   |--- am_attack_eigenvector_max >  0.50

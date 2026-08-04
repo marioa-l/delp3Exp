@@ -1,0 +1,38 @@
+=== Abstract tree retrained on the time-to-exact ground truth ===
+Input CSV : results_tte/all_results.csv
+Rows      : 1782  (161 programs, 1621 worlds)
+Grouping  : GroupKFold(5) by (config, model) — no literal leakage
+
+depth=1:  held-out accuracy = 0.9495 +/- 0.0114
+depth=2:  held-out accuracy = 0.9253 +/- 0.0439
+depth=3:  held-out accuracy = 0.8271 +/- 0.0315
+
+-> best depth = 1  (held-out acc = 0.9495)
+
+=== Held-out accuracy per configuration ===
+  ccs       n=  98  acc=1.000
+  cms       n= 184  acc=1.000
+  css       n=  98  acc=1.000
+  mcs       n= 109  acc=1.000
+  mms       n= 201  acc=1.000
+  mss       n= 121  acc=1.000
+  scm       n=  19  acc=1.000
+  scs       n= 116  acc=1.000
+  smc       n=  76  acc=1.000
+  smm       n= 211  acc=0.692
+  sms       n= 219  acc=0.991
+  ssc       n=   8  acc=0.875
+  ssm       n= 155  acc=0.865
+  sss       n= 167  acc=0.994
+
+=== Confusion (out-of-fold predictions) ===
+predicted  programs  worlds
+actual                     
+programs        129      32
+worlds           58    1563
+
+=== Final tree (refit on all rows) ===
+|--- space_log_ratio <= 0.50
+|   |--- class: 0
+|--- space_log_ratio >  0.50
+|   |--- class: 1

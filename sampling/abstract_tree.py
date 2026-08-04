@@ -75,6 +75,16 @@ DERIVED_FEATURES = [
     ("am_tree_density",       lambda r: _safe_div(r.get("am_n_trees"), r.get("am_n_arguments"))),
     # AF coverage
     ("af_em_coverage",        lambda r: _safe_div(r.get("af_n_em_vars_used"), r.get("em_var"))),
+    # log2-ratio of the two sampling spaces: the program space is ~2^n_annots
+    # and the world space ~2^em_var, so their difference is the log2 of how
+    # much smaller one space is than the other. Negative => program space is
+    # smaller => program sampling has less ground to cover.
+    ("space_log_ratio",       lambda r: (np.nan
+                                         if r.get("n_annots") is None
+                                         or r.get("em_var") is None
+                                         or pd.isna(r.get("n_annots"))
+                                         or pd.isna(r.get("em_var"))
+                                         else float(r["n_annots"]) - float(r["em_var"]))),
     # Literal-rate features
     ("lit_head_def_rate",     lambda r: _safe_div(r.get("lit_head_def"), r.get("n_rules"))),
     ("lit_head_strict_rate",  lambda r: _safe_div(r.get("lit_head_strict"), r.get("n_rules"))),
@@ -144,6 +154,11 @@ THEORETICAL_BINS = {
     "am_attack_reciprocity":   [0.0, 0.1, 0.5, 1.0001],
     "am_attack_in_degree_gini":[0.0, 0.33, 0.66, 1.0001],
     "af_em_coverage":          [0.0, 0.33, 0.66, 1.0001],
+    # Space-size log2 ratio. The cut at -8 is where program sampling stops
+    # paying off (the program space must be ~256x smaller to win); the cut at
+    # 0 separates "world space smaller" from "program space smaller".
+    # Quantile binning would place the cuts at -2 / +29 and miss the boundary.
+    "space_log_ratio":         [-np.inf, -8.0, 0.0, np.inf],
     "af_pct_annotated":        [0.0, 0.3, 0.7, 1.0001],
     "af_bipartite_density":    [0.0, 0.1, 0.3, 1.0001],
     "af_var_usage_gini":       [0.0, 0.33, 0.66, 1.0001],
@@ -464,6 +479,10 @@ def main():
     parser.add_argument("--n_bins", type=int, default=3,
                         help="Number of categorical levels (3 = low/medium/high)")
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--target_col", default="winner",
+                        help="Label column: 'winner' (best interval within a "
+                             "fixed budget) or 'gt_winner' (first to reach the "
+                             "exact interval).")
     parser.add_argument("--depths", default="auto",
                         help="Comma-separated list of depths to fit and save "
                              "(e.g. 3,5). Use 'auto' to pick by CV.")
@@ -477,10 +496,11 @@ def main():
     for c in ("n_worlds", "n_programs"):
         if c in df.columns:
             df[c] = df[c].astype(float)
-    df = df.dropna(subset=["winner"])
-    df = df[df["winner"].isin(["worlds", "programs"])].copy()
-    df["winner_binary"] = (df["winner"] == "worlds").astype(int)
-    print(f"  {len(df)} rows | {df.config.nunique()} configs")
+    tgt = args.target_col
+    df = df.dropna(subset=[tgt])
+    df = df[df[tgt].isin(["worlds", "programs"])].copy()
+    df["winner_binary"] = (df[tgt] == "worlds").astype(int)
+    print(f"  {len(df)} rows | {df.config.nunique()} configs | target={tgt}")
 
     # Build abstract feature dataframe
     X_cat, thresholds, bins_numeric = build_abstract_dataframe(df, args.n_bins)

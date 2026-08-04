@@ -138,6 +138,13 @@ class AbstractRecommender:
         out["am_defeat_ratio"]      = self._safe_div(r.get("am_n_defeaters"), r.get("am_n_arguments"))
         out["am_tree_density"]      = self._safe_div(r.get("am_n_trees"), r.get("am_n_arguments"))
         out["af_em_coverage"]       = self._safe_div(r.get("af_n_em_vars_used"), r.get("em_var"))
+        # log2-ratio of the two sampling spaces (see abstract_tree.py)
+        try:
+            out["space_log_ratio"] = (float(r["n_annots"]) - float(r["em_var"])
+                                      if r.get("n_annots") is not None
+                                      and r.get("em_var") is not None else None)
+        except (TypeError, ValueError):
+            out["space_log_ratio"] = None
         out["lit_head_def_rate"]    = self._safe_div(r.get("lit_head_def"), r.get("n_rules"))
         out["lit_head_strict_rate"] = self._safe_div(r.get("lit_head_strict"), r.get("n_rules"))
         out["lit_body_rate"]        = self._safe_div(r.get("lit_body_count"), r.get("n_rules"))

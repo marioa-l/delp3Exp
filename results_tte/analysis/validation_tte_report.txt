@@ -5,7 +5,7 @@ Unresolved rows   : 575 (excluded)
 Rows evaluated    : 1782
 
 Comparison tree accuracy : 0.939
-Abstract tree accuracy   : 0.877
+Abstract tree accuracy   : 0.830
 
 === Accuracy per configuration ===
   config       n      cmp      abs
@@ -17,10 +17,10 @@ Abstract tree accuracy   : 0.877
   mss        121    1.000    1.000
   scm         19    0.053    0.000
   scs        116    0.914    1.000
-  smc         76    1.000    1.000
+  smc         76    1.000    0.000
   smm        211    0.735    0.720
   sms        219    0.977    0.575
-  ssc          8    0.875    1.000
+  ssc          8    0.875    0.000
   ssm        155    0.910    0.890
   sss        167    0.970    0.814
 
@@ -37,10 +37,8 @@ Abstract tree accuracy   : 0.877
   abs_leaf_11           n=125   acc=0.008  pred=programs
   abs_leaf_13           n=916   acc=1.000  pred=worlds
   abs_leaf_14           n=94    acc=1.000  pred=worlds
-  abs_leaf_3            n=366   acc=0.792  pred=worlds
+  abs_leaf_3            n=450   acc=0.644  pred=worlds
   abs_leaf_4            n=19    acc=0.000  pred=programs
-  abs_leaf_6            n=1     acc=1.000  pred=programs
-  abs_leaf_7            n=83    acc=1.000  pred=programs
 
 === Ground-truth winner distribution ===
   programs      n=161
@@ -55,7 +53,7 @@ worlds           38    1583
 === Confusion (abstract tree) ===
 predicted  programs  worlds
 actual                     
-programs         85      76
+programs          1     160
 worlds          143    1478
 
 === Where both samplers reached exact ===
