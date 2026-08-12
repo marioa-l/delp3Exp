@@ -35,7 +35,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(ROOT))
 
 from sampling.abstract_tree import (  # noqa: E402
-    build_abstract_dataframe, encode_for_sklearn,
+    build_abstract_dataframe, encode_for_sklearn, export_portable,
 )
 
 
@@ -130,6 +130,11 @@ def main():
             "depth": best_d,
             "target": "gt_winner",
         }, f)
+
+    json_path = pkl_path[:-4] + ".json"
+    export_portable(json_path, final, encoders, bins_numeric,
+                    list(X.columns), args.n_bins, best_d, best_acc,
+                    "gt_winner")
 
     report = os.path.join(args.output_dir, "gt_tree_report.txt")
     with open(report, "w") as f:

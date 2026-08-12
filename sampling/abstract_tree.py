@@ -30,6 +30,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import json
 import os
 from typing import Optional
 
@@ -237,6 +238,49 @@ def build_abstract_dataframe(df: pd.DataFrame, n_bins: int):
         threshold_report[name] = "categorical"
 
     return out, threshold_report, bins_numeric
+
+
+# ── Portable export ──────────────────────────────────────────────────────────
+def export_portable(path, tree, encoders, bins_numeric, predictors,
+                    n_bins, depth, cv_accuracy=None, target="winner"):
+    """
+    Write a JSON holding everything needed to *apply* the tree, using only
+    plain Python types.
+
+    A pickled sklearn estimator only loads under a compatible sklearn build
+    (the node dtype gained a ``missing_go_to_left`` field in 1.3, so newer
+    pickles raise on older installs). The tree here is a handful of nodes and
+    applying it is a plain walk, so the portable form removes that coupling
+    and lets the same model run on a cluster with a different sklearn.
+    """
+    t = tree.tree_
+    state = {
+        "format": "portable-tree-v1",
+        "children_left": [int(v) for v in t.children_left],
+        "children_right": [int(v) for v in t.children_right],
+        "feature": [int(v) for v in t.feature],
+        "threshold": [float(v) for v in t.threshold],
+        "value": [[float(x) for x in t.value[i][0]]
+                  for i in range(t.node_count)],
+        "classes": [int(c) for c in tree.classes_],
+        "encoders": {k: list(v) for k, v in encoders.items()},
+        "bins_numeric": {
+            k: {"method": v.get("method"),
+                "bins": ([float(b) for b in v["bins"]]
+                         if v.get("bins") is not None else None),
+                "labels": (list(v["labels"])
+                           if v.get("labels") is not None else None)}
+            for k, v in bins_numeric.items()},
+        "predictors_categorical": list(predictors),
+        "n_bins": int(n_bins),
+        "depth": int(depth),
+        "cv_accuracy": (float(cv_accuracy) if cv_accuracy is not None
+                        else None),
+        "target": target,
+    }
+    with open(path, "w") as f:
+        json.dump(state, f)
+    return path
 
 
 # ── Encoding ─────────────────────────────────────────────────────────────────
@@ -632,6 +676,12 @@ def main():
                 "depth": fixed_d,
             }, f)
         print(f"  Saved: {pkl_path}")
+
+        json_path = pkl_path[:-4] + ".json"
+        export_portable(json_path, d_tree, encoders, bins_numeric,
+                        list(X_cat.columns), args.n_bins, fixed_d,
+                        d_acc, tgt)
+        print(f"  Saved: {json_path}  (portable, sklearn-independent)")
 
     summary_path = os.path.join(args.output_dir,
                                 f"abstract_tree_summary_n{args.n_bins}.txt")

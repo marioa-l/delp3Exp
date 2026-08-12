@@ -21,6 +21,8 @@ interchangeably by validate_trees.py and by the heuristic sampler.
 
 from __future__ import annotations
 
+import json
+import os
 import pickle
 from typing import Any
 
@@ -98,25 +100,56 @@ def recommend_comparison(features: dict) -> tuple[str, str]:
 # ── Abstract tree (from pickle) ──────────────────────────────────────────────
 class AbstractRecommender:
     """
-    Loads the pickle emitted by abstract_tree.py and applies the same
+    Loads the model emitted by abstract_tree.py and applies the same
     binning + prediction pipeline to new rows.
 
-    The pickle contains: ``tree`` (fitted DecisionTreeClassifier),
-    ``encoders`` (dict feat -> ordered list of categorical values),
-    ``bins_numeric`` (dict feat -> {method, bins, labels}),
-    ``predictors_categorical`` (list of columns the tree expects),
-    ``feature_columns`` (same as predictors_categorical, kept for
-    forward compatibility).
+    Two on-disk forms are accepted, both carrying ``encoders``
+    (feat -> ordered categorical values), ``bins_numeric``
+    (feat -> {method, bins, labels}) and ``predictors_categorical``
+    (the columns the tree expects):
+
+    ``.json`` (preferred)  the portable form: the tree as plain arrays, so
+                           it applies under any sklearn version.
+    ``.pkl``               a pickled DecisionTreeClassifier, which only
+                           loads under a compatible sklearn build.
+
+    Given a ``.pkl`` path, a sibling ``.json`` is used when present, so a
+    cluster with a different sklearn can run a model trained elsewhere.
     """
 
-    def __init__(self, pkl_path: str):
-        with open(pkl_path, "rb") as f:
-            state = pickle.load(f)
-        self.tree = state["tree"]
+    def __init__(self, model_path: str):
+        json_path = (model_path if model_path.endswith(".json")
+                     else model_path[:-4] + ".json"
+                     if model_path.endswith(".pkl") else None)
+
+        if json_path and os.path.exists(json_path):
+            with open(json_path) as f:
+                state = json.load(f)
+            self.tree = None
+            self._portable = state
+        else:
+            with open(model_path, "rb") as f:
+                state = pickle.load(f)
+            self.tree = state["tree"]
+            self._portable = None
+
         self.encoders = state["encoders"]
         self.bins_numeric = state["bins_numeric"]
         self.predictors = state["predictors_categorical"]
         self.n_bins = state["n_bins"]
+
+    def _apply_portable(self, x):
+        """Walk the plain-array tree; return (predicted_class, leaf_id)."""
+        p = self._portable
+        left, right = p["children_left"], p["children_right"]
+        feat, thr = p["feature"], p["threshold"]
+        node = 0
+        while left[node] != -1:
+            node = (left[node] if x[feat[node]] <= thr[node]
+                    else right[node])
+        counts = p["value"][node]
+        cls = p["classes"][counts.index(max(counts))]
+        return int(cls), int(node)
 
     # ---- Derived / sign features (kept in sync with abstract_tree.py) ----
     @staticmethod
@@ -203,8 +236,11 @@ class AbstractRecommender:
             else:
                 cat = self._bin_value(col, raw)
             x.append(self._encode(col, cat))
-        pred = int(self.tree.predict([x])[0])
-        # Also identify the leaf so we can report region purity later.
-        leaf_id = int(self.tree.apply([x])[0])
+        if self._portable is not None:
+            pred, leaf_id = self._apply_portable(x)
+        else:
+            pred = int(self.tree.predict([x])[0])
+            # Also identify the leaf so we can report region purity later.
+            leaf_id = int(self.tree.apply([x])[0])
         method = "worlds" if pred == 1 else "programs"
         return (method, f"abs_leaf_{leaf_id}")
