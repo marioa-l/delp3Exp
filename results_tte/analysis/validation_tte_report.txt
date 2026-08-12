@@ -1,60 +1,63 @@
 === Ground-truth validation (time-to-exact) ===
 Input CSV: results_tte/all_results.csv
 Total rows in CSV : 2357
-Unresolved rows   : 575 (excluded)
-Rows evaluated    : 1782
+Unresolved rows   : 467 (excluded)
+Rows evaluated    : 1890
 
-Comparison tree accuracy : 0.939
-Abstract tree accuracy   : 0.830
+Comparison tree accuracy : 0.908
+Abstract tree accuracy   : 0.850
 
 === Accuracy per configuration ===
   config       n      cmp      abs
   ccs         98    1.000    1.000
+  cmm          2    1.000    1.000
   cms        184    1.000    1.000
   css         98    1.000    1.000
   mcs        109    1.000    1.000
   mms        201    1.000    1.000
   mss        121    1.000    1.000
-  scm         19    0.053    0.000
+  scm         83    0.012    0.000
   scs        116    0.914    1.000
-  smc         76    1.000    0.000
+  smc        114    0.991    1.000
   smm        211    0.735    0.720
   sms        219    0.977    0.575
-  ssc          8    0.875    0.000
+  ssc         12    0.917    1.000
   ssm        155    0.910    0.890
   sss        167    0.970    0.814
 
 === Accuracy per region (comparison tree) ===
   A           n=886   acc=1.000  pred=worlds
   A_tiny      n=5     acc=0.600  pred=worlds
-  B           n=83    acc=1.000  pred=programs
+  B           n=124   acc=1.000  pred=programs
   B_tiny      n=4     acc=1.000  pred=worlds
-  C           n=762   acc=0.907  pred=worlds
-  D           n=42    acc=0.143  pred=programs
+  C           n=765   acc=0.906  pred=worlds
+  D           n=106   acc=0.057  pred=programs
 
 === Accuracy per region (abstract tree) ===
   abs_leaf_10           n=178   acc=1.000  pred=worlds
   abs_leaf_11           n=125   acc=0.008  pred=programs
   abs_leaf_13           n=916   acc=1.000  pred=worlds
   abs_leaf_14           n=94    acc=1.000  pred=worlds
-  abs_leaf_3            n=450   acc=0.644  pred=worlds
-  abs_leaf_4            n=19    acc=0.000  pred=programs
+  abs_leaf_3            n=368   acc=0.793  pred=worlds
+  abs_leaf_4            n=83    acc=0.000  pred=programs
+  abs_leaf_6            n=1     acc=1.000  pred=programs
+  abs_leaf_7            n=125   acc=1.000  pred=programs
 
 === Ground-truth winner distribution ===
-  programs      n=161
-  worlds        n=1621
+  programs      n=203
+  worlds        n=1687
 
 === Confusion (comparison tree) ===
 predicted  programs  worlds
 actual                     
-programs         90      71
-worlds           38    1583
+programs        131      72
+worlds          102    1585
 
 === Confusion (abstract tree) ===
 predicted  programs  worlds
 actual                     
-programs          1     160
-worlds          143    1478
+programs        127      76
+worlds          207    1480
 
 === Where both samplers reached exact ===
   n = 380

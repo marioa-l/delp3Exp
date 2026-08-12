@@ -1,0 +1,105 @@
+==========================================================================
+TIME-TO-EXACT GROUND TRUTH - FINAL RESULTS
+==========================================================================
+
+Ground truth: for each query, both samplers run until they reach the
+exact interval or hit a safety cap. The winner is whichever reaches
+the exact interval first.
+
+-- Dataset --
+  Total queries              : 2357
+  Resolved (used below)      : 1890
+  Unresolved (both hit cap)  : 467
+  Configurations             : 15
+  Distinct models            : 997
+
+  Caps applied: 900 s first pass; the 575 queries still unresolved
+  were re-run at 3600 s, which resolved 108 of them (18.8%).
+
+  Class balance: worlds 1687 (89.3%) | programs 203 (10.7%)
+
+-- Model comparison --
+  model                                        accuracy  rec:prog  rec:worlds
+  Majority baseline (always worlds)  0.8926 +/- 0.0071     0.000       1.000
+  Abstract tree (5-min budget label) 0.7836 +/- 0.0095     0.005       0.877
+  Comparison tree (hand-written)     0.9079 +/- 0.0067     0.645       0.940
+  Depth-1 tree (time-to-exact label) 0.9524 +/- 0.0049     0.842       0.966
+
+  Accuracy standard errors are binomial. The depth-1 tree's number is
+  out-of-fold under GroupKFold(5) grouped by (config, model), so no
+  literal of a model appears in both train and test; across folds it
+  is 0.9524 +/- 0.0143 (std over folds).
+
+  Accuracy alone is misleading here: the majority baseline already
+  scores 0.893. Recall on the minority class is the informative number.
+
+-- The learned rule --
+  space_log_ratio = n_annots - em_var       (log2 of the ratio between
+                                             the program and world
+                                             sampling space sizes)
+
+      space_log_ratio <= -8  ->  sample programs
+      space_log_ratio >  -8  ->  sample worlds
+
+    ratio <= -8 (-> programs)    n=  229  purity=0.7467 +/- 0.0287
+    ratio >  -8 (-> worlds)      n= 1661  purity=0.9807 +/- 0.0034
+
+  The -8 cut is not fitted on this data: the independent 5-minute
+  training set selects -8 on its own, and it transfers here unchanged.
+
+-- Per-configuration accuracy --
+  config       n  baseline  abstract  comparison  depth-1
+  sms        219     1.000     0.575       0.977    0.991
+  smm        211     0.720     0.720       0.735    0.692
+  mms        201     1.000     1.000       1.000    1.000
+  cms        184     1.000     1.000       1.000    1.000
+  sss        167     0.994     0.814       0.970    0.994
+  ssm        155     0.890     0.890       0.910    0.865
+  mss        121     1.000     1.000       1.000    1.000
+  scs        116     1.000     1.000       0.914    1.000
+  smc        114     0.000     0.000       0.991    1.000
+  mcs        109     1.000     1.000       1.000    1.000
+  ccs         98     1.000     1.000       1.000    1.000
+  css         98     1.000     1.000       1.000    1.000
+  scm         83     1.000     0.000       0.012    1.000
+  ssc         12     0.000     0.000       0.917    0.917
+  cmm          2     1.000     1.000       1.000    1.000
+
+-- Where the depth-1 tree still fails --
+  smm: acc=0.692 (n=211), programs actually wins 28.0% of the time
+  ssm: acc=0.865 (n=155), programs actually wins 11.0% of the time
+  ssc: acc=0.917 (n=12), programs actually wins 100.0% of the time
+
+  These are the configurations where the winner is genuinely mixed;
+  a threshold on the space ratio cannot separate them.
+
+-- Confusion matrices --
+  Abstract tree (5-min budget label)
+    predicted  programs  worlds
+    actual                     
+    programs          1     202
+    worlds          207    1480
+
+  Comparison tree (hand-written)
+    predicted  programs  worlds
+    actual                     
+    programs        131      72
+    worlds          102    1585
+
+  Depth-1 tree (time-to-exact label)
+    predicted  programs  worlds
+    actual                     
+    programs        171      32
+    worlds           58    1629
+
+-- Unresolved queries (excluded above) --
+  467 queries where neither sampler reached the exact interval
+  within 3600 s per method. Per configuration:
+    cmm     178 of  180 (98.9%)
+    ssc     143 of  155 (92.3%)
+    smc     103 of  217 (47.5%)
+    scm      43 of  126 (34.1%)
+
+  These concentrate in cmm (98.9% unresolved) and ssc (92.3%); they are
+  not near-misses. At the 900 s cap the median distance to the exact
+  interval was 0.85 (worlds) and 0.71 (programs) on a [0,1] scale.

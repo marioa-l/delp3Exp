@@ -1,42 +1,42 @@
 === Abstract decision tree summary ===
 Input CSV: results_5min/all_results.csv
 Rows: 2339  configs: 15
-Abstract features: 56  bins: 3
+Abstract features: 55  bins: 3
 
 === Trees saved ===
   depth= 3  CV acc=0.828
 
 === Validation ===
-5-fold CV (abstract tree, depth=4): 0.868
-5-fold CV (random forest):                  0.899 ± 0.016
-LOCO (abstract tree):                        0.804 ± 0.249
-LOCO (random forest):                        0.844 ± 0.210
+5-fold CV (abstract tree, depth=10): 0.847
+5-fold CV (random forest):                  0.897 ± 0.013
+LOCO (abstract tree):                        0.785 ± 0.241
+LOCO (random forest):                        0.839 ± 0.222
 
 === Baseline (raw features) ===
 5-fold CV (raw tree, depth=4):  0.874
 LOCO (raw tree):                            0.694 ± 0.340
 
 === Feature importance (RF, abstract) ===
-  em_deg_centrality_avg                0.0996
-  space_log_ratio                      0.0740
-  em_density                           0.0704
-  em_entropy_per_var                   0.0632
-  af_rule_to_var_ratio                 0.0621
-  em_eigenvector_avg                   0.0433
-  space_orientation                    0.0383
-  em_deg_centrality_std                0.0311
-  am_avg_height_lines                  0.0227
-  am_avg_arg_lines                     0.0207
-  am_attack_eigenvector_max            0.0196
-  em_avg_shortest_path                 0.0195
-  am_avg_def_rules                     0.0185
-  lit_head_def_rate                    0.0182
-  em_closeness_max                     0.0171
-  em_deg_centrality_max                0.0171
-  af_em_coverage                       0.0162
-  em_closeness_avg                     0.0161
-  em_betweenness_avg                   0.0160
-  am_attack_deg_avg                    0.0154
+  em_deg_centrality_avg                0.0965
+  em_density                           0.0804
+  em_entropy_per_var                   0.0770
+  af_rule_to_var_ratio                 0.0655
+  space_orientation                    0.0485
+  em_eigenvector_avg                   0.0442
+  em_deg_centrality_std                0.0430
+  em_deg_centrality_max                0.0229
+  am_avg_arg_lines                     0.0217
+  am_avg_height_lines                  0.0216
+  am_attack_betweenness_avg            0.0194
+  em_avg_shortest_path                 0.0193
+  am_avg_def_rules                     0.0193
+  am_attack_eigenvector_max            0.0189
+  lit_head_def_rate                    0.0186
+  em_closeness_avg                     0.0182
+  af_var_coverage                      0.0174
+  em_closeness_max                     0.0167
+  af_avg_complexity                    0.0162
+  af_avg_connectors                    0.0162
 
 === Binning thresholds ===
   af_avg_annot_vars               constant

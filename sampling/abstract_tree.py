@@ -479,6 +479,10 @@ def main():
     parser.add_argument("--n_bins", type=int, default=3,
                         help="Number of categorical levels (3 = low/medium/high)")
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--exclude_features", default="",
+                        help="Comma-separated feature names to drop before "
+                             "fitting (used to reproduce earlier versions of "
+                             "the tree).")
     parser.add_argument("--target_col", default="winner",
                         help="Label column: 'winner' (best interval within a "
                              "fixed budget) or 'gt_winner' (first to reach the "
@@ -504,6 +508,11 @@ def main():
 
     # Build abstract feature dataframe
     X_cat, thresholds, bins_numeric = build_abstract_dataframe(df, args.n_bins)
+    drop = [c.strip() for c in args.exclude_features.split(",") if c.strip()]
+    if drop:
+        present = [c for c in drop if c in X_cat.columns]
+        X_cat = X_cat.drop(columns=present)
+        print(f"  Excluded features: {present}")
     print(f"\nAbstract features: {X_cat.shape[1]}")
 
     X, encoders = encode_for_sklearn(X_cat)
