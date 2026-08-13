@@ -1,0 +1,90 @@
+=== Heuristic vs classic, within the method the abstract tree recommends ===
+
+Queries evaluated : 678
+Time cap per run  : 300 s
+
+Paired design: both modes run on the same query, so the delta is per-query.
+
+ALL QUERIES  (n=678)
+    base quality  : 0.8396 +/- 0.0129
+    heur quality  : 0.8614 +/- 0.0090
+    delta         : +0.0218 +/- 0.0151 (median -0.0000)
+    heuristic wins: 267/678 (39.4%), ties 3
+    both reached exact: 256 | median speedup 0.57x
+    reached exact : base 457/678, heuristic 257/678
+
+METHOD = programs  (heuristic: bn_marginal)  (n=284)
+    base quality  : 0.6367 +/- 0.0256
+    heur quality  : 0.8979 +/- 0.0052
+    delta         : +0.2612 +/- 0.0238 (median -0.0011)
+    heuristic wins: 139/284 (48.9%), ties 1
+    both reached exact: 1 | median speedup 0.47x
+    reached exact : base 96/284, heuristic 2/284
+
+METHOD = worlds  (heuristic: bn_centrality)  (n=394)
+    base quality  : 0.9859 +/- 0.0050
+    heur quality  : 0.8352 +/- 0.0149
+    delta         : -0.1507 +/- 0.0141 (median -0.0000)
+    heuristic wins: 128/394 (32.5%), ties 2
+    both reached exact: 255 | median speedup 0.57x
+    reached exact : base 361/394, heuristic 255/394
+
+LEAF abs_leaf_10  (method=worlds)  (n=100)
+    base quality  : 1.0000 +/- 0.0000
+    heur quality  : 1.0000 +/- 0.0000
+    delta         : -0.0000 +/- 0.0000 (median -0.0000)
+    heuristic wins: 46/100 (46.0%), ties 2
+    both reached exact: 100 | median speedup 0.34x
+    reached exact : base 100/100, heuristic 100/100
+
+LEAF abs_leaf_11  (method=programs)  (n=100)
+    base quality  : 0.7983 +/- 0.0385
+    heur quality  : 0.9516 +/- 0.0041
+    delta         : +0.1532 +/- 0.0387 (median -0.0170)
+    heuristic wins: 26/100 (26.0%), ties 0
+    reached exact : base 63/100, heuristic 0/100
+
+LEAF abs_leaf_13  (method=worlds)  (n=100)
+    base quality  : 0.9900 +/- 0.0072
+    heur quality  : 0.9665 +/- 0.0139
+    delta         : -0.0235 +/- 0.0114 (median -0.0000)
+    heuristic wins: 28/100 (28.0%), ties 0
+    both reached exact: 61 | median speedup 0.90x
+    reached exact : base 90/100, heuristic 61/100
+
+LEAF abs_leaf_14  (method=worlds)  (n=94)
+    base quality  : 1.0000 +/- 0.0000
+    heur quality  : 1.0000 +/- 0.0000
+    delta         : +0.0000 +/- 0.0000 (median +0.0000)
+    heuristic wins: 54/94 (57.4%), ties 0
+    both reached exact: 94 | median speedup 0.80x
+    reached exact : base 94/94, heuristic 94/94
+
+LEAF abs_leaf_3  (method=worlds)  (n=100)
+    base quality  : 0.9545 +/- 0.0180
+    heur quality  : 0.3842 +/- 0.0231
+    delta         : -0.5703 +/- 0.0240 (median -0.6940)
+    heuristic wins: 0/100 (0.0%), ties 0
+    reached exact : base 77/100, heuristic 0/100
+
+LEAF abs_leaf_4  (method=programs)  (n=83)
+    base quality  : 0.1102 +/- 0.0220
+    heur quality  : 0.8316 +/- 0.0087
+    delta         : +0.7213 +/- 0.0219 (median +0.7690)
+    heuristic wins: 83/83 (100.0%), ties 0
+    reached exact : base 0/83, heuristic 0/83
+
+LEAF abs_leaf_6  (method=programs)  (n=1)
+    base quality  : 1.0000 +/- nan
+    heur quality  : 0.6536 +/- nan
+    delta         : -0.3464 +/- nan (median -0.3464)
+    heuristic wins: 0/1 (0.0%), ties 0
+    reached exact : base 1/1, heuristic 0/1
+
+LEAF abs_leaf_7  (method=programs)  (n=100)
+    base quality  : 0.9083 +/- 0.0124
+    heur quality  : 0.9016 +/- 0.0090
+    delta         : -0.0067 +/- 0.0108 (median -0.0221)
+    heuristic wins: 30/100 (30.0%), ties 1
+    both reached exact: 1 | median speedup 0.47x
+    reached exact : base 32/100, heuristic 2/100
