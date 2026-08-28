@@ -1,0 +1,17 @@
+Traceback (most recent call last):
+  File "/Users/marioleiva/Documents/desarrollo/delp3Exp/sampling/leaf_heuristic_experiment.py", line 52, in <module>
+    from sampling.byProgramSampling import Programs      # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/marioleiva/Documents/desarrollo/delp3Exp/sampling/__init__.py", line 2, in <module>
+    from .byProgramSampling import *
+  File "/Users/marioleiva/Documents/desarrollo/delp3Exp/sampling/byProgramSampling.py", line 10, in <module>
+    from utils.utils import *
+  File "/Users/marioleiva/Documents/desarrollo/delp3Exp/utils/__init__.py", line 2, in <module>
+    from .utils import *
+  File "/Users/marioleiva/Documents/desarrollo/delp3Exp/utils/utils.py", line 8, in <module>
+    from probmodels.bn import BayesNetwork
+  File "/Users/marioleiva/Documents/desarrollo/delp3Exp/probmodels/__init__.py", line 2, in <module>
+    from .bn import BayesNetwork, create_random_dag
+  File "/Users/marioleiva/Documents/desarrollo/delp3Exp/probmodels/bn.py", line 6, in <module>
+    import pyAgrum as gum
+ModuleNotFoundError: No module named 'pyAgrum'

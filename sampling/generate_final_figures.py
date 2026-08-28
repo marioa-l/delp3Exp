@@ -63,23 +63,30 @@ def load(args):
 
     key = ["config", "model", "literal"]
     merged = val.merge(gt[key + ["pred_gt", "match_gt"]], on=key, how="inner")
+    if os.path.exists(args.final_csv):
+        fin = pd.read_csv(args.final_csv, sep=";")
+        merged = merged.merge(fin[key + ["pred_final", "match_final"]],
+                              on=key, how="inner")
     merged["pred_base"] = "worlds"
     merged["match_base"] = merged["gt_winner"] == "worlds"
     return merged
 
 
+COLOR_FINAL = "#7B1FA2"
+
 MODELS = [
     ("match_base", "pred_base", "Majority\nbaseline", COLOR_BASE),
-    ("match_abs",  "pred_abs_method", "Abstract tree\n(5-min label)", COLOR_ABSTRACT),
-    ("match_cmp",  "pred_cmp_method", "Comparison\ntree", COLOR_COMPARE),
-    ("match_gt",   "pred_gt", "Depth-1 tree\n(time-to-exact)", COLOR_GT),
+    ("match_abs",  "pred_abs_method", "Abstract\ntree\n(5-min)", COLOR_ABSTRACT),
+    ("match_cmp",  "pred_cmp_method", "Comparison\ntree\n(hand-written)", COLOR_COMPARE),
+    ("match_gt",   "pred_gt", "Binned tree\n(time-to-\nexact)", COLOR_GT),
+    ("match_final", "pred_final", "Comparison\ntree\n(time-to-exact)", COLOR_FINAL),
 ]
 
 
 def fig_model_comparison(df, out_path):
     """Overall accuracy plus per-class recall — accuracy alone hides the
     class imbalance, so recall on the minority class is shown beside it."""
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 5.2))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15.5, 5.6))
 
     labels = [m[2] for m in MODELS]
     colors = [m[3] for m in MODELS]
@@ -93,6 +100,7 @@ def fig_model_comparison(df, out_path):
     ax1.axhline(base, color=COLOR_BASE, lw=1.0, ls="--",
                 label=f"Baseline ({base:.3f})")
     ax1.set_ylim(0, 1.08)
+    ax1.tick_params(axis="x", labelsize=9)
     style_ax(ax1, ylabel="Accuracy",
              title=f"Overall accuracy  (n={len(df)})")
     ax1.legend(loc="lower right", fontsize=10, framealpha=0.9)
@@ -116,7 +124,7 @@ def fig_model_comparison(df, out_path):
         ax2.text(i + w / 2, wv + 0.012, f"{wv:.2f}", ha="center",
                  fontsize=10, fontname=FONT)
     ax2.set_xticks(x)
-    ax2.set_xticklabels(labels, fontsize=10, fontname=FONT)
+    ax2.set_xticklabels(labels, fontsize=9, fontname=FONT)
     ax2.set_ylim(0, 1.12)
     n_p = int((df["gt_winner"] == "programs").sum())
     n_w = int((df["gt_winner"] == "worlds").sum())
@@ -137,17 +145,19 @@ def fig_per_config(df, out_path):
         abs_=("match_abs", "mean"),
         cmp_=("match_cmp", "mean"),
         gt=("match_gt", "mean"),
+        fin=("match_final", "mean"),
     ).reset_index().sort_values("n", ascending=False)
 
     x = np.arange(len(grp))
-    w = 0.2
-    fig, ax = plt.subplots(figsize=(14, 5.4))
+    w = 0.165
+    fig, ax = plt.subplots(figsize=(15, 5.4))
     series = [("base", "Majority baseline", COLOR_BASE),
               ("abs_", "Abstract tree (5-min label)", COLOR_ABSTRACT),
-              ("cmp_", "Comparison tree", COLOR_COMPARE),
-              ("gt", "Depth-1 tree (time-to-exact)", COLOR_GT)]
+              ("cmp_", "Comparison tree (hand-written)", COLOR_COMPARE),
+              ("gt", "Binned tree (time-to-exact)", COLOR_GT),
+              ("fin", "Comparison tree (time-to-exact)", COLOR_FINAL)]
     for i, (col, lab, c) in enumerate(series):
-        off = (i - 1.5) * w
+        off = (i - 2.0) * w
         ax.bar(x + off, grp[col].values, w, label=lab, color=c,
                edgecolor="white")
 
@@ -256,6 +266,9 @@ def main():
                         default="results_tte/analysis/validation_tte_predictions.csv")
     parser.add_argument("--gt_csv",
                         default="results_tte/analysis/gt_tree_predictions.csv")
+    parser.add_argument("--final_csv",
+                        default="results_tte/analysis/"
+                                "final_tree_predictions.csv")
     parser.add_argument("--output_dir", default="results_tte/figures")
     args = parser.parse_args()
 

@@ -1,0 +1,315 @@
+"""
+Do the leaf-guided heuristics beat the plain sampler, and the earlier
+generic heuristics, on the method the tree recommends?
+
+For every selected query the comparison tree (final_tree.json) gives the
+recommended method and the branch that produced it. That method is then run
+three times under an identical time cap:
+
+    plain     mode="random"          uniform sampling, the baseline
+    generic   "bn_centrality" (W)    the earlier heuristics: they recompute
+              "bn_marginal"   (P)    their own state and ignore the branch
+    guided    "hub_strata"    (W)    the new leaf-guided heuristics, which
+              "usage_strata"  (P)    reuse attributes the tree already paid for
+
+The guided modes are H1/H2/H3 together: H1 (worlds) stratifies over the
+highest-degree BN variables, H2 (programs) stratifies over the EM variables
+the most annotations depend on, and H3 sets how many dimensions to stratify
+over from the relative size of the two sampling spaces
+(``hint_ratio = n_annots - em_var``), instead of a fixed constant.
+
+Every run carries ``stop_at_exact``, so one pass yields both metrics that
+matter: interval quality when time runs out, and time to reach the exact
+interval when it is reached at all. Solver calls are recorded too, since a
+heuristic that buys quality with extra solver work is not a win.
+
+Resumable (finished queries are skipped on restart), incremental, parallel.
+
+Writes to <output_dir>:
+    leaf_heuristic_results.csv
+    leaf_heuristic_summary.txt
+
+Usage:
+    python sampling/leaf_heuristic_experiment.py --n_per_leaf 40 \\
+        --time_limit 120 --workers 6
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+import time
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from pathlib import Path
+
+import pandas as pd
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.append(str(ROOT))
+
+from sampling.byProgramSampling import Programs      # noqa: E402
+from sampling.byWorldSampling import Worlds          # noqa: E402
+from sampling.final_tree import apply_plain          # noqa: E402
+
+# mode name per (method, family)
+MODES = {
+    "worlds":   {"plain": "random", "generic": "bn_centrality",
+                 "guided": "hub_strata"},
+    "programs": {"plain": "random", "generic": "bn_marginal",
+                 "guided": "usage_strata"},
+}
+FAMILIES = ["plain", "generic", "guided"]
+
+DEFAULT_ROOTS = [
+    "/Users/marioleiva/Documents/desarrollo/delp3e_models",
+    "/home/jupyter-mario.leiva.al@gma-57ad0/exp-delp3e",
+]
+
+COLUMNS = (["config", "model", "literal", "leaf", "method",
+            "exact_l", "exact_u", "time_limit", "hint_ratio"]
+           + [f"{f}_{m}" for f in FAMILIES
+              for m in ("l", "u", "quality", "time_to_exact", "delp_calls",
+                        "wall")]
+           + ["ok", "error"])
+
+
+def find_models_root(override):
+    if override and os.path.isdir(override):
+        return override
+    for r in DEFAULT_ROOTS:
+        if os.path.isdir(r):
+            return r
+    raise FileNotFoundError(f"Models root not found; tried {DEFAULT_ROOTS}")
+
+
+def quality(l, u, exact_l, exact_u):
+    rem = 1 - (exact_u - exact_l)
+    return float("nan") if rem <= 0 else (1 - (u - l)) / rem
+
+
+def _run(method, mode, model_path, save_dir, literal, cap, dgraph_path,
+         exact, epsilon, hint_ratio):
+    os.makedirs(save_dir, exist_ok=True)
+    stop = {literal: exact}
+    common = dict(percentile_samples=0, max_seconds=cap, mode=mode,
+                  stop_at_exact=stop, stop_epsilon=epsilon,
+                  hint_ratio=hint_ratio)
+    if method == "worlds":
+        s = Worlds(model_path, save_dir + "/")
+        s.utils.get_interest_lit = lambda: [literal]
+        s.start_sampling(source="random", info=f"_lh_w_{mode}",
+                         dgraph_path=dgraph_path, **common)
+    else:
+        s = Programs(model_path, save_dir + "/")
+        s.utils.get_interest_lit = lambda: [literal]
+        s.start_sampling(info=f"_lh_p_{mode}", **common)
+    st = s.results["status"].get(literal, {})
+    return (st.get("pyes", 0.0), 1 - st.get("pno", 0.0),
+            st.get("time_to_exact"), st.get("delp_calls", 0))
+
+
+def _worker(job):
+    (cfg, model, literal, leaf, method, model_path, dgraph_path, save_dir,
+     exact_l, exact_u, cap, epsilon, hint_ratio) = job
+    row = {"config": cfg, "model": model, "literal": literal, "leaf": leaf,
+           "method": method, "exact_l": exact_l, "exact_u": exact_u,
+           "time_limit": cap, "hint_ratio": hint_ratio, "error": ""}
+    try:
+        for fam in FAMILIES:
+            t0 = time.time()
+            l, u, tte, calls = _run(method, MODES[method][fam], model_path,
+                                    save_dir, literal, cap, dgraph_path,
+                                    (exact_l, exact_u), epsilon, hint_ratio)
+            row[f"{fam}_l"] = l
+            row[f"{fam}_u"] = u
+            row[f"{fam}_quality"] = quality(l, u, exact_l, exact_u)
+            row[f"{fam}_time_to_exact"] = tte
+            row[f"{fam}_delp_calls"] = calls
+            row[f"{fam}_wall"] = time.time() - t0
+        row["ok"] = True
+    except Exception as e:  # pragma: no cover
+        row["ok"] = False
+        row["error"] = str(e)
+    return row
+
+
+def _worker_safe(job):
+    try:
+        return _worker(job)
+    except Exception as e:  # pragma: no cover
+        return {"config": job[0], "model": job[1], "literal": job[2],
+                "leaf": job[3], "method": job[4], "ok": False, "error": str(e)}
+
+
+def already_done(csv_path):
+    if not os.path.exists(csv_path):
+        return set()
+    try:
+        d = pd.read_csv(csv_path, sep=";",
+                        usecols=["config", "model", "literal"])
+    except Exception:
+        return set()
+    return set(map(tuple, d.itertuples(index=False, name=None)))
+
+
+def build_jobs(args, models_root, csv_path):
+    df = pd.read_csv(args.input_csv, sep=";")
+    df = df.dropna(subset=["exact_l", "exact_u"])
+    df = df[(df["exact_u"] - df["exact_l"]) < 1.0]
+    if not args.include_unresolved:
+        df = df[df["gt_winner"].isin(["worlds", "programs"])]
+
+    tree = json.load(open(args.tree_json))["tree"]
+    preds = [apply_plain(tree, r) for r in df.to_dict("records")]
+    df = df.assign(method=[p[0] for p in preds],
+                   leaf=[" & ".join(p[1]) for p in preds])
+    print(f"Candidates: {len(df)} | "
+          f"{df.method.value_counts().to_dict()}")
+
+    picks = [g.sample(n=min(args.n_per_leaf, len(g)),
+                      random_state=args.seed)
+             for _, g in df.groupby("leaf")]
+    sel = pd.concat(picks, ignore_index=True)
+
+    done = already_done(csv_path)
+    if done:
+        before = len(sel)
+        sel = sel[[(r.config, r.model, r.literal) not in done
+                   for r in sel.itertuples()]]
+        print(f"Resuming: {before - len(sel)} of {before} already on disk")
+
+    jobs = []
+    for r in sel.itertuples():
+        mp = os.path.join(models_root, r.config, f"{r.model}.json")
+        if not os.path.exists(mp):
+            continue
+        # H3 input: how much bigger this method's space is than the other one,
+        # in log2 units. Positive means more coverage insurance is worthwhile.
+        ratio = float(r.n_annots) - float(r.em_var)
+        hint = ratio if r.method == "programs" else -ratio
+        jobs.append((r.config, r.model, r.literal, r.leaf, r.method, mp,
+                     os.path.join(args.dgraph_dir, r.config,
+                                  f"{r.model}_dgraph.json"),
+                     os.path.join(args.output_dir, "runs", r.config, r.model),
+                     float(r.exact_l), float(r.exact_u), args.time_limit,
+                     args.epsilon, hint))
+    return jobs, sel
+
+
+def write_summary(csv_path, out_path):
+    df = pd.read_csv(csv_path, sep=";")
+    df = df[df["ok"] == True]  # noqa: E712
+    if df.empty:
+        print("[warn] nothing to summarise")
+        return
+    L = ["=== Leaf-guided heuristics vs plain and generic ===", "",
+         f"Queries : {len(df)}",
+         f"Time cap: {int(df['time_limit'].iloc[0])} s per run, "
+         f"{len(FAMILIES)} runs per query", "",
+         "Paired: all modes run on the same query.", ""]
+
+    def block(title, g):
+        n = len(g)
+        L.append(f"{title}  (n={n})")
+        for fam in FAMILIES:
+            q = g[f"{fam}_quality"].dropna()
+            ex = g[f"{fam}_time_to_exact"].notna().sum()
+            calls = g[f"{fam}_delp_calls"].median()
+            sem = q.std(ddof=1) / max(len(q), 1) ** 0.5 if len(q) > 1 else 0
+            L.append(f"    {fam:<8s} quality {q.mean():.4f} +/- {sem:.4f}"
+                     f"   reached exact {ex:>4d}/{n}"
+                     f"   median solver calls {calls:>9.0f}")
+        for fam in ("generic", "guided"):
+            d = (g[f"{fam}_quality"] - g["plain_quality"]).dropna()
+            if len(d):
+                wins = int((d > 0).sum())
+                sem = d.std(ddof=1) / max(len(d), 1) ** 0.5
+                L.append(f"    {fam} - plain : mean {d.mean():+.4f} "
+                         f"+/- {sem:.4f}, median {d.median():+.4f}, "
+                         f"wins {wins}/{len(d)} ({wins/len(d):.1%})")
+        L.append("")
+
+    block("ALL QUERIES", df)
+    for method, g in df.groupby("method"):
+        block(f"METHOD = {method}", g)
+    for leaf, g in df.groupby("leaf"):
+        lab = leaf if len(leaf) < 70 else leaf[:67] + "..."
+        block(f"LEAF  {lab}", g)
+
+    with open(out_path, "w") as f:
+        f.write("\n".join(L))
+    print("\n".join(L[:34]))
+    print(f"\nWrote {out_path}")
+
+
+def main():
+    p = argparse.ArgumentParser()
+    p.add_argument("--input_csv", default="results_tte/all_results.csv")
+    p.add_argument("--tree_json",
+                   default="results_tte/analysis/final_tree.json")
+    p.add_argument("--output_dir", default="results_tte/leaf_heuristics")
+    p.add_argument("--models_root", default=None)
+    p.add_argument("--dgraph_dir", default="results/dgraphs")
+    p.add_argument("--n_per_leaf", type=int, default=40)
+    p.add_argument("--time_limit", type=int, default=120)
+    p.add_argument("--epsilon", type=float, default=1e-6)
+    p.add_argument("--workers", type=int, default=6)
+    p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--include_unresolved", action="store_true")
+    p.add_argument("--summary_only", action="store_true")
+    p.add_argument("--dry_run", action="store_true")
+    args = p.parse_args()
+
+    os.makedirs(args.output_dir, exist_ok=True)
+    csv_path = os.path.join(args.output_dir, "leaf_heuristic_results.csv")
+    sum_path = os.path.join(args.output_dir, "leaf_heuristic_summary.txt")
+
+    if args.summary_only:
+        write_summary(csv_path, sum_path)
+        return
+
+    models_root = find_models_root(args.models_root)
+    print(f"Models root: {models_root}\nTree: {args.tree_json}\n"
+          f"Cap: {args.time_limit}s x {len(FAMILIES)} runs/query | "
+          f"workers: {args.workers}\n")
+
+    jobs, sel = build_jobs(args, models_root, csv_path)
+    if not jobs:
+        print("Nothing left to run.")
+        if os.path.exists(csv_path):
+            write_summary(csv_path, sum_path)
+        return
+
+    print(f"\nJobs: {len(jobs)}")
+    print(sel.groupby(["method", "leaf"]).size().to_string())
+    worst = len(jobs) * len(FAMILIES) * args.time_limit / 3600 / max(args.workers, 1)
+    print(f"\nWorst case (every run hits the cap): {worst:.1f} h "
+          f"at {args.workers} workers")
+    if args.dry_run:
+        return
+
+    t0, n = time.time(), 0
+    with ProcessPoolExecutor(max_workers=args.workers) as exe:
+        futs = {exe.submit(_worker_safe, j): j for j in jobs}
+        for fut in as_completed(futs):
+            n += 1
+            row = fut.result()
+            header = not os.path.exists(csv_path)
+            pd.DataFrame([row]).reindex(columns=COLUMNS).to_csv(
+                csv_path, mode="a", header=header, index=False, sep=";")
+            g = row.get("guided_quality")
+            b = row.get("plain_quality")
+            delta = (f"{g - b:+.3f}" if isinstance(g, float)
+                     and isinstance(b, float) else "  n/a")
+            print(f"  [{n}/{len(jobs)}] {row['config']}/{row['model']} "
+                  f"{row['method']:<8s} guided-plain={delta} "
+                  f"({(time.time()-t0)/3600:.2f} h)", flush=True)
+
+    print(f"\nFinished in {(time.time()-t0)/3600:.2f} h")
+    write_summary(csv_path, sum_path)
+
+
+if __name__ == "__main__":
+    main()

@@ -70,6 +70,63 @@ class Programs:
         # to save programs id and bin
         self.local_n_programs = []
 
+    # ── Leaf-guided helpers (H2 usage strata, H3 adaptive depth) ────────────
+    def _annotation_vars(self) -> dict:
+        """
+        ``{annotation_index -> set(EM variable indices it references)}``,
+        read straight off the annotation strings. Tier-0 information: no BN
+        inference and no solver, just parsing what is already in the model.
+        """
+        out = {}
+        for pos, key in enumerate(self.utils.annotations):
+            text = str(self.utils.annotations[key])
+            out[pos] = {int(t) for t in re.findall(r"\d+", text)}
+        return out
+
+    def _high_leverage_vars(self, k: int) -> list:
+        """
+        H2: the EM variables worth covering systematically — the ones the
+        most annotations depend on.
+
+        The decision tree reaches the "sample programs" leaf through facts
+        about annotation structure (body size, connectors, rule-to-variable
+        ratio), which say that a few EM variables drive many rules. Fixing
+        those variables settles a large slice of the program space at once.
+
+        Stratifying over variables rather than over annotation bits is what
+        keeps the proposal sound: annotations share variables, so forcing
+        their truth values directly produces conjunctions no world satisfies,
+        and every such program burns a solver call for nothing.
+        """
+        usage = {}
+        for vs in self._annotation_vars().values():
+            for v in vs:
+                usage[v] = usage.get(v, 0) + 1
+        return sorted(usage, key=lambda v: -usage[v])[:k]
+
+    def _program_from_world(self, world: list) -> list:
+        """Annotation bit-vector induced by a full EM assignment."""
+        out = list(self.utils.prog_in_bin)
+        for pos, key in enumerate(self.utils.annotations):
+            if pos < len(out) and out[pos] == "x":
+                try:
+                    out[pos] = 1 if eval_annot(
+                        str(self.utils.annotations[key]), world) else 0
+                except Exception:
+                    out[pos] = int(np.random.random() < 0.5)
+        return out
+
+    @staticmethod
+    def _adaptive_k(n_dims: int, hint_ratio: float = None,
+                    k_max: int = 4) -> int:
+        """H3: stratification depth chosen from the size of the space."""
+        if n_dims <= 2:
+            return 0
+        k = int(min(k_max, max(1, round(np.log2(max(n_dims, 2)) - 1))))
+        if hint_ratio is not None and hint_ratio > 0:
+            k = int(min(k_max, k + 1))
+        return min(k, n_dims)
+
     # ── Heuristic P helpers ──────────────────────────────────────────────────
     def _compute_annotation_marginals(self):
         """
@@ -134,6 +191,8 @@ class Programs:
         mode: str = "random",
         stop_at_exact: dict = None,
         stop_epsilon: float = 1e-6,
+        strata_k: int = None,
+        hint_ratio: float = None,
     ) -> list:
         """
         `stop_at_exact` is an optional mapping ``{literal: (exact_l, exact_u)}``.
@@ -181,6 +240,20 @@ class Programs:
         if mode == "bn_marginal":
             annotation_marginals = self._compute_annotation_marginals()
 
+        # H2: EM variables to cover systematically, and the strata over them.
+        lever_vars, prog_strata = [], []
+        if mode == "usage_strata":
+            k = strata_k if strata_k is not None else self._adaptive_k(
+                self.utils.em_vars, hint_ratio)
+            lever_vars = self._high_leverage_vars(k)
+            if lever_vars:
+                prog_strata = [
+                    [(v, (s >> j) & 1) for j, v in enumerate(lever_vars)]
+                    for s in range(2 ** len(lever_vars))
+                ]
+            print(f"    [H2] stratifying over {len(lever_vars)} "
+                  f"high-leverage EM variables -> {len(prog_strata)} strata")
+
         if max_seconds is not None:
             lit_to_query = self.utils.get_interest_lit()
             self.results["status"] = {lit: copy.copy(STATUS) for lit in lit_to_query}
@@ -210,6 +283,7 @@ class Programs:
                     mode, annotation_marginals,
                     stop_at_exact=exact_target,
                     stop_epsilon=stop_epsilon,
+                    prog_strata=prog_strata,
                 )
                 self.results["status"][lit]["time_to_exact"] = lit_time_to_exact
 
@@ -294,6 +368,7 @@ class Programs:
         annotation_marginals: dict = None,
         stop_at_exact: tuple = None,
         stop_epsilon: float = 1e-6,
+        prog_strata: list = None,
     ) -> tuple:
         """
         Iterate sampling programs until the time budget is exhausted.
@@ -321,7 +396,18 @@ class Programs:
 
             sampled_count += 1
 
-            if mode == "bn_marginal" and annotation_marginals is not None:
+            if mode == "usage_strata" and prog_strata:
+                # Round-robin over the configurations of the EM variables the
+                # annotations lean on most. The remaining variables are drawn
+                # at random and the annotations are then evaluated, so every
+                # proposed program is realisable by construction.
+                world = [int(np.random.random() < 0.5)
+                         for _ in range(self.utils.em_vars)]
+                for var, val in prog_strata[sampled_count % len(prog_strata)]:
+                    if var < len(world):
+                        world[var] = val
+                sampled_in_bin = self._program_from_world(world)
+            elif mode == "bn_marginal" and annotation_marginals is not None:
                 sampled_in_bin = self._sample_program_bin_from_marginals(
                     annotation_marginals)
             else:

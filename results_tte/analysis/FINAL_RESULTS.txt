@@ -1,105 +1,117 @@
-==========================================================================
-TIME-TO-EXACT GROUND TRUTH - FINAL RESULTS
-==========================================================================
+========================================================================
+DeLP3E SAMPLER RECOMMENDATION - FINAL RESULTS
+========================================================================
 
-Ground truth: for each query, both samplers run until they reach the
-exact interval or hit a safety cap. The winner is whichever reaches
-the exact interval first.
+Ground truth: both samplers run until one reaches the exact interval;
+the winner is whichever gets there first. This does not depend on a
+chosen timeout, unlike 'best interval within N seconds'.
 
 -- Dataset --
-  Total queries              : 2357
-  Resolved (used below)      : 1890
-  Unresolved (both hit cap)  : 467
-  Configurations             : 15
-  Distinct models            : 997
-
-  Caps applied: 900 s first pass; the 575 queries still unresolved
-  were re-run at 3600 s, which resolved 108 of them (18.8%).
-
-  Class balance: worlds 1687 (89.3%) | programs 203 (10.7%)
+  Total queries   : 2357
+  Resolved        : 1890
+  Unresolved      : 467 (neither reached exact within 3600 s)
+  Configurations  : 15   Models: 997
+  Class balance   : worlds 1687 (89.3%) | programs 203 (10.7%)
 
 -- Model comparison --
-  model                                        accuracy  rec:prog  rec:worlds
-  Majority baseline (always worlds)  0.8926 +/- 0.0071     0.000       1.000
-  Abstract tree (5-min budget label) 0.7836 +/- 0.0095     0.005       0.877
-  Comparison tree (hand-written)     0.9079 +/- 0.0067     0.645       0.940
-  Depth-1 tree (time-to-exact label) 0.9524 +/- 0.0049     0.842       0.966
+  model                                           accuracy  rec:prog  rec:worlds
+  Majority baseline (always worlds)      0.8926 +/- 0.0071     0.000       1.000
+  Abstract tree, binned (5-min label)    0.8503 +/- 0.0082     0.626       0.877
+  Comparison tree, hand-written          0.9079 +/- 0.0067     0.645       0.940
+  Binned tree (time-to-exact)            0.9524 +/- 0.0049     0.842       0.966
+  Comparison tree (time-to-exact)  <<    0.9550 +/- 0.0048     0.596       0.998
 
-  Accuracy standard errors are binomial. The depth-1 tree's number is
-  out-of-fold under GroupKFold(5) grouped by (config, model), so no
-  literal of a model appears in both train and test; across folds it
-  is 0.9524 +/- 0.0143 (std over folds).
+  Held-out numbers for the two time-to-exact trees are out-of-fold
+  under GroupKFold(5) grouped by (config, model): no literal of a
+  model is ever in both train and test.
+    Comparison tree : 0.9550 +/- 0.0116 (std over folds)
+    Binned tree     : 0.9524 +/- 0.0143
 
-  Accuracy alone is misleading here: the majority baseline already
-  scores 0.893. Recall on the minority class is the informative number.
+  TRADE-OFF worth stating out loud: the comparison tree has the best
+  accuracy but the WORSE minority recall (0.60 vs 0.84). It gets there
+  by leaning to the majority class - it never misses a 'worlds' case
+  (recall 1.00) but misses 40% of the 'programs' ones. If the cost of
+  running the wrong sampler is symmetric, the binned tree is the
+  better choice despite the lower headline accuracy.
 
--- The learned rule --
-  space_log_ratio = n_annots - em_var       (log2 of the ratio between
-                                             the program and world
-                                             sampling space sizes)
+-- The tree to present --
+  Every question compares two attributes; no numeric thresholds.
+  Questions whose two answers give the same recommendation were
+  removed (3 questions / 4 leaves -> 2 questions / 3 leaves), which
+  changes no answer at all.
 
-      space_log_ratio <= -8  ->  sample programs
-      space_log_ratio >  -8  ->  sample worlds
+      IF am_n_arguments < em_n_arcs:
+          IF em_entropy < n_annots:  -> WORLDS   (n=519,  purity 85%)
+          ELSE:                      -> PROGRAMS (n=127,  purity 98%)
+      ELSE:                          -> WORLDS   (n=1244, purity 100%)
 
-    ratio <= -8 (-> programs)    n=  229  purity=0.7467 +/- 0.0287
-    ratio >  -8 (-> worlds)      n= 1661  purity=0.9807 +/- 0.0034
+  Leave-one-config-out (weighted): 0.8286 - below the 0.8926 baseline,
+  so the tree does NOT transfer to a configuration it never saw. It
+  is validated for unseen models within known configurations only.
 
-  The -8 cut is not fitted on this data: the independent 5-minute
-  training set selects -8 on its own, and it transfers here unchanged.
+-- Attribute cost, and what it buys --
+  How each attribute is obtained, cheapest first:
+    tier 0  read straight off the model JSON (n_annots, n_rules, em_var, af_*)
+    tier 1  graph metrics over the BN DAG    (em_n_arcs, em_closeness_*, ...)
+    tier 2  BN inference / NP-hard           (em_entropy, em_treewidth)
+    tier 3  runs the DeLP solver             (am_* , incl. am_n_arguments)
+
+  Tier 3 is the expensive one: it launches the solver as a subprocess with a
+  900 s timeout — the very work the recommendation exists to avoid. Note the
+  first tree put am_n_arguments at the ROOT, so every query paid for it.
+
+  Tree variants (all validated the same way, GroupKFold by model):
+
+    attributes allowed          accuracy            structure
+    everything                  0.9550 +/- 0.0116   2 questions / 3 leaves
+    no DeLP solver              0.9524 +/- 0.0157   2 questions / 3 leaves
+    no BN inference             0.9360 +/- 0.0184   6 questions / 7 leaves
+    neither (tiers 0-1 only)    0.9413 +/- 0.0271   5 questions / 6 leaves
+
+  Dropping the solver costs almost nothing (0.9550 -> 0.9524): em_n_arcs
+  replaces am_n_arguments at the root and still splits 1190 queries at 100%
+  purity. Dropping entropy as well costs about 1.4 points and buys a richer
+  tree. The all-cheap tree is the one now saved as final_tree.pdf.
+
+  Caveat on that tree: its smallest leaf (n=77) sits at 55% purity, barely
+  better than a coin flip. The extra depth is not all signal.
 
 -- Per-configuration accuracy --
-  config       n  baseline  abstract  comparison  depth-1
-  sms        219     1.000     0.575       0.977    0.991
-  smm        211     0.720     0.720       0.735    0.692
-  mms        201     1.000     1.000       1.000    1.000
-  cms        184     1.000     1.000       1.000    1.000
-  sss        167     0.994     0.814       0.970    0.994
-  ssm        155     0.890     0.890       0.910    0.865
-  mss        121     1.000     1.000       1.000    1.000
-  scs        116     1.000     1.000       0.914    1.000
-  smc        114     0.000     0.000       0.991    1.000
-  mcs        109     1.000     1.000       1.000    1.000
-  ccs         98     1.000     1.000       1.000    1.000
-  css         98     1.000     1.000       1.000    1.000
-  scm         83     1.000     0.000       0.012    1.000
-  ssc         12     0.000     0.000       0.917    0.917
-  cmm          2     1.000     1.000       1.000    1.000
+  config       n  baseline  abstract  cmp-hand   binned  cmp-tte
+  sms        219     1.000     0.575     0.977    0.991    1.000
+  smm        211     0.720     0.720     0.735    0.692    0.706
+  mms        201     1.000     1.000     1.000    1.000    1.000
+  cms        184     1.000     1.000     1.000    1.000    1.000
+  sss        167     0.994     0.814     0.970    0.994    0.994
+  ssm        155     0.890     0.890     0.910    0.865    0.890
+  mss        121     1.000     1.000     1.000    1.000    1.000
+  scs        116     1.000     1.000     0.914    1.000    1.000
+  smc        114     0.000     1.000     0.991    1.000    0.965
+  mcs        109     1.000     1.000     1.000    1.000    1.000
+  ccs         98     1.000     1.000     1.000    1.000    1.000
+  css         98     1.000     1.000     1.000    1.000    1.000
+  scm         83     1.000     0.000     0.012    1.000    1.000
+  ssc         12     0.000     1.000     0.917    0.917    0.917
+  cmm          2     1.000     1.000     1.000    1.000    1.000
 
--- Where the depth-1 tree still fails --
-  smm: acc=0.692 (n=211), programs actually wins 28.0% of the time
-  ssm: acc=0.865 (n=155), programs actually wins 11.0% of the time
-  ssc: acc=0.917 (n=12), programs actually wins 100.0% of the time
-
-  These are the configurations where the winner is genuinely mixed;
-  a threshold on the space ratio cannot separate them.
-
--- Confusion matrices --
-  Abstract tree (5-min budget label)
+-- Confusion, comparison tree (time-to-exact) --
     predicted  programs  worlds
     actual                     
-    programs          1     202
-    worlds          207    1480
+    programs        121      82
+    worlds            3    1684
 
-  Comparison tree (hand-written)
-    predicted  programs  worlds
-    actual                     
-    programs        131      72
-    worlds          102    1585
+-- Heuristics (separate experiment, 678 queries, 300 s cap, paired) --
+  Adding a heuristic to the recommended method does NOT help overall:
+  median delta -0.000, heuristic wins 39.4% of queries.
+  Only one leaf improves (median +0.769, 100% wins); one degrades
+  badly (-0.694, 0% wins); the rest are neutral to slightly negative.
+  It also reaches the exact interval far less often: 456 -> 257.
+  Intervals stay sound: 0/678 failed to contain the exact interval.
 
-  Depth-1 tree (time-to-exact label)
-    predicted  programs  worlds
-    actual                     
-    programs        171      32
-    worlds           58    1629
-
--- Unresolved queries (excluded above) --
-  467 queries where neither sampler reached the exact interval
-  within 3600 s per method. Per configuration:
-    cmm     178 of  180 (98.9%)
-    ssc     143 of  155 (92.3%)
-    smc     103 of  217 (47.5%)
-    scm      43 of  126 (34.1%)
-
-  These concentrate in cmm (98.9% unresolved) and ssc (92.3%); they are
-  not near-misses. At the 900 s cap the median distance to the exact
-  interval was 0.85 (worlds) and 0.71 (programs) on a [0,1] scale.
+-- Artefacts --
+  Figure to present : results_tte/analysis/final_tree.pdf
+  Rules             : results_tte/analysis/final_tree_rules.txt
+  Model comparison  : results_tte/figures/final_model_comparison.pdf
+  Per configuration : results_tte/figures/final_per_config.pdf
+  Heuristics        : results_tte/figures/heuristic_overview.pdf
+  Portable model    : results_tte/analysis/final_tree.json

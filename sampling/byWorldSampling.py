@@ -23,6 +23,52 @@ class Worlds:
         # when a heuristic mode needs it).
         self._influence_cache = None
 
+    # ── Leaf-guided helpers (H1 hub strata, H3 adaptive depth) ───────────────
+    def _bn_degree_centrality(self):
+        """
+        Degree centrality of every EM variable, straight off the BN graph
+        (parents + children). This is tier-1 information: the decision tree
+        already consulted metrics derived from this same graph, so nothing
+        new is paid for here — no inference, no solver.
+
+        Returns a list of (var_index, centrality) sorted by centrality desc.
+        """
+        bn = self.utils.em.bn
+        try:
+            nodes = list(bn.nodes())
+        except Exception:
+            return []
+        n = max(len(nodes) - 1, 1)
+        scores = []
+        for i, node in enumerate(nodes):
+            try:
+                deg = len(bn.parents(node)) + len(bn.children(node))
+            except Exception:
+                deg = 0
+            scores.append((i, deg / n))
+        return sorted(scores, key=lambda t: -t[1])
+
+    @staticmethod
+    def _adaptive_k(n_dims: int, hint_ratio: float = None,
+                    k_max: int = 4) -> int:
+        """
+        H3: choose how many dimensions to stratify over from the size of the
+        space, instead of a fixed constant.
+
+        A tiny space needs no stratification (plain sampling covers it); a
+        large one benefits from guaranteeing coverage of the few dimensions
+        that matter most. ``hint_ratio`` is the log2 ratio between the two
+        sampling spaces when the caller already knows it.
+        """
+        if n_dims <= 2:
+            return 0
+        k = int(min(k_max, max(1, round(np.log2(max(n_dims, 2)) - 1))))
+        if hint_ratio is not None and hint_ratio > 0:
+            # The bigger this space is relative to the alternative, the more
+            # coverage insurance is worth buying.
+            k = int(min(k_max, k + 1))
+        return min(k, n_dims)
+
     # ── Heuristic W helpers ──────────────────────────────────────────────────
     def _load_influence_from_dgraph(self, dgraph_path: str):
         """
@@ -95,6 +141,8 @@ class Worlds:
         dgraph_path: str = None,
         stop_at_exact: dict = None,
         stop_epsilon: float = 1e-6,
+        strata_k: int = None,
+        hint_ratio: float = None,
     ) -> dict:
         """
         `stop_at_exact` is an optional mapping ``{literal: (exact_l, exact_u)}``.
@@ -110,6 +158,22 @@ class Worlds:
         unique_worlds = []
         repeated_worlds = 0
         history = {}
+
+        # H1: pick the hub variables to stratify over. Their centralities come
+        # from the BN graph the tree already looked at, so this costs nothing
+        # beyond a few counts.
+        hub_vars, strata = [], []
+        if mode == "hub_strata":
+            k = strata_k if strata_k is not None else self._adaptive_k(
+                self.utils.em_vars, hint_ratio)
+            hub_vars = [i for i, _ in self._bn_degree_centrality()[:k]]
+            if hub_vars:
+                strata = [
+                    [(v, (s >> j) & 1) for j, v in enumerate(hub_vars)]
+                    for s in range(2 ** len(hub_vars))
+                ]
+            print(f"    [H1] stratifying over {len(hub_vars)} hub variables "
+                  f"-> {len(strata)} strata")
 
         # If a heuristic mode was requested, prepare its state.
         if mode == "bn_centrality":
@@ -145,6 +209,7 @@ class Worlds:
                         n_worlds, lit, max_seconds, mode,
                         stop_at_exact=exact_target,
                         stop_epsilon=stop_epsilon,
+                        strata=strata,
                     )
                 )
                 self.results["status"][lit]["time_to_exact"] = lit_time_to_exact
@@ -208,6 +273,7 @@ class Worlds:
         mode: str = "random",
         stop_at_exact: tuple = None,
         stop_epsilon: float = 1e-6,
+        strata: list = None,
     ) -> tuple:
         """
         Iterate sampling worlds until the time budget is exhausted.
@@ -240,7 +306,32 @@ class Worlds:
 
             sampled_count += 1
 
-            if mode == "bn_centrality":
+            if mode == "hub_strata" and strata:
+                # Round-robin over hub configurations, so every combination of
+                # the most connected variables is covered early instead of
+                # being left to chance. The rest of the world is drawn from
+                # the BN, and the estimator still weights by the true world
+                # probability, so the bounds stay sound.
+                if not bn_buffer:
+                    try:
+                        unique_batch, _ = self.utils.em.gen_samples(BN_BATCH)
+                    except Exception:
+                        unique_batch = []
+                    bn_buffer.extend(unique_batch)
+                if bn_buffer:
+                    world = list(bn_buffer.pop(0)[0])
+                else:
+                    world = list(self.utils.id_world_to_bin(
+                        int(np.random.choice(n_worlds, 1)[0]))[0])
+                for var, val in strata[sampled_count % len(strata)]:
+                    if var < len(world):
+                        world[var] = val
+                world_key = tuple(world)
+                if world_key in sampled_ids:
+                    continue
+                sampled_ids.add(world_key)
+                evidence = {i: int(v) for i, v in enumerate(world)}
+            elif mode == "bn_centrality":
                 if not bn_buffer:
                     try:
                         unique_batch, _ = self.utils.em.gen_samples(BN_BATCH)

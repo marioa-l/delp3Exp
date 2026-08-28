@@ -1,0 +1,19 @@
+Recommendation rules — every question compares two attributes.
+Target: which sampler reaches the exact interval first.
+
+IF em_n_arcs < n_annots:
+    -> sample WORLDS  (n=1190, purity=100%, programs=0, worlds=1190)
+ELSE:
+    IF em_closeness_avg < em_deg_centrality_max:
+        -> sample WORLDS  (n=408, purity=90%, programs=41, worlds=367)
+    ELSE:
+        IF af_avg_body_size < em_max_in_degree:
+            IF em_n_arcs < n_rules:
+                IF af_avg_connectors < af_rule_to_var_ratio:
+                    -> sample WORLDS  (n=49, purity=80%, programs=10, worlds=39)
+                ELSE:
+                    -> sample PROGRAMS  (n=77, purity=55%, programs=42, worlds=35)
+            ELSE:
+                -> sample PROGRAMS  (n=109, purity=95%, programs=104, worlds=5)
+        ELSE:
+            -> sample WORLDS  (n=57, purity=89%, programs=6, worlds=51)

@@ -1,0 +1,67 @@
+{
+ "format": "comparison-tree-v1",
+ "target": "gt_winner",
+ "depth": 5,
+ "held_out_accuracy": 0.9412698412698413,
+ "tree": {
+  "kind": "node",
+  "a": "em_n_arcs",
+  "b": "n_annots",
+  "yes": {
+   "kind": "leaf",
+   "cls": "worlds",
+   "n_p": 0,
+   "n_w": 1190
+  },
+  "no": {
+   "kind": "node",
+   "a": "em_closeness_avg",
+   "b": "em_deg_centrality_max",
+   "yes": {
+    "kind": "leaf",
+    "cls": "worlds",
+    "n_p": 41,
+    "n_w": 367
+   },
+   "no": {
+    "kind": "node",
+    "a": "af_avg_body_size",
+    "b": "em_max_in_degree",
+    "yes": {
+     "kind": "node",
+     "a": "em_n_arcs",
+     "b": "n_rules",
+     "yes": {
+      "kind": "node",
+      "a": "af_avg_connectors",
+      "b": "af_rule_to_var_ratio",
+      "yes": {
+       "kind": "leaf",
+       "cls": "worlds",
+       "n_p": 10,
+       "n_w": 39
+      },
+      "no": {
+       "kind": "leaf",
+       "cls": "programs",
+       "n_p": 42,
+       "n_w": 35
+      }
+     },
+     "no": {
+      "kind": "leaf",
+      "cls": "programs",
+      "n_p": 104,
+      "n_w": 5
+     }
+    },
+    "no": {
+     "kind": "leaf",
+     "cls": "worlds",
+     "n_p": 6,
+     "n_w": 51
+    }
+   }
+  }
+ }
+}
