@@ -51,7 +51,27 @@ sys.path.append(str(ROOT))
 
 from sampling.byProgramSampling import Programs      # noqa: E402
 from sampling.byWorldSampling import Worlds          # noqa: E402
-from sampling.final_tree import apply_plain          # noqa: E402
+
+
+def apply_plain(node, row):
+    """
+    Walk the portable comparison tree for one feature dict; returns
+    (method, path).
+
+    Deliberately kept here instead of imported from final_tree, which pulls
+    in sklearn and matplotlib. Applying the tree needs neither, and the
+    cluster does not always carry a matching sklearn.
+    """
+    path = []
+    while node["kind"] != "leaf":
+        a, b = row.get(node["a"]), row.get(node["b"])
+        if a is None or b is None or pd.isna(a) or pd.isna(b):
+            went = False           # undecidable -> take the ELSE branch
+        else:
+            went = float(a) < float(b)
+        path.append(f"{node['a']} {'<' if went else '>='} {node['b']}")
+        node = node["yes"] if went else node["no"]
+    return node["cls"], path
 
 # mode name per (method, family)
 MODES = {
