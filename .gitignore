@@ -36,3 +36,22 @@ Docu/
 pruebas.py
 sampling/generate_feature_docs.py
 sampling/generate_new_feature_docs.py
+
+# Paper sources and figure sources (kept in Overleaf, not tracked here)
+KBS_Empirical_Analysis_of_Approximate_Query_Answering_over_Probabilistic_DeLP_Knowledge_Bases/
+images/
+main*.tex
+*.bib
+utils.tex
+# LaTeX build artefacts
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.lot
+*.out
+*.spl
+*.synctex.gz
+*.toc
