@@ -309,20 +309,17 @@ class Worlds:
             if mode == "hub_strata" and strata:
                 # Round-robin over hub configurations, so every combination of
                 # the most connected variables is covered early instead of
-                # being left to chance. The rest of the world is drawn from
-                # the BN, and the estimator still weights by the true world
-                # probability, so the bounds stay sound.
-                if not bn_buffer:
-                    try:
-                        unique_batch, _ = self.utils.em.gen_samples(BN_BATCH)
-                    except Exception:
-                        unique_batch = []
-                    bn_buffer.extend(unique_batch)
-                if bn_buffer:
-                    world = list(bn_buffer.pop(0)[0])
-                else:
-                    world = list(self.utils.id_world_to_bin(
-                        int(np.random.choice(n_worlds, 1)[0]))[0])
+                # being left to chance.
+                #
+                # The non-hub part is drawn UNIFORMLY, not from the BN. Closing
+                # the interval onto the exact bounds requires covering the
+                # space, and a BN-weighted proposal keeps redrawing the same
+                # high-probability worlds: the duplicate rate climbs and
+                # progress stalls well short of exact. Uniform draws keep the
+                # coverage behaviour of plain sampling and the stratification
+                # adds the guarantee on the variables that matter most.
+                world = list(self.utils.id_world_to_bin(
+                    int(np.random.choice(n_worlds, 1)[0]))[0])
                 for var, val in strata[sampled_count % len(strata)]:
                     if var < len(world):
                         world[var] = val

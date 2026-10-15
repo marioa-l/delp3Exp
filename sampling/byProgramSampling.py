@@ -77,11 +77,11 @@ class Programs:
         read straight off the annotation strings. Tier-0 information: no BN
         inference and no solver, just parsing what is already in the model.
         """
-        out = {}
-        for pos, key in enumerate(self.utils.annotations):
-            text = str(self.utils.annotations[key])
-            out[pos] = {int(t) for t in re.findall(r"\d+", text)}
-        return out
+        # The dict keys are the rule indices, i.e. the positions of "x" in
+        # prog_in_bin — not 0,1,2,... Keying by enumeration order instead
+        # silently writes each annotation's bit into the wrong slot.
+        return {key: {int(t) for t in re.findall(r"\d+", str(text))}
+                for key, text in self.utils.annotations.items()}
 
     def _high_leverage_vars(self, k: int) -> list:
         """
@@ -107,13 +107,12 @@ class Programs:
     def _program_from_world(self, world: list) -> list:
         """Annotation bit-vector induced by a full EM assignment."""
         out = list(self.utils.prog_in_bin)
-        for pos, key in enumerate(self.utils.annotations):
-            if pos < len(out) and out[pos] == "x":
+        for key, annot in self.utils.annotations.items():
+            if key < len(out) and out[key] == "x":
                 try:
-                    out[pos] = 1 if eval_annot(
-                        str(self.utils.annotations[key]), world) else 0
+                    out[key] = 1 if eval_annot(str(annot), world) else 0
                 except Exception:
-                    out[pos] = int(np.random.random() < 0.5)
+                    out[key] = int(np.random.random() < 0.5)
         return out
 
     @staticmethod
