@@ -1,0 +1,69 @@
+=== Leaf-guided heuristics vs plain and generic ===
+
+Queries : 483
+Time cap: 280 s per run, 3 runs per query
+
+Paired: all modes run on the same query.
+
+ALL QUERIES  (n=483)
+    plain    quality 0.9437 +/- 0.0088   reached exact  370/483   median solver calls      1024
+    generic  quality 0.8215 +/- 0.0127   reached exact  163/483   median solver calls      1951
+    guided   quality 0.9428 +/- 0.0084   reached exact  332/483   median solver calls      1024
+    generic - plain : mean -0.1223 +/- 0.0123, median -0.0077, wins 126/483 (26.1%)
+    guided - plain : mean -0.0010 +/- 0.0047, median -0.0000, wins 175/483 (36.2%)
+
+METHOD = programs  (n=177)
+    plain    quality 0.9289 +/- 0.0126   reached exact   86/177   median solver calls      1572
+    generic  quality 0.9481 +/- 0.0047   reached exact    4/177   median solver calls      3560
+    guided   quality 0.9287 +/- 0.0103   reached exact   48/177   median solver calls      1734
+    generic - plain : mean +0.0192 +/- 0.0130, median -0.0145, wins 45/177 (25.4%)
+    guided - plain : mean -0.0002 +/- 0.0113, median -0.0008, wins 40/177 (22.6%)
+
+METHOD = worlds  (n=306)
+    plain    quality 0.9523 +/- 0.0118   reached exact  284/306   median solver calls       530
+    generic  quality 0.7482 +/- 0.0186   reached exact  159/306   median solver calls       530
+    guided   quality 0.9509 +/- 0.0119   reached exact  284/306   median solver calls       530
+    generic - plain : mean -0.2041 +/- 0.0162, median -0.0000, wins 81/306 (26.5%)
+    guided - plain : mean -0.0014 +/- 0.0037, median -0.0000, wins 135/306 (44.1%)
+
+LEAF  em_n_arcs < n_annots  (n=100)
+    plain    quality 0.9422 +/- 0.0230   reached exact   93/100   median solver calls      3976
+    generic  quality 0.9410 +/- 0.0234   reached exact   92/100   median solver calls      3968
+    guided   quality 0.9451 +/- 0.0222   reached exact   94/100   median solver calls      3965
+    generic - plain : mean -0.0012 +/- 0.0006, median -0.0000, wins 43/100 (43.0%)
+    guided - plain : mean +0.0030 +/- 0.0040, median -0.0000, wins 43/100 (43.0%)
+
+LEAF  em_n_arcs >= n_annots & em_closeness_avg < em_deg_centrality_max  (n=100)
+    plain    quality 0.9426 +/- 0.0221   reached exact   89/100   median solver calls       278
+    generic  quality 0.6844 +/- 0.0333   reached exact   40/100   median solver calls       278
+    guided   quality 0.9415 +/- 0.0224   reached exact   89/100   median solver calls       278
+    generic - plain : mean -0.2583 +/- 0.0301, median -0.2110, wins 22/100 (22.0%)
+    guided - plain : mean -0.0011 +/- 0.0084, median -0.0000, wins 44/100 (44.0%)
+
+LEAF  em_n_arcs >= n_annots & em_closeness_avg >= em_deg_centrality_max &...  (n=49)
+    plain    quality 0.9770 +/- 0.0201   reached exact   47/49   median solver calls       512
+    generic  quality 0.5835 +/- 0.0420   reached exact    6/49   median solver calls       512
+    guided   quality 0.9643 +/- 0.0251   reached exact   47/49   median solver calls       512
+    generic - plain : mean -0.3935 +/- 0.0402, median -0.2843, wins 3/49 (6.1%)
+    guided - plain : mean -0.0127 +/- 0.0127, median -0.0000, wins 21/49 (42.9%)
+
+LEAF  em_n_arcs >= n_annots & em_closeness_avg >= em_deg_centrality_max &...  (n=77)
+    plain    quality 0.9028 +/- 0.0262   reached exact   45/77   median solver calls      1573
+    generic  quality 0.9649 +/- 0.0046   reached exact    0/77   median solver calls      4189
+    guided   quality 0.9500 +/- 0.0162   reached exact   29/77   median solver calls      2111
+    generic - plain : mean +0.0620 +/- 0.0265, median -0.0137, wins 20/77 (26.0%)
+    guided - plain : mean +0.0471 +/- 0.0211, median -0.0000, wins 25/77 (32.5%)
+
+LEAF  em_n_arcs >= n_annots & em_closeness_avg >= em_deg_centrality_max &...  (n=100)
+    plain    quality 0.9490 +/- 0.0091   reached exact   41/100   median solver calls      1555
+    generic  quality 0.9352 +/- 0.0072   reached exact    4/100   median solver calls      3102
+    guided   quality 0.9123 +/- 0.0130   reached exact   19/100   median solver calls      1506
+    generic - plain : mean -0.0138 +/- 0.0093, median -0.0158, wins 25/100 (25.0%)
+    guided - plain : mean -0.0367 +/- 0.0103, median -0.0040, wins 15/100 (15.0%)
+
+LEAF  em_n_arcs >= n_annots & em_closeness_avg >= em_deg_centrality_max &...  (n=57)
+    plain    quality 0.9659 +/- 0.0239   reached exact   55/57   median solver calls       333
+    generic  quality 0.6637 +/- 0.0426   reached exact   21/57   median solver calls       333
+    guided   quality 0.9658 +/- 0.0240   reached exact   54/57   median solver calls       333
+    generic - plain : mean -0.3022 +/- 0.0399, median -0.2637, wins 13/57 (22.8%)
+    guided - plain : mean -0.0000 +/- 0.0001, median -0.0000, wins 27/57 (47.4%)
