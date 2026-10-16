@@ -1,12 +1,14 @@
 """
-Do the leaf-guided heuristics beat the plain sampler, and the earlier
+Do the leaf-guided heuristics beat uniform sampling, and the earlier
 generic heuristics, on the method the tree recommends?
 
 For every selected query the comparison tree (final_tree.json) gives the
 recommended method and the branch that produced it. That method is then run
 three times under an identical time cap:
 
-    plain     mode="random"          uniform sampling, the baseline
+    random    mode="random"          uniform draws from the space: the trivial
+                                     definition of each sampler, and the
+                                     baseline the other two must beat
     generic   "bn_centrality" (W)    the earlier heuristics: they recompute
               "bn_marginal"   (P)    their own state and ignore the branch
     guided    "hub_strata"    (W)    the new leaf-guided heuristics, which
@@ -26,7 +28,10 @@ heuristic that buys quality with extra solver work is not a win.
 Resumable (finished queries are skipped on restart), incremental, parallel.
 
 Writes to <output_dir>:
-    leaf_heuristic_results.csv
+    leaf_heuristic_results.csv   one row per query, final state of each mode
+    leaf_heuristic_traces.csv    the interval over time, per query and mode,
+                                 resampled onto a grid that is dense over the
+                                 first seconds and coarse afterwards
     leaf_heuristic_summary.txt
 
 Usage:
@@ -74,18 +79,36 @@ def apply_plain(node, row):
     return node["cls"], path
 
 # mode name per (method, family)
+#   random  — the trivial definition of each sampler: draw uniformly from the
+#             space. Not the BN distribution, which would hand this family
+#             structural information the comparison is meant to isolate.
+#   generic — structural information about the models, independent of the tree.
+#   guided  — the attributes the tree already consulted on the branch that
+#             produced this recommendation.
 MODES = {
-    "worlds":   {"plain": "random", "generic": "bn_centrality",
+    "worlds":   {"random": "random", "generic": "bn_centrality",
                  "guided": "hub_strata"},
-    "programs": {"plain": "random", "generic": "bn_marginal",
+    "programs": {"random": "random", "generic": "bn_marginal",
                  "guided": "usage_strata"},
 }
-FAMILIES = ["plain", "generic", "guided"]
+FAMILIES = ["random", "generic", "guided"]
+
+# Convergence traces are resampled onto a fixed grid rather than kept per
+# sample: the interesting question is how fast the interval closes in the
+# first seconds, so the grid is dense early and coarse later.
+def trace_grid(cap):
+    g = [round(0.1 * i, 2) for i in range(1, 51)]          # 0.1 .. 5 s
+    g += [round(5 + 0.5 * i, 2) for i in range(1, 51)]     # 5.5 .. 30 s
+    g += [float(t) for t in range(32, int(cap) + 1, 2)]    # 32 .. cap
+    return [t for t in g if t <= cap]
 
 DEFAULT_ROOTS = [
     "/Users/marioleiva/Documents/desarrollo/delp3e_models",
     "/home/jupyter-mario.leiva.al@gma-57ad0/exp-delp3e",
 ]
+
+TRACE_COLUMNS = ["config", "model", "literal", "method", "family",
+                 "t", "n_samples", "delp_calls", "l", "u", "quality"]
 
 COLUMNS = (["config", "model", "literal", "leaf", "method",
             "exact_l", "exact_u", "time_limit", "hint_ratio"]
@@ -119,15 +142,40 @@ def _run(method, mode, model_path, save_dir, literal, cap, dgraph_path,
     if method == "worlds":
         s = Worlds(model_path, save_dir + "/")
         s.utils.get_interest_lit = lambda: [literal]
-        s.start_sampling(source="random", info=f"_lh_w_{mode}",
-                         dgraph_path=dgraph_path, **common)
+        hist = s.start_sampling(source="random", info=f"_lh_w_{mode}",
+                                dgraph_path=dgraph_path, **common)
     else:
         s = Programs(model_path, save_dir + "/")
         s.utils.get_interest_lit = lambda: [literal]
-        s.start_sampling(info=f"_lh_p_{mode}", **common)
+        hist = s.start_sampling(info=f"_lh_p_{mode}", **common)
     st = s.results["status"].get(literal, {})
     return (st.get("pyes", 0.0), 1 - st.get("pno", 0.0),
-            st.get("time_to_exact"), st.get("delp_calls", 0))
+            st.get("time_to_exact"), st.get("delp_calls", 0),
+            (hist or {}).get(literal, []))
+
+
+def resample(history, cap):
+    """
+    Step-sample the per-draw history onto the fixed grid: at each grid point,
+    report the state as of the last draw at or before it. Points before the
+    first draw are dropped, and the run's final state is carried to the end of
+    the grid only while the run was still going, so a run that stopped early
+    at the exact interval is not reported as still improving afterwards.
+    """
+    if not history:
+        return []
+    grid = trace_grid(cap)
+    out, i, last = [], 0, None
+    end = history[-1].get("time", 0.0)
+    for t in grid:
+        while i < len(history) and history[i].get("time", 0.0) <= t:
+            last = history[i]
+            i += 1
+        if last is None or t > end:
+            continue
+        out.append((t, last.get("calls", 0), last.get("l", 0.0),
+                    last.get("u", 1.0), i))
+    return out
 
 
 def _worker(job):
@@ -136,31 +184,36 @@ def _worker(job):
     row = {"config": cfg, "model": model, "literal": literal, "leaf": leaf,
            "method": method, "exact_l": exact_l, "exact_u": exact_u,
            "time_limit": cap, "hint_ratio": hint_ratio, "error": ""}
+    traces = []
     try:
         for fam in FAMILIES:
             t0 = time.time()
-            l, u, tte, calls = _run(method, MODES[method][fam], model_path,
-                                    save_dir, literal, cap, dgraph_path,
-                                    (exact_l, exact_u), epsilon, hint_ratio)
+            l, u, tte, calls, hist = _run(
+                method, MODES[method][fam], model_path, save_dir, literal,
+                cap, dgraph_path, (exact_l, exact_u), epsilon, hint_ratio)
             row[f"{fam}_l"] = l
             row[f"{fam}_u"] = u
             row[f"{fam}_quality"] = quality(l, u, exact_l, exact_u)
             row[f"{fam}_time_to_exact"] = tte
             row[f"{fam}_delp_calls"] = calls
             row[f"{fam}_wall"] = time.time() - t0
+            for t, c, tl, tu, n in resample(hist, cap):
+                traces.append((cfg, model, literal, method, fam, t, n, c,
+                               tl, tu, quality(tl, tu, exact_l, exact_u)))
         row["ok"] = True
     except Exception as e:  # pragma: no cover
         row["ok"] = False
         row["error"] = str(e)
-    return row
+    return row, traces
 
 
 def _worker_safe(job):
     try:
         return _worker(job)
     except Exception as e:  # pragma: no cover
-        return {"config": job[0], "model": job[1], "literal": job[2],
-                "leaf": job[3], "method": job[4], "ok": False, "error": str(e)}
+        return ({"config": job[0], "model": job[1], "literal": job[2],
+                 "leaf": job[3], "method": job[4], "ok": False,
+                 "error": str(e)}, [])
 
 
 def already_done(csv_path):
@@ -224,7 +277,7 @@ def write_summary(csv_path, out_path):
     if df.empty:
         print("[warn] nothing to summarise")
         return
-    L = ["=== Leaf-guided heuristics vs plain and generic ===", "",
+    L = ["=== Leaf-guided heuristics vs random and generic ===", "",
          f"Queries : {len(df)}",
          f"Time cap: {int(df['time_limit'].iloc[0])} s per run, "
          f"{len(FAMILIES)} runs per query", "",
@@ -242,11 +295,11 @@ def write_summary(csv_path, out_path):
                      f"   reached exact {ex:>4d}/{n}"
                      f"   median solver calls {calls:>9.0f}")
         for fam in ("generic", "guided"):
-            d = (g[f"{fam}_quality"] - g["plain_quality"]).dropna()
+            d = (g[f"{fam}_quality"] - g["random_quality"]).dropna()
             if len(d):
                 wins = int((d > 0).sum())
                 sem = d.std(ddof=1) / max(len(d), 1) ** 0.5
-                L.append(f"    {fam} - plain : mean {d.mean():+.4f} "
+                L.append(f"    {fam} - random: mean {d.mean():+.4f} "
                          f"+/- {sem:.4f}, median {d.median():+.4f}, "
                          f"wins {wins}/{len(d)} ({wins/len(d):.1%})")
         L.append("")
@@ -285,6 +338,7 @@ def main():
     os.makedirs(args.output_dir, exist_ok=True)
     csv_path = os.path.join(args.output_dir, "leaf_heuristic_results.csv")
     sum_path = os.path.join(args.output_dir, "leaf_heuristic_summary.txt")
+    trace_path = os.path.join(args.output_dir, "leaf_heuristic_traces.csv")
 
     if args.summary_only:
         write_summary(csv_path, sum_path)
@@ -315,16 +369,20 @@ def main():
         futs = {exe.submit(_worker_safe, j): j for j in jobs}
         for fut in as_completed(futs):
             n += 1
-            row = fut.result()
+            row, traces = fut.result()
             header = not os.path.exists(csv_path)
             pd.DataFrame([row]).reindex(columns=COLUMNS).to_csv(
                 csv_path, mode="a", header=header, index=False, sep=";")
+            if traces:
+                th = not os.path.exists(trace_path)
+                pd.DataFrame(traces, columns=TRACE_COLUMNS).to_csv(
+                    trace_path, mode="a", header=th, index=False, sep=";")
             g = row.get("guided_quality")
-            b = row.get("plain_quality")
+            b = row.get("random_quality")
             delta = (f"{g - b:+.3f}" if isinstance(g, float)
                      and isinstance(b, float) else "  n/a")
             print(f"  [{n}/{len(jobs)}] {row['config']}/{row['model']} "
-                  f"{row['method']:<8s} guided-plain={delta} "
+                  f"{row['method']:<8s} guided-random={delta} "
                   f"({(time.time()-t0)/3600:.2f} h)", flush=True)
 
     print(f"\nFinished in {(time.time()-t0)/3600:.2f} h")

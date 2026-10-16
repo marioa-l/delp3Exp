@@ -305,7 +305,7 @@ def draw(node, pos, ax, max_depth):
             ax.plot([x, cx], [-d - 0.16, -cd + 0.16], color="#777777",
                     lw=1.0, zorder=1)
             ax.text((x + cx) / 2 + dx, (-d - 0.16 + -cd + 0.16) / 2, label,
-                    fontsize=8.5, fontname=FONT, ha="center", va="center",
+                    fontsize=(8.5), fontname=FONT, ha="center", va="center",
                     color="#333333",
                     bbox=dict(facecolor="white", edgecolor="none",
                               alpha=0.9, pad=1.0))
@@ -323,7 +323,7 @@ def draw(node, pos, ax, max_depth):
                                     boxstyle="round,pad=0.02,rounding_size=0.05",
                                     fc=color, ec=EDGE, lw=1.3, zorder=2))
         ax.text(x, -d, txt, ha="center", va="center", color="white",
-                fontsize=8.5, fontname=FONT, zorder=3, linespacing=1.35)
+                fontsize=(8.5), fontname=FONT, zorder=3, linespacing=1.35)
     else:
         txt = f"{node['a']}\n<\n{node['b']}"
         w, h = 0.92, 0.32
@@ -332,12 +332,102 @@ def draw(node, pos, ax, max_depth):
                                     boxstyle="round,pad=0.02,rounding_size=0.05",
                                     fc=COLOR_NODE, ec=TIER_EDGE[tier],
                                     lw=2.0 if tier >= 2 else 1.3, zorder=2))
-        ax.text(x, -d, txt, ha="center", va="center", fontsize=8.5,
+        ax.text(x, -d, txt, ha="center", va="center", fontsize=(8.5),
                 fontname=FONT, zorder=3, linespacing=1.2)
         if tier >= 2:
             ax.text(x, -d - h / 2 - 0.045, TIER_NAMES[tier], ha="center",
-                    va="top", fontsize=7.5, fontname=FONT,
+                    va="top", fontsize=(7.5), fontname=FONT,
                     color=TIER_EDGE[tier])
+
+
+def cascade_rows(node, indent=0, rows=None):
+    """
+    Flatten the tree into an indented decision list.
+
+    A question whose branches mostly terminate reads better as a cascade than
+    as a spreading tree: the width then grows with the indent rather than with
+    the number of leaves, which is what lets the figure fit a single column at
+    a legible type size. Each row is (indent, kind, payload, branch_label).
+    """
+    if rows is None:
+        rows = []
+    if node["kind"] == "leaf":
+        rows.append((indent, "leaf", node, None))
+        return rows
+    rows.append((indent, "node", node, None))
+    for branch in ("yes", "no"):
+        child = node[branch]
+        if child["kind"] == "leaf":
+            rows.append((indent + 1, "leaf", child, branch))
+        else:
+            rows.append((indent + 1, "label", None, branch))
+            cascade_rows(child, indent + 1, rows)
+    return rows
+
+
+def figure_cascade(node, out_path, acc, acc_std, n, n_leaves, n_q,
+                   pruned_from):
+    rows = cascade_rows(node)
+    n_rows = len(rows)
+
+    # One data unit per row, and a figure height of ROW_IN inches per row, so
+    # that type set in points keeps a fixed size relative to the rows. The
+    # width is the column width, so \includegraphics[width=\columnwidth]
+    # neither enlarges nor shrinks the figure.
+    ROW_IN = 0.265
+    fig_w = 4.78
+    fig_h = n_rows * ROW_IN + 0.25
+    fig, ax = plt.subplots(figsize=(fig_w, fig_h))
+    ax.set_xlim(0, 1)
+    ax.set_ylim(-n_rows + 0.4, 1.0)
+    ax.axis("off")
+
+    dx = 0.055                       # indent step, axis fraction
+    for i, (indent, kind, payload, branch) in enumerate(rows):
+        y = -i
+        x = 0.015 + indent * dx
+
+        if kind == "label":
+            ax.text(x, y, f"{branch}:", fontsize=8, fontname=FONT,
+                    va="center", ha="left", color="#555555", style="italic")
+            continue
+
+        prefix = ""
+        if branch is not None:
+            prefix = f"{branch}: "
+
+        if kind == "node":
+            tier = payload.get(
+                "tier", pair_tier(f"{payload['a']}_LT_{payload['b']}"))
+            txt = f"{payload['a']} $<$ {payload['b']} ?"
+            ax.text(x, y, txt, fontsize=8.5, fontname=FONT, va="center",
+                    ha="left", color=inkish(tier),
+                    bbox=dict(boxstyle="round,pad=0.30", facecolor=COLOR_NODE,
+                              edgecolor=TIER_EDGE[tier],
+                              linewidth=1.6 if tier >= 2 else 1.0))
+        else:
+            total = payload["n_p"] + payload["n_w"]
+            purity = (max(payload["n_p"], payload["n_w"]) / total) if total else 0
+            color = (COLOR_WORLDS if payload["cls"] == "worlds"
+                     else COLOR_PROGRAMS)
+            txt = (f"{prefix}sample {payload['cls'].upper()}"
+                   f"   (n={total}, {purity:.0%})")
+            ax.text(x, y, txt, fontsize=8.5, fontname=FONT, va="center",
+                    ha="left", color="white",
+                    bbox=dict(boxstyle="round,pad=0.30", facecolor=color,
+                              edgecolor=EDGE, linewidth=1.0))
+
+    fig.tight_layout()
+    for ext in ("pdf", "png"):
+        p = out_path if ext == "pdf" else out_path[:-4] + ".png"
+        fig.savefig(p, format=ext, bbox_inches="tight",
+                    dpi=300 if ext == "png" else None)
+        print(f"  Saved: {p}")
+    plt.close(fig)
+
+
+def inkish(tier):
+    return TIER_EDGE[tier] if tier >= 2 else "#1B1D21"
 
 
 def figure(node, out_path, acc, acc_std, n, n_leaves, n_q, pruned_from):
@@ -354,14 +444,14 @@ def figure(node, out_path, acc, acc_std, n, n_leaves, n_q, pruned_from):
     ax.set_title(
         "Which sampler reaches the exact interval first\n"
         f"every question compares two attributes — no numeric thresholds",
-        fontsize=14, fontname=FONT, pad=10)
+        fontsize=(14), fontname=FONT, pad=10)
     ax.text(0.5, -0.02,
             f"held-out accuracy {acc:.3f} ± {acc_std:.3f}  "
             f"(n={n}, grouped by model)   ·   "
             f"{n_q} questions, {n_leaves} leaves "
             f"(pruned from {pruned_from})",
             transform=ax.transAxes, ha="center", va="top",
-            fontsize=10.5, fontname=FONT, color="#333333")
+            fontsize=(10.5), fontname=FONT, color="#333333")
     fig.tight_layout()
     fig.savefig(out_path, format="pdf", bbox_inches="tight")
     plt.close(fig)
@@ -413,6 +503,9 @@ def main():
                         "needs the DeLP solver.")
     p.add_argument("--ban_features", default="",
                    help="Comma-separated attribute names to forbid outright.")
+    p.add_argument("--cascade", action="store_true",
+                   help="Draw the tree as an indented decision list, which "
+                        "fits a single column at a legible size.")
     p.add_argument("--no_prune", action="store_true",
                    help="Keep questions whose two answers agree")
     args = p.parse_args()
@@ -539,8 +632,9 @@ def main():
     baseline = max((y == 1).mean(), (y == 0).mean())
 
     # ── Outputs ──────────────────────────────────────────────────────────
-    figure(tree, os.path.join(args.output_dir, "final_tree.pdf"),
-           acc, acc_std, len(df), l_after, q_after, l_before)
+    draw_fig = figure_cascade if args.cascade else figure
+    draw_fig(tree, os.path.join(args.output_dir, "final_tree.pdf"),
+             acc, acc_std, len(df), l_after, q_after, l_before)
 
     rules = "\n".join(rules_text(tree))
     with open(os.path.join(args.output_dir, "final_tree_rules.txt"), "w") as f:
