@@ -46,8 +46,10 @@ C_GENERIC = "#D55E00"
 C_GUIDED  = "#0072B2"
 C_OK      = "#27AE60"
 C_BAD     = "#C0392B"
-FAMS = [("plain", "plain", C_PLAIN),
-        ("generic", "generic", C_GENERIC),
+# generic is evaluated and reported in the text, but the figure contrasts the
+# two families the paper's question is about: uniform draws against draws
+# steered by the attributes the tree already consulted.
+FAMS = [("random", "random", C_PLAIN),
         ("guided", "guided", C_GUIDED)]
 
 
@@ -70,11 +72,11 @@ def panel_quality(ax, d):
     groups = [("all", d), ("worlds", d[d.method == "worlds"]),
               ("programs", d[d.method == "programs"])]
     x = np.arange(len(groups))
-    w = 0.26
+    w = 0.36
     for i, (key, lab, col) in enumerate(FAMS):
         vals = [g[f"{key}_quality"].mean() for _, g in groups]
         errs = [sem(g[f"{key}_quality"]) for _, g in groups]
-        off = (i - 1) * w
+        off = (i - 0.5) * w
         ax.bar(x + off, vals, w, yerr=errs, label=lab, color=col,
                edgecolor="white", error_kw=dict(lw=1.0, ecolor="#333333"))
     ax.set_xticks(x)
@@ -91,11 +93,11 @@ def panel_exact(ax, d):
     groups = [("all", d), ("worlds", d[d.method == "worlds"]),
               ("programs", d[d.method == "programs"])]
     x = np.arange(len(groups))
-    w = 0.26
+    w = 0.36
     for i, (key, lab, col) in enumerate(FAMS):
         fr = [g[f"{key}_time_to_exact"].notna().mean() for _, g in groups]
         cnt = [int(g[f"{key}_time_to_exact"].notna().sum()) for _, g in groups]
-        off = (i - 1) * w
+        off = (i - 0.5) * w
         ax.bar(x + off, fr, w, label=lab, color=col, edgecolor="white")
         for xi, v, c, (_, g) in zip(x + off, fr, cnt, groups):
             ax.text(xi, v + 0.02, str(c), ha="center", fontsize=5.5,
@@ -116,22 +118,22 @@ def panel_delta(ax, d):
     order = sorted(d.short.unique())
     pos = np.arange(len(order))
     w = 0.36
-    for i, (key, lab, col) in enumerate([FAMS[1], FAMS[2]]):
+    for i, (key, lab, col) in enumerate([("generic","generic",C_GENERIC), FAMS[1]]):
         meds, errs = [], []
         for s in order:
             g = d[d.short == s]
-            delta = (g[f"{key}_quality"] - g["plain_quality"]).dropna()
+            delta = (g[f"{key}_quality"] - g["random_quality"]).dropna()
             meds.append(delta.mean())
             errs.append(sem(delta))
         off = (i - 0.5) * w
-        ax.barh(pos + off, meds, w, xerr=errs, label=f"{lab} $-$ plain",
+        ax.barh(pos + off, meds, w, xerr=errs, label=f"{lab} $-$ random",
                 color=col, edgecolor="white",
                 error_kw=dict(lw=0.9, ecolor="#333333"))
     ax.axvline(0, color="black", lw=1.0, ls=":")
     ax.set_yticks(pos)
     ax.set_yticklabels([f"{s}  (n={len(d[d.short==s])})" for s in order],
                        fontsize=7, fontname=FONT)
-    style(ax, xlabel=r"mean quality delta vs plain",
+    style(ax, xlabel=r"mean quality delta vs random",
           title="C")
     ax.legend(loc="lower left", fontsize=10, framealpha=0.9)
 
@@ -159,7 +161,7 @@ def panel_calls(ax, d):
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--input_csv",
-                   default="results_tte/leaf_heuristics_v2/"
+                   default="results_tte/leaf_heuristics_v3/"
                            "leaf_heuristic_results.csv")
     p.add_argument("--output_dir", default="results_tte/figures")
     p.add_argument("--full", action="store_true",
@@ -190,11 +192,11 @@ def main():
         panel_exact(axes[1], d)
 
     # No suptitle: the caption carries the headline numbers.
-    gd = (d["guided_quality"] - d["plain_quality"]).dropna()
-    gn = (d["generic_quality"] - d["plain_quality"]).dropna()
-    print(f"  caption numbers -> guided-plain: median {gd.median():+.3f}, "
+    gd = (d["guided_quality"] - d["random_quality"]).dropna()
+    gn = (d["generic_quality"] - d["random_quality"]).dropna()
+    print(f"  caption numbers -> guided-random: median {gd.median():+.3f}, "
           f"mean {gd.mean():+.4f} +/- {sem(gd):.4f}")
-    print(f"                     generic-plain: median {gn.median():+.3f}, "
+    print(f"                     generic-random: median {gn.median():+.3f}, "
           f"mean {gn.mean():+.4f} +/- {sem(gn):.4f}")
     fig.tight_layout()
 

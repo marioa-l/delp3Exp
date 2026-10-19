@@ -89,7 +89,7 @@ MODES = {
     "worlds":   {"random": "random", "generic": "bn_centrality",
                  "guided": "hub_strata"},
     "programs": {"random": "random", "generic": "bn_marginal",
-                 "guided": "usage_strata"},
+                 "guided": "program_strata"},
 }
 FAMILIES = ["random", "generic", "guided"]
 
@@ -175,6 +175,13 @@ def resample(history, cap):
             continue
         out.append((t, last.get("calls", 0), last.get("l", 0.0),
                     last.get("u", 1.0), i))
+    # The run's final state, appended whatever the grid: a run that reaches the
+    # exact interval between two grid points would otherwise be recorded as
+    # still short of it, and that is precisely the moment of interest.
+    f = history[-1]
+    if not out or out[-1][0] < end:
+        out.append((end, f.get("calls", 0), f.get("l", 0.0),
+                    f.get("u", 1.0), len(history)))
     return out
 
 

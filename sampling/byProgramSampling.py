@@ -83,36 +83,45 @@ class Programs:
         return {key: {int(t) for t in re.findall(r"\d+", str(text))}
                 for key, text in self.utils.annotations.items()}
 
-    def _high_leverage_vars(self, k: int) -> list:
+    def _high_leverage_annots(self, k: int) -> list:
         """
-        H2: the EM variables worth covering systematically — the ones the
-        most annotations depend on.
+        H2: the annotation positions worth covering systematically.
 
-        The decision tree reaches the "sample programs" leaf through facts
-        about annotation structure (body size, connectors, rule-to-variable
-        ratio), which say that a few EM variables drive many rules. Fixing
-        those variables settles a large slice of the program space at once.
-
-        Stratifying over variables rather than over annotation bits is what
-        keeps the proposal sound: annotations share variables, so forcing
-        their truth values directly produces conjunctions no world satisfies,
-        and every such program burns a solver call for nothing.
+        An annotation scores high when it references EM variables that many
+        other annotations also depend on, so pinning its value down settles a
+        large slice of the program space. These are facts about annotation
+        structure, which is what the branch leading to a "sample programs"
+        leaf compares (body size, connectors, rule-to-variable ratio).
         """
+        avars = self._annotation_vars()
         usage = {}
-        for vs in self._annotation_vars().values():
+        for vs in avars.values():
             for v in vs:
                 usage[v] = usage.get(v, 0) + 1
-        return sorted(usage, key=lambda v: -usage[v])[:k]
+        score = {pos: sum(usage.get(v, 0) for v in vs)
+                 for pos, vs in avars.items()}
+        return sorted(score, key=lambda i: -score[i])[:k]
 
-    def _program_from_world(self, world: list) -> list:
-        """Annotation bit-vector induced by a full EM assignment."""
-        out = list(self.utils.prog_in_bin)
-        for key, annot in self.utils.annotations.items():
-            if key < len(out) and out[key] == "x":
-                try:
-                    out[key] = 1 if eval_annot(str(annot), world) else 0
-                except Exception:
-                    out[key] = int(np.random.random() < 0.5)
+    def _partition_programs(self, programs: list, positions: list) -> list:
+        """
+        Split the enumerated consistent programs into cells by the values the
+        chosen annotations take in them.
+
+        Partitioning the program space itself is what distinguishes this from
+        drawing a world and deriving its program: the latter visits programs
+        in proportion to how many worlds induce them, which over-samples the
+        few programs that already carry most of the mass and leaves the rest
+        of the space uncovered. Here every program keeps equal weight within
+        its cell, and the cells are visited in turn.
+        """
+        cells = {}
+        for pid in programs:
+            bits = self.utils.id_prog_to_bin(pid)
+            key = tuple(bits[p] if p < len(bits) else 0 for p in positions)
+            cells.setdefault(key, []).append(pid)
+        out = list(cells.values())
+        for c in out:
+            np.random.shuffle(c)
         return out
 
     @staticmethod
@@ -239,19 +248,17 @@ class Programs:
         if mode == "bn_marginal":
             annotation_marginals = self._compute_annotation_marginals()
 
-        # H2: EM variables to cover systematically, and the strata over them.
-        lever_vars, prog_strata = [], []
-        if mode == "usage_strata":
+        # H2: cells of the program space to cover systematically.
+        prog_cells, cell_pos = [], []
+        if mode == "program_strata":
             k = strata_k if strata_k is not None else self._adaptive_k(
-                self.utils.em_vars, hint_ratio)
-            lever_vars = self._high_leverage_vars(k)
-            if lever_vars:
-                prog_strata = [
-                    [(v, (s >> j) & 1) for j, v in enumerate(lever_vars)]
-                    for s in range(2 ** len(lever_vars))
-                ]
-            print(f"    [H2] stratifying over {len(lever_vars)} "
-                  f"high-leverage EM variables -> {len(prog_strata)} strata")
+                self.utils.n_annots, hint_ratio)
+            cell_pos = self._high_leverage_annots(k)
+            if cell_pos:
+                prog_cells = self._partition_programs(
+                    self.local_n_programs, cell_pos)
+            print(f"    [H2] {len(self.local_n_programs)} programs split by "
+                  f"{len(cell_pos)} annotations -> {len(prog_cells)} cells")
 
         if max_seconds is not None:
             lit_to_query = self.utils.get_interest_lit()
@@ -282,7 +289,7 @@ class Programs:
                     mode, annotation_marginals,
                     stop_at_exact=exact_target,
                     stop_epsilon=stop_epsilon,
-                    prog_strata=prog_strata,
+                    prog_cells=prog_cells,
                 )
                 self.results["status"][lit]["time_to_exact"] = lit_time_to_exact
 
@@ -367,7 +374,7 @@ class Programs:
         annotation_marginals: dict = None,
         stop_at_exact: tuple = None,
         stop_epsilon: float = 1e-6,
-        prog_strata: list = None,
+        prog_cells: list = None,
     ) -> tuple:
         """
         Iterate sampling programs until the time budget is exhausted.
@@ -379,6 +386,10 @@ class Programs:
                              marginal, then reject the candidate before
                              the solver call if it contains a direct
                              strict contradiction (Heuristic P).
+            "program_strata" — partition the enumerated programs by the
+                             annotations with the most structural leverage and
+                             visit the cells in turn, drawing uniformly without
+                             replacement inside each (Heuristic H2).
         """
         initial_time = time.time()
         lit_history = []
@@ -386,6 +397,9 @@ class Programs:
         inconsistent_programs = 0
         prefiltered = 0
         sampled_count = 0
+        cell_cursor = 0          # round-robin position over the program cells
+        pool = list(programs)    # drawn from without replacement by "random"
+        np.random.shuffle(pool)
         time_to_exact = None
 
         while True:
@@ -395,22 +409,32 @@ class Programs:
 
             sampled_count += 1
 
-            if mode == "usage_strata" and prog_strata:
-                # Round-robin over the configurations of the EM variables the
-                # annotations lean on most. The remaining variables are drawn
-                # at random and the annotations are then evaluated, so every
-                # proposed program is realisable by construction.
-                world = [int(np.random.random() < 0.5)
-                         for _ in range(self.utils.em_vars)]
-                for var, val in prog_strata[sampled_count % len(prog_strata)]:
-                    if var < len(world):
-                        world[var] = val
-                sampled_in_bin = self._program_from_world(world)
+            if mode == "program_strata" and prog_cells:
+                # Round-robin over the cells, drawing uniformly without
+                # replacement inside the current one. Every program keeps
+                # equal weight within its cell, so the estimator is unchanged;
+                # what the cells add is even coverage of the partition.
+                cell = None
+                for off in range(len(prog_cells)):
+                    c = prog_cells[(cell_cursor + off) % len(prog_cells)]
+                    if c:
+                        cell, cell_cursor = c, (cell_cursor + off + 1) % len(prog_cells)
+                        break
+                if cell is None:
+                    break                      # every cell exhausted
+                sampled_prog = cell.pop()
+                sampled_in_bin = self.utils.id_prog_to_bin(sampled_prog)
             elif mode == "bn_marginal" and annotation_marginals is not None:
                 sampled_in_bin = self._sample_program_bin_from_marginals(
                     annotation_marginals)
             else:
-                sampled_prog = np.random.choice(programs, 1, replace=True)[0]
+                # Without replacement. The program space is enumerated and
+                # finite, and re-drawing a program already queried costs a
+                # solver call that cannot move the interval: its scenarios are
+                # in known_evidences and contribute no further probability.
+                if not pool:
+                    break                      # space exhausted
+                sampled_prog = pool.pop()
                 sampled_in_bin = self.utils.id_prog_to_bin(sampled_prog)
 
             expression = ""
