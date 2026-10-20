@@ -60,10 +60,17 @@ def parse_file(path):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--roots", default="results_tte,results_tte_long",
-                        help="Comma-separated result roots to merge. Later "
-                             "roots do not take priority by position — the "
-                             "largest safety_cap always wins.")
+                        help="Comma-separated result roots to merge. By "
+                             "default the largest safety_cap wins on a "
+                             "duplicate; see --supersede.")
     parser.add_argument("--out", default="results_tte/all_results.csv")
+    parser.add_argument("--supersede", action="store_true",
+                        help="Let later roots win on every duplicate, instead "
+                             "of the largest safety_cap. Use it when a later "
+                             "root recomputes queries the earlier one already "
+                             "holds at a larger cap -- a recomputation is "
+                             "newer evidence, however long the old run was "
+                             "given.")
     args = parser.parse_args()
 
     dfs = []
@@ -88,16 +95,23 @@ def main():
     for c in numeric_cols:
         merged[c] = pd.to_numeric(merged[c], errors="coerce")
 
-    # Keep the longest-cap attempt per query. sort_values is stable, so ties
-    # keep the first file read.
     before = len(merged)
-    merged = (merged.sort_values("safety_cap", kind="stable")
-                    .drop_duplicates(subset=["config", "model", "literal"],
-                                     keep="last")
-                    .reset_index(drop=True))
+    if args.supersede:
+        # Root order decides: the last root to hold a query wins.
+        merged = merged.drop_duplicates(subset=["config", "model", "literal"],
+                                        keep="last").reset_index(drop=True)
+        how = "superseded by a later root"
+    else:
+        # Keep the longest-cap attempt per query. sort_values is stable, so
+        # ties keep the first file read.
+        merged = (merged.sort_values("safety_cap", kind="stable")
+                        .drop_duplicates(subset=["config", "model", "literal"],
+                                         keep="last")
+                        .reset_index(drop=True))
+        how = "superseded by a longer re-run"
     dropped = before - len(merged)
     if dropped:
-        print(f"\nSuperseded by a longer re-run: {dropped} rows dropped")
+        print(f"\n{dropped} rows {how}")
 
     merged.to_csv(args.out, sep=";", index=False)
     print(f"\nWrote {args.out}")
