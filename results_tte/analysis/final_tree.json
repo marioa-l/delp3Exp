@@ -2,64 +2,97 @@
  "format": "comparison-tree-v1",
  "target": "gt_winner",
  "depth": 5,
- "held_out_accuracy": 0.9412698412698413,
+ "held_out_accuracy": 0.8385745491355656,
  "tree": {
   "kind": "node",
-  "a": "em_n_arcs",
+  "a": "em_var",
   "b": "n_annots",
   "yes": {
    "kind": "leaf",
    "cls": "worlds",
-   "n_p": 0,
-   "n_w": 1190
+   "n_p": 21,
+   "n_w": 1167
   },
   "no": {
    "kind": "node",
-   "a": "em_closeness_avg",
-   "b": "em_deg_centrality_max",
+   "a": "af_rule_to_var_ratio",
+   "b": "em_avg_in_degree",
    "yes": {
-    "kind": "leaf",
-    "cls": "worlds",
-    "n_p": 41,
-    "n_w": 367
-   },
-   "no": {
     "kind": "node",
-    "a": "af_avg_body_size",
-    "b": "em_max_in_degree",
+    "a": "af_avg_connectors",
+    "b": "em_avg_in_degree",
     "yes": {
+     "kind": "leaf",
+     "cls": "programs",
+     "n_p": 122,
+     "n_w": 0
+    },
+    "no": {
      "kind": "node",
-     "a": "em_n_arcs",
-     "b": "n_rules",
+     "a": "em_deg_centrality_std",
+     "b": "em_eigenvector_avg",
      "yes": {
+      "kind": "leaf",
+      "cls": "worlds",
+      "n_p": 27,
+      "n_w": 46
+     },
+     "no": {
       "kind": "node",
-      "a": "af_avg_connectors",
-      "b": "af_rule_to_var_ratio",
+      "a": "af_max_body_size",
+      "b": "af_max_var_usage",
       "yes": {
        "kind": "leaf",
        "cls": "worlds",
-       "n_p": 10,
-       "n_w": 39
+       "n_p": 27,
+       "n_w": 31
       },
       "no": {
        "kind": "leaf",
        "cls": "programs",
-       "n_p": 42,
-       "n_w": 35
+       "n_p": 78,
+       "n_w": 36
+      }
+     }
+    }
+   },
+   "no": {
+    "kind": "node",
+    "a": "em_avg_in_degree",
+    "b": "em_eigenvector_max",
+    "yes": {
+     "kind": "leaf",
+     "cls": "worlds",
+     "n_p": 25,
+     "n_w": 86
+    },
+    "no": {
+     "kind": "node",
+     "a": "af_avg_annot_vars",
+     "b": "af_avg_body_size",
+     "yes": {
+      "kind": "node",
+      "a": "af_avg_connectors",
+      "b": "em_clustering_coef",
+      "yes": {
+       "kind": "leaf",
+       "cls": "programs",
+       "n_p": 31,
+       "n_w": 20
+      },
+      "no": {
+       "kind": "leaf",
+       "cls": "worlds",
+       "n_p": 67,
+       "n_w": 124
       }
      },
      "no": {
       "kind": "leaf",
       "cls": "programs",
-      "n_p": 104,
-      "n_w": 5
+      "n_p": 25,
+      "n_w": 6
      }
-    },
-    "no": {
-     "kind": "leaf",
-     "cls": "worlds",
-     "n_p": 6,
-     "n_w": 51
     }
    }
   }

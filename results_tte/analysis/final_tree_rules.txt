@@ -1,19 +1,28 @@
 Recommendation rules — every question compares two attributes.
 Target: which sampler reaches the exact interval first.
 
-IF em_n_arcs < n_annots:
-    -> sample WORLDS  (n=1190, purity=100%, programs=0, worlds=1190)
+IF em_var < n_annots:
+    -> sample WORLDS  (n=1188, purity=98%, programs=21, worlds=1167)
 ELSE:
-    IF em_closeness_avg < em_deg_centrality_max:
-        -> sample WORLDS  (n=408, purity=90%, programs=41, worlds=367)
-    ELSE:
-        IF af_avg_body_size < em_max_in_degree:
-            IF em_n_arcs < n_rules:
-                IF af_avg_connectors < af_rule_to_var_ratio:
-                    -> sample WORLDS  (n=49, purity=80%, programs=10, worlds=39)
-                ELSE:
-                    -> sample PROGRAMS  (n=77, purity=55%, programs=42, worlds=35)
-            ELSE:
-                -> sample PROGRAMS  (n=109, purity=95%, programs=104, worlds=5)
+    IF af_rule_to_var_ratio < em_avg_in_degree:
+        IF af_avg_connectors < em_avg_in_degree:
+            -> sample PROGRAMS  (n=122, purity=100%, programs=122, worlds=0)
         ELSE:
-            -> sample WORLDS  (n=57, purity=89%, programs=6, worlds=51)
+            IF em_deg_centrality_std < em_eigenvector_avg:
+                -> sample WORLDS  (n=73, purity=63%, programs=27, worlds=46)
+            ELSE:
+                IF af_max_body_size < af_max_var_usage:
+                    -> sample WORLDS  (n=58, purity=53%, programs=27, worlds=31)
+                ELSE:
+                    -> sample PROGRAMS  (n=114, purity=68%, programs=78, worlds=36)
+    ELSE:
+        IF em_avg_in_degree < em_eigenvector_max:
+            -> sample WORLDS  (n=111, purity=77%, programs=25, worlds=86)
+        ELSE:
+            IF af_avg_annot_vars < af_avg_body_size:
+                IF af_avg_connectors < em_clustering_coef:
+                    -> sample PROGRAMS  (n=51, purity=61%, programs=31, worlds=20)
+                ELSE:
+                    -> sample WORLDS  (n=191, purity=65%, programs=67, worlds=124)
+            ELSE:
+                -> sample PROGRAMS  (n=31, purity=81%, programs=25, worlds=6)

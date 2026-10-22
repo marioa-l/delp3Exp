@@ -1,51 +1,59 @@
 === Comparison tree on the time-to-exact ground truth ===
 
-Rows            : 1890  (203 programs, 1687 worlds)
-Configurations  : 15
-Distinct models : 997
+Rows            : 1939  (423 programs, 1516 worlds)
+Configurations  : 14
+Distinct models : 1025
 Base features   : 41
 Comparisons kept: 290
 
-Held-out accuracy (GroupKFold by model) : 0.9413 +/- 0.0271
-Leave-one-config-out (weighted)         : 0.8952
-Majority baseline (always worlds)       : 0.8926
-In-sample accuracy of the shown tree    : 0.9487
+Held-out accuracy (GroupKFold by model) : 0.8386 +/- 0.0098
+Leave-one-config-out (weighted)         : 0.7803
+Majority baseline (always worlds)       : 0.7818
+In-sample accuracy of the shown tree    : 0.8819
 
-Structure: 13 questions / 14 leaves before pruning, 5 / 6 after.
+Structure: 16 questions / 17 leaves before pruning, 8 / 9 after.
 Pruning removes questions whose two answers give the same
 recommendation, so no answer changes — only the drawing shrinks.
 
 -- Leave-one-config-out detail --
   ccs      n=   98  acc=1.000
-  cmm      n=    2  acc=1.000
   cms      n=  184  acc=1.000
   css      n=   98  acc=1.000
   mcs      n=  109  acc=1.000
   mms      n=  201  acc=1.000
   mss      n=  121  acc=1.000
-  scm      n=   83  acc=0.964
-  scs      n=  116  acc=1.000
-  smc      n=  114  acc=0.456
-  smm      n=  211  acc=0.711
-  sms      n=  219  acc=0.941
-  ssc      n=   12  acc=0.083
-  ssm      n=  155  acc=0.729
-  sss      n=  167  acc=0.964
+  scm      n=  115  acc=0.991
+  scs      n=  116  acc=0.983
+  smc      n=  131  acc=0.290
+  smm      n=  211  acc=0.488
+  sms      n=  219  acc=0.594
+  ssc      n=   14  acc=0.214
+  ssm      n=  155  acc=0.477
+  sss      n=  167  acc=0.754
 
 -- Rules --
-IF em_n_arcs < n_annots:
-    -> sample WORLDS  (n=1190, purity=100%, programs=0, worlds=1190)
+IF em_var < n_annots:
+    -> sample WORLDS  (n=1188, purity=98%, programs=21, worlds=1167)
 ELSE:
-    IF em_closeness_avg < em_deg_centrality_max:
-        -> sample WORLDS  (n=408, purity=90%, programs=41, worlds=367)
-    ELSE:
-        IF af_avg_body_size < em_max_in_degree:
-            IF em_n_arcs < n_rules:
-                IF af_avg_connectors < af_rule_to_var_ratio:
-                    -> sample WORLDS  (n=49, purity=80%, programs=10, worlds=39)
-                ELSE:
-                    -> sample PROGRAMS  (n=77, purity=55%, programs=42, worlds=35)
-            ELSE:
-                -> sample PROGRAMS  (n=109, purity=95%, programs=104, worlds=5)
+    IF af_rule_to_var_ratio < em_avg_in_degree:
+        IF af_avg_connectors < em_avg_in_degree:
+            -> sample PROGRAMS  (n=122, purity=100%, programs=122, worlds=0)
         ELSE:
-            -> sample WORLDS  (n=57, purity=89%, programs=6, worlds=51)
+            IF em_deg_centrality_std < em_eigenvector_avg:
+                -> sample WORLDS  (n=73, purity=63%, programs=27, worlds=46)
+            ELSE:
+                IF af_max_body_size < af_max_var_usage:
+                    -> sample WORLDS  (n=58, purity=53%, programs=27, worlds=31)
+                ELSE:
+                    -> sample PROGRAMS  (n=114, purity=68%, programs=78, worlds=36)
+    ELSE:
+        IF em_avg_in_degree < em_eigenvector_max:
+            -> sample WORLDS  (n=111, purity=77%, programs=25, worlds=86)
+        ELSE:
+            IF af_avg_annot_vars < af_avg_body_size:
+                IF af_avg_connectors < em_clustering_coef:
+                    -> sample PROGRAMS  (n=51, purity=61%, programs=31, worlds=20)
+                ELSE:
+                    -> sample WORLDS  (n=191, purity=65%, programs=67, worlds=124)
+            ELSE:
+                -> sample PROGRAMS  (n=31, purity=81%, programs=25, worlds=6)
