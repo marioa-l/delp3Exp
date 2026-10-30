@@ -14,7 +14,7 @@ tighter interval while reaching the exact interval far less often, and a panel
 showing only quality would present that as an improvement.
 
 Reads:
-    results_tte/leaf_heuristics_v2/leaf_heuristic_results.csv
+    results_tte/leaf_heuristics_v4/leaf_heuristic_results.csv
 
 Writes PDF and PNG to --output_dir (default results_tte/figures/):
     leaf_heuristic_overview.{pdf,png}
@@ -161,7 +161,7 @@ def panel_calls(ax, d):
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--input_csv",
-                   default="results_tte/leaf_heuristics_v3/"
+                   default="results_tte/leaf_heuristics_v4/"
                            "leaf_heuristic_results.csv")
     p.add_argument("--output_dir", default="results_tte/figures")
     p.add_argument("--full", action="store_true",

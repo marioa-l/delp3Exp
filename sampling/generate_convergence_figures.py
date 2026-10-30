@@ -18,8 +18,8 @@ Two corrections matter for the curves to mean anything:
     still short of it.
 
 Reads:
-    results_tte/leaf_heuristics_v3/leaf_heuristic_traces.csv
-    results_tte/leaf_heuristics_v3/leaf_heuristic_results.csv
+    results_tte/leaf_heuristics_v4/leaf_heuristic_traces.csv
+    results_tte/leaf_heuristics_v4/leaf_heuristic_results.csv
 
 Writes PDF and PNG to --output_dir (default results_tte/figures/):
     convergence.{pdf,png}
@@ -114,7 +114,7 @@ def panel_delta(ax, m):
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument("--run_dir", default="results_tte/leaf_heuristics_v3")
+    p.add_argument("--run_dir", default="results_tte/leaf_heuristics_v4")
     p.add_argument("--output_dir", default="results_tte/figures")
     args = p.parse_args()
 
@@ -125,13 +125,15 @@ def main():
               os.path.join(args.run_dir, "leaf_heuristic_results.csv"))
     print(f"queries: {m.groupby(KEY).ngroups}  grid points: {m.t.nunique()}")
 
-    fig, axes = plt.subplots(1, 3, figsize=(4.79, 1.75))
+    # Two panels, not three. A paired-difference panel was useful while we
+    # believed there was an early advantage the overlapping curves hid; with
+    # the corrected baseline the difference is noise about zero, and drawing
+    # it invites reading a trend into bands that straddle zero throughout.
+    fig, axes = plt.subplots(1, 2, figsize=(4.79, 2.0))
     panel(axes[0], m[m.method == "worlds"], "worlds")
     panel(axes[1], m[m.method == "programs"], "programs")
-    panel_delta(axes[2], m)
-    axes[0].legend(loc="lower right", fontsize=5.5, framealpha=0.9)
-    for ax in axes[1:]:
-        ax.set_ylabel("")
+    axes[0].legend(loc="lower right", fontsize=6, framealpha=0.9)
+    axes[1].set_ylabel("")
     fig.tight_layout(pad=0.4)
 
     for ext in ("pdf", "png"):
