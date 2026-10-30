@@ -193,7 +193,11 @@ class Model:
         self.em = BayesNetwork(gbn(index_model), gdn(model_path))
         self.em.load_bn()
         self.save_path = save_path + gfn(model_path)[:-5]
-        self.to_bin_prog_format = "{0:0" + str(self.n_annots) + "b}"
+        # A program id carries one bit per RULE (see map_world_to_prog), so it
+        # must be padded to the rule count. Padding to n_annots dropped the
+        # leading zeros whenever the first rule was absent, and every bit was
+        # then read one rule off by the program sampler.
+        self.to_bin_prog_format = "{0:0" + str(self.am_rules_dim) + "b}"
         self.to_bin_world_format = "{0:0" + str(self.em_vars) + "b}"
 
     def get_n_worlds(self) -> int:

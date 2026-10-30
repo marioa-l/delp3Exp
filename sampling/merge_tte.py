@@ -23,6 +23,7 @@ import argparse
 import glob
 import os
 
+import numpy as np
 import pandas as pd
 
 # Column order as emitted by _run_one_model in time_to_exact_experiment.py.
@@ -97,9 +98,21 @@ def main():
 
     before = len(merged)
     if args.supersede:
-        # Root order decides: the last root to hold a query wins.
-        merged = merged.drop_duplicates(subset=["config", "model", "literal"],
-                                        keep="last").reset_index(drop=True)
+        # Root order decides, one method at a time: a later root overrides a
+        # method's columns only if it ran that method (its *_ok is set), so a
+        # programs-only re-run keeps the worlds half of the earlier row while
+        # a "did not reach" from the re-run still replaces an earlier time.
+        key = ["config", "model", "literal"]
+        merged = merged.replace("", np.nan)
+        out = merged[key + ["exact_l", "exact_u", "safety_cap"]
+                     ].drop_duplicates(key, keep="last")
+        for meth in ("worlds", "programs"):
+            cols = [c for c in FULL_COLUMNS if meth in c]
+            ran = merged[merged[f"{meth}_ok"].notna()]
+            out = out.merge(ran[key + cols].drop_duplicates(key, keep="last"),
+                            on=key, how="left")
+        out["ok"] = True
+        merged = out.reindex(columns=FULL_COLUMNS)
         how = "superseded by a later root"
     else:
         # Keep the longest-cap attempt per query. sort_values is stable, so
@@ -112,6 +125,14 @@ def main():
     dropped = before - len(merged)
     if dropped:
         print(f"\n{dropped} rows {how}")
+
+    # The winner is a function of the two times, so recompute it after the
+    # merge rather than trusting a value written when only one method ran.
+    tw, tp = merged["time_worlds"], merged["time_programs"]
+    merged["gt_winner"] = np.select(
+        [tw.notna() & tp.notna() & (tw < tp), tw.notna() & tp.notna(),
+         tw.notna(), tp.notna()],
+        ["worlds", "programs", "worlds", "programs"], default="unresolved")
 
     merged.to_csv(args.out, sep=";", index=False)
     print(f"\nWrote {args.out}")

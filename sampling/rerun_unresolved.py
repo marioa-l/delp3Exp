@@ -5,7 +5,17 @@ longer cap.
 
 Only the (config, model, literal) triples flagged ``gt_winner == unresolved``
 in the input CSV are re-executed, so the cost stays proportional to what is
-actually missing.
+actually missing. ``--all_queries`` lifts that filter, ``--models_csv``
+restricts to listed models and ``--methods`` runs a single sampler, which
+together re-run one half of the ground truth where a bug invalidated it:
+
+    python sampling/rerun_unresolved.py \\
+        --input_csv results_tte/all_results.csv \\
+        --all_queries --methods programs \\
+        --models_csv results_tte/bitshift_affected_models.csv \\
+        --cap 900 --workers 16 \\
+        --models_root /home/jupyter-mario.leiva.al@gma-57ad0/exp-delp3e \\
+        --output_root results_tte_bitshift
 
 Designed for a multi-day HPC run:
     - resumable: on restart, triples already present in the output CSVs are
@@ -62,7 +72,7 @@ FULL_COLUMNS = [
 def _run_one_model(job: tuple) -> list:
     """Re-run only the requested literals of a single model."""
     (cfg, model_name, model_path, exact_path,
-     save_dir, cap, dgraph_path, epsilon, literals) = job
+     save_dir, cap, dgraph_path, epsilon, literals, methods) = job
 
     try:
         targets = load_interest_targets(exact_path)
@@ -83,6 +93,8 @@ def _run_one_model(job: tuple) -> list:
 
         w_start = time.time()
         try:
+            if "worlds" not in methods:
+                raise StopIteration  # leave the worlds columns empty
             wsampler = Worlds(model_path, save_dir + "/")
             wsampler.utils.get_interest_lit = lambda: [lit]
             wsampler.start_sampling(
@@ -98,12 +110,16 @@ def _run_one_model(job: tuple) -> list:
             row["worlds_u"] = 1 - st.get("pno", 0.0)
             row["worlds_delp_calls"] = st.get("delp_calls", 0)
             row["worlds_ok"] = True
+        except StopIteration:
+            pass
         except Exception as e:
             row.update({"worlds_ok": False, "worlds_error": str(e),
                         "worlds_wall_time": time.time() - w_start})
 
         p_start = time.time()
         try:
+            if "programs" not in methods:
+                raise StopIteration
             psampler = Programs(model_path, save_dir + "/")
             psampler.utils.get_interest_lit = lambda: [lit]
             psampler.start_sampling(
@@ -119,10 +135,15 @@ def _run_one_model(job: tuple) -> list:
             row["programs_u"] = 1 - st.get("pno", 0.0)
             row["programs_delp_calls"] = st.get("delp_calls", 0)
             row["programs_ok"] = True
+        except StopIteration:
+            pass
         except Exception as e:
             row.update({"programs_ok": False, "programs_error": str(e),
                         "programs_wall_time": time.time() - p_start})
 
+        # With a single method the winner below is provisional; merge_tte.py
+        # recomputes it once the other method's columns are filled in from
+        # the earlier run.
         tw, tp = row.get("time_worlds"), row.get("time_programs")
         if tw is not None and tp is not None:
             row["gt_winner"] = "worlds" if tw < tp else "programs"
@@ -184,15 +205,31 @@ def main():
     parser.add_argument("--output_root", default="results_tte_long")
     parser.add_argument("--dry_run", action="store_true",
                         help="Report what would be run and exit")
+    parser.add_argument("--methods", default="worlds,programs",
+                        help="Which samplers to run (comma-separated). With "
+                             "one method the other's columns stay empty and "
+                             "merge_tte.py --supersede fills them from the "
+                             "earlier root.")
+    parser.add_argument("--all_queries", action="store_true",
+                        help="Run every query of --input_csv, not only the "
+                             "unresolved ones")
+    parser.add_argument("--models_csv", default=None,
+                        help="Restrict to the (config, model) pairs listed in "
+                             "this CSV")
     args = parser.parse_args()
 
+    methods = [m.strip() for m in args.methods.split(",") if m.strip()]
     models_root = find_models_root(args.models_root)
     df = pd.read_csv(args.input_csv, sep=";")
-    todo = df[df["gt_winner"] == "unresolved"][
-        ["config", "model", "literal"]].drop_duplicates()
+    if not args.all_queries:
+        df = df[df["gt_winner"] == "unresolved"]
+    todo = df[["config", "model", "literal"]].drop_duplicates()
     if args.configs:
         keep = {c.strip() for c in args.configs.split(",") if c.strip()}
         todo = todo[todo["config"].isin(keep)]
+    if args.models_csv:
+        sel = pd.read_csv(args.models_csv)[["config", "model"]].drop_duplicates()
+        todo = todo.merge(sel, on=["config", "model"])
 
     done = already_done(args.output_root)
     if done:
@@ -207,6 +244,7 @@ def main():
         return
 
     print(f"Models root : {models_root}")
+    print(f"Methods     : {methods}")
     print(f"Safety cap  : {args.cap}s ({args.cap/60:.0f} min) per sampler")
     print(f"Workers     : {args.workers}")
     print(f"Output root : {args.output_root}")
@@ -214,7 +252,7 @@ def main():
           f"{todo.groupby(['config','model']).ngroups} models")
     print(todo.groupby("config").size().to_string())
 
-    worst_h = len(todo) * 2 * args.cap / 3600 / max(args.workers, 1)
+    worst_h = len(todo) * len(methods) * args.cap / 3600 / max(args.workers, 1)
     print(f"\nWorst case (every run hits the cap): {worst_h:.1f} h "
           f"of wall time at {args.workers} workers")
 
@@ -236,6 +274,7 @@ def main():
             os.path.join(args.dgraph_dir, cfg, f"{model_name}_dgraph.json"),
             args.epsilon,
             grp["literal"].tolist(),
+            methods,
         ))
 
     for cfg in todo["config"].unique():
