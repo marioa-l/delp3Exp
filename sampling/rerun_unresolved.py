@@ -293,7 +293,9 @@ def main():
             if rows:
                 csv_path = os.path.join(args.output_root, cfg, f"{cfg}_tte.csv")
                 header = not os.path.exists(csv_path)
-                pd.DataFrame(rows)[FULL_COLUMNS].to_csv(
+                # reindex, not [], so the columns of a method that did not
+                # run come out empty instead of raising
+                pd.DataFrame(rows).reindex(columns=FULL_COLUMNS).to_csv(
                     csv_path, mode="a", header=header, index=False, sep=";")
                 for r in rows:
                     tally[r.get("gt_winner", "unresolved")] += 1
