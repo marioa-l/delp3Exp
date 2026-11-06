@@ -1,0 +1,78 @@
+=== Comparison tree on the time-to-exact ground truth ===
+
+Rows            : 2154  (846 programs, 1308 worlds)
+Configurations  : 15
+Distinct models : 1129
+Base features   : 41
+Comparisons kept: 293
+
+Held-out accuracy (GroupKFold by model) : 0.9206 +/- 0.0228
+Leave-one-config-out (weighted)         : 0.9025
+Majority baseline (always worlds)       : 0.6072
+In-sample accuracy of the shown tree    : 0.9378
+
+Structure: 14 questions / 15 leaves before pruning, 14 / 15 after.
+Pruning removes questions whose two answers give the same
+recommendation, so no answer changes — only the drawing shrinks.
+
+-- Leave-one-config-out detail --
+  ccs      n=   98  acc=1.000
+  cmm      n=    2  acc=1.000
+  cms      n=  184  acc=1.000
+  css      n=   98  acc=1.000
+  mcs      n=  109  acc=1.000
+  mms      n=  201  acc=1.000
+  mss      n=  121  acc=1.000
+  scm      n=  115  acc=1.000
+  scs      n=  116  acc=1.000
+  smc      n=  203  acc=1.000
+  smm      n=  211  acc=0.626
+  sms      n=  219  acc=0.598
+  ssc      n=  155  acc=1.000
+  ssm      n=  155  acc=0.955
+  sss      n=  167  acc=0.784
+
+-- Rules --
+IF em_var < n_annots:
+    IF af_avg_var_usage < em_max_in_degree:
+        IF af_pct_annotated < em_closeness_max:
+            IF em_betweenness_avg < em_clustering_coef:
+                -> sample WORLDS  (n=31, purity=84%, programs=5, worlds=26)
+            ELSE:
+                -> sample WORLDS  (n=25, purity=68%, programs=8, worlds=17)
+        ELSE:
+            IF af_pct_annotated < em_in_degree_gini:
+                -> sample WORLDS  (n=44, purity=89%, programs=5, worlds=39)
+            ELSE:
+                -> sample WORLDS  (n=41, purity=100%, programs=0, worlds=41)
+    ELSE:
+        IF af_avg_connectors < em_betweenness_avg:
+            -> sample WORLDS  (n=29, purity=97%, programs=1, worlds=28)
+        ELSE:
+            -> sample WORLDS  (n=1020, purity=100%, programs=0, worlds=1020)
+ELSE:
+    IF af_n_em_vars_used < em_n_arcs:
+        IF af_avg_connectors < em_avg_in_degree:
+            IF af_var_usage_gini < em_deg_centrality_avg:
+                IF af_max_body_size < em_avg_shortest_path:
+                    -> sample PROGRAMS  (n=29, purity=100%, programs=29, worlds=0)
+                ELSE:
+                    -> sample PROGRAMS  (n=26, purity=69%, programs=18, worlds=8)
+            ELSE:
+                IF em_closeness_avg < em_deg_centrality_max:
+                    -> sample PROGRAMS  (n=150, purity=95%, programs=143, worlds=7)
+                ELSE:
+                    -> sample PROGRAMS  (n=334, purity=100%, programs=334, worlds=0)
+        ELSE:
+            IF af_rule_to_var_ratio < em_avg_in_degree:
+                IF af_var_coverage < em_eigenvector_max:
+                    -> sample PROGRAMS  (n=204, purity=88%, programs=180, worlds=24)
+                ELSE:
+                    -> sample PROGRAMS  (n=37, purity=68%, programs=25, worlds=12)
+            ELSE:
+                IF af_var_usage_gini < em_deg_centrality_max:
+                    -> sample PROGRAMS  (n=123, purity=55%, programs=68, worlds=55)
+                ELSE:
+                    -> sample PROGRAMS  (n=25, purity=92%, programs=23, worlds=2)
+    ELSE:
+        -> sample WORLDS  (n=36, purity=81%, programs=7, worlds=29)

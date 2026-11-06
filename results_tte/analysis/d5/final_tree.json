@@ -1,0 +1,166 @@
+{
+ "format": "comparison-tree-v1",
+ "target": "gt_winner",
+ "depth": 5,
+ "held_out_accuracy": 0.9206021691037607,
+ "tree": {
+  "kind": "node",
+  "a": "em_var",
+  "b": "n_annots",
+  "yes": {
+   "kind": "node",
+   "a": "af_avg_var_usage",
+   "b": "em_max_in_degree",
+   "yes": {
+    "kind": "node",
+    "a": "af_pct_annotated",
+    "b": "em_closeness_max",
+    "yes": {
+     "kind": "node",
+     "a": "em_betweenness_avg",
+     "b": "em_clustering_coef",
+     "yes": {
+      "kind": "leaf",
+      "cls": "worlds",
+      "n_p": 5,
+      "n_w": 26
+     },
+     "no": {
+      "kind": "leaf",
+      "cls": "worlds",
+      "n_p": 8,
+      "n_w": 17
+     }
+    },
+    "no": {
+     "kind": "node",
+     "a": "af_pct_annotated",
+     "b": "em_in_degree_gini",
+     "yes": {
+      "kind": "leaf",
+      "cls": "worlds",
+      "n_p": 5,
+      "n_w": 39
+     },
+     "no": {
+      "kind": "leaf",
+      "cls": "worlds",
+      "n_p": 0,
+      "n_w": 41
+     }
+    }
+   },
+   "no": {
+    "kind": "node",
+    "a": "af_avg_connectors",
+    "b": "em_betweenness_avg",
+    "yes": {
+     "kind": "leaf",
+     "cls": "worlds",
+     "n_p": 1,
+     "n_w": 28
+    },
+    "no": {
+     "kind": "leaf",
+     "cls": "worlds",
+     "n_p": 0,
+     "n_w": 1020
+    }
+   }
+  },
+  "no": {
+   "kind": "node",
+   "a": "af_n_em_vars_used",
+   "b": "em_n_arcs",
+   "yes": {
+    "kind": "node",
+    "a": "af_avg_connectors",
+    "b": "em_avg_in_degree",
+    "yes": {
+     "kind": "node",
+     "a": "af_var_usage_gini",
+     "b": "em_deg_centrality_avg",
+     "yes": {
+      "kind": "node",
+      "a": "af_max_body_size",
+      "b": "em_avg_shortest_path",
+      "yes": {
+       "kind": "leaf",
+       "cls": "programs",
+       "n_p": 29,
+       "n_w": 0
+      },
+      "no": {
+       "kind": "leaf",
+       "cls": "programs",
+       "n_p": 18,
+       "n_w": 8
+      }
+     },
+     "no": {
+      "kind": "node",
+      "a": "em_closeness_avg",
+      "b": "em_deg_centrality_max",
+      "yes": {
+       "kind": "leaf",
+       "cls": "programs",
+       "n_p": 143,
+       "n_w": 7
+      },
+      "no": {
+       "kind": "leaf",
+       "cls": "programs",
+       "n_p": 334,
+       "n_w": 0
+      }
+     }
+    },
+    "no": {
+     "kind": "node",
+     "a": "af_rule_to_var_ratio",
+     "b": "em_avg_in_degree",
+     "yes": {
+      "kind": "node",
+      "a": "af_var_coverage",
+      "b": "em_eigenvector_max",
+      "yes": {
+       "kind": "leaf",
+       "cls": "programs",
+       "n_p": 180,
+       "n_w": 24
+      },
+      "no": {
+       "kind": "leaf",
+       "cls": "programs",
+       "n_p": 25,
+       "n_w": 12
+      }
+     },
+     "no": {
+      "kind": "node",
+      "a": "af_var_usage_gini",
+      "b": "em_deg_centrality_max",
+      "yes": {
+       "kind": "leaf",
+       "cls": "programs",
+       "n_p": 68,
+       "n_w": 55
+      },
+      "no": {
+       "kind": "leaf",
+       "cls": "programs",
+       "n_p": 23,
+       "n_w": 2
+      }
+     }
+    }
+   },
+   "no": {
+    "kind": "leaf",
+    "cls": "worlds",
+    "n_p": 7,
+    "n_w": 29
+   }
+  }
+ }
+}

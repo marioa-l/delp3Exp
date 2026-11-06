@@ -1,0 +1,39 @@
+=== Comparison tree on the time-to-exact ground truth ===
+
+Rows            : 2154  (846 programs, 1308 worlds)
+Configurations  : 15
+Distinct models : 1129
+Base features   : 41
+Comparisons kept: 293
+
+Held-out accuracy (GroupKFold by model) : 0.9257 +/- 0.0207
+Leave-one-config-out (weighted)         : 0.9248
+Majority baseline (always worlds)       : 0.6072
+In-sample accuracy of the shown tree    : 0.9276
+
+Structure: 1 questions / 2 leaves before pruning, 1 / 2 after.
+Pruning removes questions whose two answers give the same
+recommendation, so no answer changes — only the drawing shrinks.
+
+-- Leave-one-config-out detail --
+  ccs      n=   98  acc=1.000
+  cmm      n=    2  acc=1.000
+  cms      n=  184  acc=1.000
+  css      n=   98  acc=1.000
+  mcs      n=  109  acc=1.000
+  mms      n=  201  acc=1.000
+  mss      n=  121  acc=1.000
+  scm      n=  115  acc=0.957
+  scs      n=  116  acc=0.983
+  smc      n=  203  acc=1.000
+  smm      n=  211  acc=0.863
+  sms      n=  219  acc=0.598
+  ssc      n=  155  acc=1.000
+  ssm      n=  155  acc=0.987
+  sss      n=  167  acc=0.784
+
+-- Rules --
+IF em_var < n_annots:
+    -> sample WORLDS  (n=1190, purity=98%, programs=19, worlds=1171)
+ELSE:
+    -> sample PROGRAMS  (n=964, purity=86%, programs=827, worlds=137)

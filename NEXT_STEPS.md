@@ -84,23 +84,74 @@ only, same model list -- the input CSV must be the merged one:
     python sampling/merge_tte.py --supersede \
         --roots results_tte,results_tte_long,results_tte_fixed,results_tte_fixed_long,results_tte_bitshift,results_tte_bitshift_long
     python sampling/add_base_features.py --input_csv results_tte/all_results.csv
+    python sampling/enrich_dataset.py --input_csv results_tte/all_results.csv
 
-## Step 2 -- refit and revalidate the tree
+Both feature scripts are needed after every merge: the merge keeps only the
+result columns, `add_base_features` adds the 19 size/literal/AF attributes and
+`enrich_dataset` the 49 AM/EM/AF complexity and graph attributes (from the
+cache in `results/complexity_cache.json`). The tree sees 41 of the 68 with
+tiers 2-3 banned.
 
-    python sampling/final_tree.py --depth 5 --ban_tiers 2,3 --min_leaf 25 --cascade
+## Step 2 -- the final trees: depth 1, 3 and 5 (decided 2026-11-05)
 
-Reference, measured under the bug:
+Three trees are the final result, not one. Pruning is off, because it
+collapses every depth to the root question (no deeper question changes the
+recommendation); the deeper trees are kept for their leaves, whose purity and
+attributes are what the heuristics will read.
 
-| | current (biased) |
-|---|---|
-| held-out accuracy | 0.8386 +/- 0.0098 |
-| leave-one-config-out | 0.7803 |
-| majority baseline | 0.7818 |
-| class split | 1516 worlds / 423 programs / 418 unresolved |
+    for d in 1 3 5; do
+      python sampling/final_tree.py --depth $d --ban_tiers 2,3 --min_leaf 25 \
+          --cascade --no_prune --output_dir results_tte/analysis/d$d
+    done
 
-Expect the split to move a long way towards programs and the root question
-(`em_var < n_annots`) to change. Section 5 is written around the current
-questions.
+Then draw the three as editable slides (needs `pptxgenjs` on NODE_PATH, e.g.
+`npm install pptxgenjs` in any folder and `NODE_PATH=<folder>/node_modules`):
+
+    node sampling/trees_to_pptx.js results_tte/figures/final_trees.pptx \
+        results_tte/analysis/d1/final_tree.json \
+        results_tte/analysis/d3/final_tree.json \
+        results_tte/analysis/d5/final_tree.json
+
+### Final ground truth (2026-11-06)
+
+All six roots merged; the 3600 s programs-only re-run resolved 14 of the 88
+queries left open on affected models (8 smc, 6 ssc, all programs).
+
+| | worlds | programs | unresolved | total |
+|---|---|---|---|---|
+| final | 1308 | 846 | 203 (178 cmm, 14 smc, 11 scm) | 2357 |
+
+Of the 2154 resolved: both samplers reach the exact interval on 1206 (56%),
+only worlds on 590, only programs on 358. Where both reach, the slower takes
+a median 1.68x the faster, >2x in 41.3%, >10x in 6.6%.
+
+### Final trees, on that ground truth
+
+| depth | held-out (GroupKFold by model) | LOCO | in-sample | questions |
+|---|---|---|---|---|
+| 1 | 0.9257 +/- 0.0207 | 0.9248 | 0.9276 | 1 |
+| 3 | 0.9345 +/- 0.0212 | 0.9271 | 0.9378 | 6 |
+| 5 | 0.9206 +/- 0.0228 | 0.9025 | 0.9378 | 14 |
+| majority baseline | 0.6072 | | | |
+
+Outputs in `results_tte/analysis/d{1,3,5}/`, drawn in
+`results_tte/figures/final_trees.pptx`. Accuracy does not drop with depth;
+it is flat within one standard error. What changes is transfer: depth 5
+loses 2 points under LOCO.
+
+(On the 900 s ground truth the same trees gave 0.9238 / 0.9318 / 0.9271
+held-out with fold std ~0.005. The trees differ only in leaf counts and one
+depth-5 question, so the larger std is probably the GroupKFold assignment
+shifting with the added rows; not checked.) Under either
+root branch every leaf carries the same recommendation; the leaves differ in
+purity (55% to 100%), i.e. in how close the two algorithms are.
+
+Reference, measured under the bit-shift bug: held-out 0.8386, LOCO 0.7803,
+baseline 0.7818, split 1516 / 423 / 418.
+
+The heuristics are to be designed from the information in the depth-3 and
+depth-5 trees (which attributes a query's branch consulted, and the purity
+of its leaf), on top of the mass-based mechanisms below.
 
 ## Step 3 -- heuristics, redesigned
 

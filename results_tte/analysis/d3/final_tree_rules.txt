@@ -1,0 +1,22 @@
+Recommendation rules — every question compares two attributes.
+Target: which sampler reaches the exact interval first.
+
+IF em_var < n_annots:
+    IF af_avg_var_usage < em_max_in_degree:
+        IF af_pct_annotated < em_closeness_max:
+            -> sample WORLDS  (n=56, purity=77%, programs=13, worlds=43)
+        ELSE:
+            -> sample WORLDS  (n=85, purity=94%, programs=5, worlds=80)
+    ELSE:
+        IF af_avg_connectors < em_betweenness_avg:
+            -> sample WORLDS  (n=29, purity=97%, programs=1, worlds=28)
+        ELSE:
+            -> sample WORLDS  (n=1020, purity=100%, programs=0, worlds=1020)
+ELSE:
+    IF af_n_em_vars_used < em_n_arcs:
+        IF af_avg_connectors < em_avg_in_degree:
+            -> sample PROGRAMS  (n=539, purity=97%, programs=524, worlds=15)
+        ELSE:
+            -> sample PROGRAMS  (n=389, purity=76%, programs=296, worlds=93)
+    ELSE:
+        -> sample WORLDS  (n=36, purity=81%, programs=7, worlds=29)
