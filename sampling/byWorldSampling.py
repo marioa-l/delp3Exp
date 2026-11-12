@@ -11,6 +11,78 @@ from delp.consultDeLP import *
 from utils.utils import *
 
 
+class UniqueAncestral:
+    """
+    Ancestral sampling from the EM, without replacement.
+
+    Variables are drawn in topological order, each from its CPT given the
+    parents already drawn, so a world comes out with probability P(w), and
+    P(w) is the product of the CPT entries used: no inference, O(|E|) per
+    world. Plain ancestral sampling keeps redrawing the heavy worlds; here the
+    draws descend a trie over the topological order whose nodes hold, for
+    each branch, the probability mass not yet visited below it. A visited
+    world is removed by zeroing its leaf and re-summing its path, so every
+    draw is proportional to P(w) among the worlds not yet visited (the
+    UniqueRandomizer of Shi, Bieber and Sutton, 2020). Nothing is ever
+    enumerated: the trie only holds the paths of the worlds drawn so far.
+    """
+
+    def __init__(self, bn):
+        self.order = list(bn.topologicalOrder())
+        self.n = len(self.order)
+        self.parents, self.cpt = [], []
+        for v in self.order:
+            pot = bn.cpt(v)
+            # toarray() axes run in the reverse of pot.names
+            ids = [bn.idFromName(x) for x in reversed(pot.names)]
+            pa = [i for i in ids if i != v]
+            arr = np.transpose(pot.toarray(), [ids.index(i) for i in pa] + [ids.index(v)])
+            self.parents.append(pa)
+            self.cpt.append(arr)               # arr[parent values] = (P(v=0), P(v=1))
+        # Node i of the trie: rem[i, b] = unvisited mass below branch b,
+        # child[i, b] = index of the child node, -1 while not expanded.
+        self.rem = np.zeros((4096, 2))
+        self.child = np.full((4096, 2), -1, dtype=np.int32)
+        self.size = 0
+        self._new(1.0, 0, None)
+
+    def _new(self, mass, depth, world):
+        if self.size == len(self.rem):
+            self.rem = np.vstack([self.rem, np.zeros_like(self.rem)])
+            self.child = np.vstack([self.child, np.full_like(self.child, -1)])
+        pa = tuple(world[i] for i in self.parents[depth]) if world else ()
+        self.rem[self.size] = mass * self.cpt[depth][pa]
+        self.size += 1
+        return self.size - 1
+
+    def draw(self):
+        """Return (world, P(world)) for an unvisited world, or (None, 0.0)
+        once every world of positive mass has been visited."""
+        if self.rem[0].sum() <= 0:
+            return None, 0.0
+        world = [0] * self.n
+        node, path = 0, []
+        for depth, v in enumerate(self.order):
+            r0, r1 = self.rem[node]
+            b = 1 if np.random.random() * (r0 + r1) >= r0 else 0
+            if (r1 if b else r0) <= 0:
+                b = 1 - b
+            world[v] = b
+            path.append((node, b))
+            if depth == self.n - 1:
+                break
+            c = self.child[node, b]
+            if c < 0:
+                c = self._new(self.rem[node, b], depth + 1, world)
+                self.child[node, b] = c
+            node = c
+        prob = float(self.rem[node, b])
+        self.rem[node, b] = 0.0
+        for nd, bb in reversed(path[:-1]):
+            self.rem[nd, bb] = self.rem[self.child[nd, bb]].sum()
+        return world, prob
+
+
 class Worlds:
     def __init__(self, model_path: str, save_path: str):
         # Utils to handle model
@@ -279,13 +351,21 @@ class Worlds:
         Iterate sampling worlds until the time budget is exhausted.
         Two modes are supported:
             "random"        — the current uniform random sampling of world IDs.
+            "ancestral"     — ancestral sampling from the EM without
+                              replacement (UniqueAncestral): heavy worlds come
+                              first, P(w) comes from the CPTs, no repeats.
             "bn_centrality" — importance sampling: worlds are drawn directly
                               from the BN's joint distribution and accepted
                               proportionally to their argument-influence
                               score (Heuristic W). Each unique world is
                               still processed at most once; the influence
                               score modulates rejection so decisive worlds
-                              are visited first.
+                              are visited first. Broken in practice: under
+                              pyAgrum 1.15 em.gen_samples always raises
+                              (drawSamples returns a log-likelihood, not the
+                              samples), so every draw falls back to uniform
+                              and pays the failed call. Kept only so the v4
+                              results can be traced back to the code.
         """
         initial_time = time.time()
         lit_history = []
@@ -298,6 +378,8 @@ class Worlds:
         bn_buffer = []
         BN_BATCH = 200
         influence_norm = None  # highest observed influence, used to normalize
+        # Built inside the timed loop so its cost is charged to the run.
+        ancestral = UniqueAncestral(self.utils.em.bn) if mode == "ancestral" else None
 
         while True:
             current_time = time.time() - initial_time
@@ -305,8 +387,13 @@ class Worlds:
                 break
 
             sampled_count += 1
+            prob_world = None
 
-            if mode == "hub_strata" and strata:
+            if mode == "ancestral":
+                world, prob_world = ancestral.draw()
+                if world is None:
+                    break                      # every world of positive mass visited
+            elif mode == "hub_strata" and strata:
                 # Round-robin over hub configurations, so every combination of
                 # the most connected variables is covered early instead of
                 # being left to chance.
@@ -364,7 +451,8 @@ class Worlds:
                 sampled_ids.add(sampled_world)
                 world, evidence = self.utils.id_world_to_bin(sampled_world)
 
-            prob_world = self.utils.em.get_sampling_prob(evidence)
+            if prob_world is None:
+                prob_world = self.utils.em.get_sampling_prob(evidence)
             program, id_program = self.utils.map_world_to_prog(world)
 
             status = self.known_progs.search_sample(id_program)
@@ -390,6 +478,8 @@ class Worlds:
                     "calls": delp_calls,
                     "l": l_now,
                     "u": u_now,
+                    # probability mass of the worlds visited so far
+                    "mass": s["pyes"] + s["pno"] + s["pundecided"] + s["punknown"],
                 }
             )
             # Stop as soon as the running interval matches the exact one.

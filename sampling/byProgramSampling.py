@@ -216,7 +216,9 @@ class Programs:
         # local_n_programs = {}
         n_used_vars = len(self.used_vars)
         poss_prog_format = "{0:0" + str(n_used_vars) + "b}"
-        poss_asignations = pow(2, n_used_vars)
+        # Enumerated once per instance: a second call on the same model (a
+        # different mode or literal) reuses the list instead of redoing it.
+        poss_asignations = 0 if self.local_n_programs else pow(2, n_used_vars)
         counter = Counter(
             "Processing possible programs (%d): " % (poss_asignations),
             max=poss_asignations,
@@ -381,6 +383,8 @@ class Programs:
         Supported modes:
             "random"       — pick programs uniformly from the enumerated
                              list (current baseline).
+            "marginal_order" — the same list without replacement, in
+                             decreasing product of the annotation marginals.
             "bn_marginal"  — draw each rule's presence independently with
                              probability equal to its annotation's BN
                              marginal, then reject the candidate before
@@ -401,6 +405,19 @@ class Programs:
         pool = list(programs)    # drawn from without replacement by "random"
         np.random.shuffle(pool)
         time_to_exact = None
+        if mode == "marginal_order":
+            # Visit the enumerated programs in decreasing order of the product
+            # of their annotations' marginals, i.e. of the program's mass if
+            # the annotations were independent. One inference per annotation,
+            # not per program, and charged to the run's clock. The sort is
+            # stable over the shuffled pool, so ties are broken at random;
+            # pop() takes from the end, hence ascending order.
+            eps = 1e-12
+            logs = {j: (np.log(max(1 - m, eps)), np.log(max(m, eps)))
+                    for j, m in self._compute_annotation_marginals().items()}
+            pool.sort(key=lambda pid: sum(
+                logs[j][b] for j, b in enumerate(self.utils.id_prog_to_bin(pid))
+                if j in logs))
 
         while True:
             current_time = time.time() - initial_time
@@ -487,6 +504,8 @@ class Programs:
                     "calls": delp_calls,
                     "l": l_now,
                     "u": u_now,
+                    # probability mass of the programs visited so far
+                    "mass": s["pyes"] + s["pno"] + s["pundecided"] + s["punknown"],
                 }
             )
             # Stop as soon as the running interval matches the exact one.

@@ -16,6 +16,25 @@ and behave identically whichever leaf the query landed in.
 Both reintroduce exactly the computations the comparison tree was built to
 avoid, which is the main argument against them.
 
+`bn_centrality` never drew from the BN. Under pyAgrum 1.15
+`BNDatabaseGenerator.drawSamples` returns the log-likelihood of the draw, not
+the samples, so `em.gen_samples` raises on every call; the sampler catches it
+and falls back to a uniform draw, paying the failed call (0.34 ms) on every
+draw, repeats included. Its v4 numbers are uniform sampling made slower, not
+a heuristic. `bn_marginal` does not go through `gen_samples` and is not
+affected; it fails to close the interval because it samples with
+replacement.
+
+## Mass-based heuristics (v5)
+
+Both order the visits by probability mass while doing only polynomial work
+per sample: nothing computes P for the whole space up front.
+
+| mode | method | what it does |
+|---|---|---|
+| `ancestral` | worlds | Ancestral sampling from the EM in topological order, without replacement (`UniqueAncestral`): a trie over the order holds the unvisited mass below each branch, every draw is proportional to P(w) among the unvisited worlds, and P(w) is the product of the CPT entries drawn. O(\|E\|) per world, no inference, no repeats, ends when every world of positive mass has been visited. |
+| `marginal_order` | programs | The enumerated program list, visited without replacement in decreasing product of the annotation marginals (the program's mass if the annotations were independent). One inference per annotation, charged to the run's clock. |
+
 ## Leaf-guided heuristics (new)
 
 These reuse attributes the tree already consulted — tier 0 and tier 1 only,
@@ -80,6 +99,9 @@ start_sampling(..., mode="hub_strata" | "usage_strata",
                hint_ratio=None)      # log2 size ratio, positive = larger space
 ```
 
-`sampling/leaf_heuristic_experiment.py` runs plain, generic and guided modes
-back to back on the same queries and reports quality, time-to-exact and
-solver calls per tree leaf.
+`sampling/leaf_heuristic_experiment.py` (v5) runs four curves on every
+non-trivial query -- worlds and programs, each uniform and mass-guided -- and
+records the interval and the mass visited sample by sample, grouped by the
+leaves of the depth-3 and depth-5 trees. The v4 version (plain, generic and
+guided on the recommended method only, quality at the cap) is the one at
+commit c09fba70; its results are in `results_tte/leaf_heuristics_v4/`.

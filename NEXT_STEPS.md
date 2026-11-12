@@ -222,12 +222,44 @@ would be cheap summaries of mass concentration (e.g. the entropy of the
 annotation marginals, or the spread of the per-variable marginals), which say
 how much an order can buy rather than what the order is.
 
-### Check before implementing
+### Checked: `bn_centrality` never sampled from the EM (2026-11-12)
 
-`generic` on worlds (`bn_centrality`) already drew from the EM with repeats
-skipped and scored 0.002 on `ssm/26` at 280 s. With 90% of the mass in 101
-worlds that is not possible if it works. Find out why before building the
-ancestral sampler on the same path (`gen_samples` -> `bn_buffer`).
+`em.gen_samples` raises on every call under pyAgrum 1.15 (`drawSamples`
+returns the log-likelihood, not the samples); the world sampler catches it
+and falls back to a uniform draw, paying 0.34 ms per draw. The v4 `generic`
+worlds numbers are uniform sampling made slower: in the 18- and 24-variable
+configs it visited 27-56% of the worlds `random` did. Uniform itself scored
+0.003 on `ssm/26`. `utils/umda.py` and `bn.py:302` call the same function.
+Paper: L1032 says the scenario heuristic draws from the joint distribution,
+and L1569-1577 mixes this artefact into the generic results; both must go.
+
+### Implemented (2026-11-12)
+
+- `ancestral` (worlds, `UniqueAncestral` in `byWorldSampling.py`): ancestral
+  sampling without replacement over a trie of unvisited mass. Validated:
+  exhausts the space with no repeats, total mass 1.000000000000, P(w) equal
+  to pyAgrum inference to 6e-17, 100-160 us per draw.
+- `marginal_order` (programs): the enumerated list sorted by the product of
+  annotation marginals, without replacement.
+- Smoke test, 20 s: `ssm/26 a_6` mass visited worlds 0.002 -> 0.991,
+  programs 0.009 -> 0.940.
+
+### Step 3 run -- sample-by-sample convergence on the tree leaves (icic)
+
+Four curves per non-trivial query (worlds and programs, each uniform and
+guided), routed by the depth-3 and depth-5 trees, 60 queries per leaf of
+each tree (618 queries), 280 s cap per curve:
+
+    python sampling/leaf_heuristic_experiment.py --n_per_leaf 60 \
+        --time_limit 280 --workers 16 \
+        --models_root /home/jupyter-mario.leiva.al@gma-57ad0/exp-delp3e \
+        --output_dir results_tte/leaf_heuristics_v5
+
+Worst case 12 h at 16 workers, plus the program enumeration each query pays
+before its clock starts. Resumable by relaunching the same command;
+`--summary_only` rebuilds `summary.txt` / `summary.csv` from what is on disk.
+Read mass against k to compare the order within a method, and the gap to the
+exact interval against time to compare the methods.
 
 ## Paper state
 
