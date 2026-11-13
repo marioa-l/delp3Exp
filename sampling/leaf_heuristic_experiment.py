@@ -17,7 +17,8 @@ interval sooner than the other one:
 Queries: non-trivial only (the exact interval is not [1,1], [0,0] or [0,1]:
 the answer changes with the world), resolved in the ground truth unless
 --include_unresolved. Each tree in --trees routes every query to a leaf, and
-up to --n_per_leaf queries are drawn per leaf of each tree (union over trees).
+up to --n_per_leaf queries are drawn per leaf of each tree (union over trees;
+0 takes them all, which is how the guided ground truth is built).
 
 Per curve, one record per distinct sample k (a new world or a new program):
 elapsed time, solver calls, l, u and the probability mass visited so far.
@@ -41,6 +42,13 @@ Usage (icic):
     python sampling/leaf_heuristic_experiment.py --n_per_leaf 60 \\
         --time_limit 280 --workers 16 \\
         --models_root /home/jupyter-mario.leiva.al@gma-57ad0/exp-delp3e \\
+        --output_dir results_tte/leaf_heuristics_v5
+
+Guided ground truth (every non-trivial query, guided curves only; the
+queries already on disk are skipped):
+    python sampling/leaf_heuristic_experiment.py --n_per_leaf 0 \\
+        --include_unresolved --curves worlds_guided,programs_guided \\
+        --time_limit 280 --workers 16 --models_root <root> \\
         --output_dir results_tte/leaf_heuristics_v5
 """
 
@@ -237,7 +245,8 @@ def select_queries(args, trees):
     keys = set()
     for tag in trees:
         for _, g in df.groupby(f"leaf_{tag}"):
-            g = g.sample(n=min(args.n_per_leaf, len(g)), random_state=args.seed)
+            if args.n_per_leaf > 0:
+                g = g.sample(n=min(args.n_per_leaf, len(g)), random_state=args.seed)
             keys |= set(zip(g.config, g.model, g.literal))
     sel = df[[k in keys for k in zip(df.config, df.model, df.literal)]]
     print(f"Non-trivial candidates: {len(df)}; selected: {len(sel)}")
@@ -335,14 +344,27 @@ def write_summary(output_dir, trees):
                "gap@Ts  : (exact_l - l) + (u - exact_u) after T seconds",
                "values  : mean +/- standard error over the queries of the leaf", ""], []
     cols = [f"mass@k{k}" for k in (1, 2, 3, 10, 100)] + [f"gap@{t}s" for t in GAP_AT_T]
+    L.append("guided vs uniform within each method, paired per query "
+             "(ratios are guided / uniform over queries where both reach the exact interval)")
+    for meth in ("worlds", "programs"):
+        tg, tu = (per_q[f"{meth}_{f}_tte"].fillna(np.inf).values for f in ("guided", "random"))
+        ok, both = np.isfinite(tg) | np.isfinite(tu), np.isfinite(tg) & np.isfinite(tu)
+        kr = per_q[f"{meth}_guided_k"].values[both] / per_q[f"{meth}_random_k"].values[both]
+        L.append(f"    {meth:9s} guided first {_ms((tg < tu)[ok])} (n={ok.sum()})   "
+                 f"median samples ratio {np.median(kr):.3f}   "
+                 f"median time ratio {np.median(tg[both] / tu[both]):.3f}   (n={both.sum()})")
+    L.append("")
     for tag in trees:
         L.append(f"##### TREE {tag}")
-        L += _recommended_vs_other(per_q, tag)
+        L += _tree_level(per_q, tag, float(res.time_limit.iloc[0]), rows)
         for leaf in sorted(per_q[f"leaf_{tag}"].unique(), key=lambda s: int(s[1:])):
             g = per_q[per_q[f"leaf_{tag}"] == leaf]
             rec = g[f"rec_{tag}"].iloc[0]
             gt = g.gt_winner.value_counts().to_dict()
-            L.append(f"{tag} {leaf}  recommends {rec}  n={len(g)}  gt={gt}")
+            tw, tp = (g[f"{m}_guided_tte"].fillna(np.inf).values for m in ("worlds", "programs"))
+            okg = np.isfinite(tw) | np.isfinite(tp)
+            gw = pd.Series(np.where(tw < tp, "worlds", "programs")[okg]).value_counts().to_dict()
+            L.append(f"{tag} {leaf}  recommends {rec}  n={len(g)}  gt={gt}  guided winner={gw}")
             L.append(f"    {g[f'path_{tag}'].iloc[0]}")
             L.append("    " + f"{'':18s}" + "".join(f"{c:>17s}" for c in cols)
                      + f"{'exact':>8s}{'med tte':>9s}")
@@ -368,20 +390,39 @@ def write_summary(output_dir, trees):
     print("\n".join(L))
 
 
-def _recommended_vs_other(per_q, tag):
-    """How often the recommended method reaches the exact interval first,
-    with uniform and with guided sampling (a method that never reaches it
-    loses; queries where neither does are left out)."""
+def _ms(x, d=4):
+    x = np.asarray(x, float)
+    se = x.std(ddof=1) / np.sqrt(len(x)) if len(x) > 1 else 0.0
+    return f"{x.mean():.{d}f} +/- {se:.{d}f}"
+
+
+def _tree_level(per_q, tag, cap, rows):
+    """How often the recommended method reaches the exact interval first
+    (a method that never reaches it loses; queries where neither does are
+    left out), and what each selection policy costs over all queries: time
+    to the exact interval capped at the time limit, so a miss costs the cap."""
+    T = {f"{m}_{f}": per_q[f"{m}_{f}_tte"].fillna(np.inf).values for m, f, _ in CURVES}
+    rec = per_q[f"rec_{tag}"].values
     out = []
     for fam in ("random", "guided"):
-        tw = per_q[f"worlds_{fam}_tte"].fillna(np.inf)
-        tp = per_q[f"programs_{fam}_tte"].fillna(np.inf)
-        ok = (np.isfinite(tw) | np.isfinite(tp)).values
-        win = np.where(tw < tp, "worlds", "programs")
-        hit = pd.Series(win == per_q[f"rec_{tag}"].values)[ok].astype(float)
-        se = hit.std(ddof=1) / np.sqrt(len(hit)) if len(hit) > 1 else 0.0
-        out.append(f"recommended method first to the exact interval ({fam}): "
-                   f"{hit.mean():.4f} +/- {se:.4f}  (n={ok.sum()})")
+        tw, tp = T[f"worlds_{fam}"], T[f"programs_{fam}"]
+        for r in ("worlds", "programs", None):
+            ok = (rec == r if r else True) & (np.isfinite(tw) | np.isfinite(tp))
+            hit = (np.where(tw < tp, "worlds", "programs") == rec)[ok]
+            out.append(f"recommended method first ({fam}, "
+                       f"{'recommends ' + r if r else 'all'}): {_ms(hit)}  (n={ok.sum()})")
+    pol = {"tree + uniform": np.where(rec == "worlds", T["worlds_random"], T["programs_random"]),
+           "tree + guided": np.where(rec == "worlds", T["worlds_guided"], T["programs_guided"]),
+           **{f"always {m} {f}": T[f"{m}_{f}"] for m, f, _ in CURVES},
+           "oracle guided": np.minimum(T["worlds_guided"], T["programs_guided"])}
+    out.append(f"policy cost: time to the exact interval, capped at {cap:.0f} s")
+    for name, t in pol.items():
+        tc = np.minimum(t, cap)
+        out.append(f"    {name:24s} reached {np.isfinite(t).sum():4d}/{len(t)}   "
+                   f"mean {_ms(tc, 1)} s   median {np.median(tc):6.1f} s")
+        rows += [dict(tree=tag, leaf="all", recommends="", method=name, family="policy",
+                      metric=k, mean=v.mean(), sem=v.std(ddof=1) / np.sqrt(len(v)), n=len(v))
+                 for k, v in (("tte_capped", tc), ("reached_exact", np.isfinite(t).astype(float)))]
     return out + [""]
 
 
@@ -393,7 +434,8 @@ def main():
                         "by its folder name (d3, d5)")
     p.add_argument("--output_dir", default="results_tte/leaf_heuristics_v5")
     p.add_argument("--models_root", default=None)
-    p.add_argument("--n_per_leaf", type=int, default=60)
+    p.add_argument("--n_per_leaf", type=int, default=60,
+                   help="queries drawn per leaf; 0 takes every query")
     p.add_argument("--runs", type=int, default=1,
                    help="repetitions of the four curves per query")
     p.add_argument("--curves", default=",".join(f"{m}_{f}" for m, f, _ in CURVES),

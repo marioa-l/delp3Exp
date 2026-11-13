@@ -112,6 +112,10 @@ def load(d):
     missing = [f"{m}_{f}" for m, f, _ in CURVES if (m, f) not in present]
     if missing:
         print("[warn] curves with no results yet, left out:", missing)
+    # Every curve averages over the same queries: those that have all of them.
+    res = res[res[[f"{m}_{f}_k" for m, f in present]].notna().all(axis=1)]
+    tr = tr.merge(res[KEY], on=KEY)
+    print(f"queries with every curve: {len(res)}")
     return res, tr, present
 
 

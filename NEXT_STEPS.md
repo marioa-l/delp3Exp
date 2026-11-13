@@ -261,7 +261,57 @@ before its clock starts. Resumable by relaunching the same command;
 Read mass against k to compare the order within a method, and the gap to the
 exact interval against time to compare the methods.
 
+Results (2026-11-13, all four curves on the 618 queries, `summary.txt`):
+ancestral beats uniform worlds on every query (a third of the samples, 0.41x
+the time); marginal order beats uniform programs on 91% (0.90x). Tree +
+guided: 577/618 exact, 65.2 +/- 3.4 s mean capped time, against 92.9 +/- 4.0
+for tree + uniform and 57.7 +/- 3.1 for the oracle. But where the tree says
+programs, the guided programs sampler is first only 0.52 of the time (d3 L6
+flips to worlds): ancestral helped worlds far more than marginal order helped
+programs, so the uniform labels no longer describe the guided samplers.
+
+## Step 4 -- guided ground truth and a new tree
+
+The current tree is, in effect, one question (`em_var < n_annots`, sample the
+smaller space): with uniform samplers the cost follows the size of the space.
+With guided samplers it follows how concentrated the mass is, so the labels
+change (618 queries: 138 programs -> worlds, 8 the other way). A trial on
+those 618, cheap attributes plus `em_entropy_mc`, puts
+`af_n_em_vars_used < em_entropy_mc -> programs` (89/89) at the root.
+`em_entropy_mc` is the mean -log2 P(w) over ancestral draws: no inference,
+r = 0.9999 against `em_entropy`, 2 s for 431 models.
+
+icic, guided curves on every non-trivial query (1770; the 618 are skipped,
+1152 jobs, worst case 11.2 h at 16 workers):
+
+    python sampling/leaf_heuristic_experiment.py --n_per_leaf 0 \
+        --include_unresolved --curves worlds_guided,programs_guided \
+        --time_limit 280 --workers 16 \
+        --models_root /home/jupyter-mario.leiva.al@gma-57ad0/exp-delp3e \
+        --output_dir results_tte/leaf_heuristics_v5
+
+Optional, after it: the same command with
+`--curves worlds_random,programs_random` (another 11.2 h worst case) gives
+all four curves on all 1770, so the convergence figures and the tree +
+uniform baseline cover every query, measured on the same machine. The
+figures only average over queries that have every curve.
+
+Then, locally:
+
+    python sampling/guided_ground_truth.py
+    for d in 1 3 5; do
+      python sampling/final_tree.py --input_csv results_tte/all_results_guided.csv \
+          --depth $d --ban_tiers 2,3 --min_leaf 25 --cascade --no_prune \
+          --output_dir results_tte/analysis_guided/d$d
+    done
+
+and compare the old and new trees under guided sampling by policy cost (mean
+capped time, queries at the exact interval), not only accuracy.
+
 ## Paper state
+
+Superseded: a new version of the paper will be supplied; edit that one, not
+the `KBS_...` copy described below.
 
 `KBS_.../main.tex` compiles clean (0 errors, 35 pages; 36 undefined
 references, all pre-existing `\linelabel` targets). Results and Conclusions
