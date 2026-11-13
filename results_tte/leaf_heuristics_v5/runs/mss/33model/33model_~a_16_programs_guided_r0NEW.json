@@ -1,0 +1,32 @@
+{
+    "status": {
+        "~a_16": {
+            "yes": 458,
+            "no": 1194,
+            "undecided": 1845,
+            "unknown": 0,
+            "pyes": 0.001263644732703935,
+            "pno": 0.8615140603514481,
+            "pundecided": 0.13719947290960677,
+            "punknown": 0.0,
+            "time": 195.95459365844727,
+            "delp_calls": 3497,
+            "time_to_exact": null,
+            "percY": 16016.26,
+            "percN": 41754.18,
+            "percU": 64519.65,
+            "percUNK": 0.0,
+            "l": 0.001263644732703935,
+            "u": 0.13848593964855194,
+            "flag": "INTEREST"
+        }
+    },
+    "data": {
+        "n_samples": 3497,
+        "time": 280.03039169311523,
+        "repeated_programs": 0,
+        "inconsistent_programs": 0,
+        "worlds_consulted": 3497,
+        "delp_calls": 3497
+    }
+}
