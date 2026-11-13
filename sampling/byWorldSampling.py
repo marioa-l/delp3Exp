@@ -5,6 +5,7 @@ import re
 import time
 
 import numpy as np
+import pyAgrum as gum
 from progress.counter import Counter
 
 from delp.consultDeLP import *
@@ -32,11 +33,21 @@ class UniqueAncestral:
         self.n = len(self.order)
         self.parents, self.cpt = [], []
         for v in self.order:
+            # Read the CPT entry by entry through an Instantiation, the one
+            # API every pyAgrum version shares (Potential.names and the axis
+            # order of toarray() are not: icic's version has no .names).
             pot = bn.cpt(v)
-            # toarray() axes run in the reverse of pot.names
-            ids = [bn.idFromName(x) for x in reversed(pot.names)]
-            pa = [i for i in ids if i != v]
-            arr = np.transpose(pot.toarray(), [ids.index(i) for i in pa] + [ids.index(v)])
+            pa = sorted(bn.parents(v))
+            pos = {bn.variable(i).name(): j for j, i in enumerate(pa + [v])}
+            arr = np.zeros((2,) * (len(pa) + 1))
+            inst = gum.Instantiation(pot)
+            inst.setFirst()
+            while not inst.end():
+                idx = [0] * (len(pa) + 1)
+                for d in range(inst.nbrDim()):
+                    idx[pos[inst.variable(d).name()]] = inst.val(d)
+                arr[tuple(idx)] = pot.get(inst)
+                inst.inc()
             self.parents.append(pa)
             self.cpt.append(arr)               # arr[parent values] = (P(v=0), P(v=1))
         # Node i of the trie: rem[i, b] = unvisited mass below branch b,

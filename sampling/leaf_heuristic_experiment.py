@@ -142,7 +142,7 @@ def thin(history, dense_k, cap, ratio=1.05):
 
 def _worker(job):
     (cfg, model, literal, run, model_path, save_dir, exact_l, exact_u,
-     cap, epsilon, dense_k, seed, info) = job
+     cap, epsilon, dense_k, seed, curves, info) = job
     np.random.seed(zlib.crc32(f"{cfg}/{model}/{literal}/{run}/{seed}".encode()))
     os.makedirs(save_dir, exist_ok=True)
     row = {**info, "config": cfg, "model": model, "literal": literal,
@@ -151,6 +151,8 @@ def _worker(job):
     traces, samplers = [], {}
     for method, fam, mode in CURVES:
         c = f"{method}_{fam}"
+        if c not in curves:
+            continue
         t0 = time.time()
         try:
             # One sampler per method: the program sampler enumerates its
@@ -182,8 +184,28 @@ def _worker(job):
         except Exception as e:  # one curve failing does not lose the others
             row[f"{c}_error"] = str(e)[:200]
         row[f"{c}_wall"] = time.time() - t0
-    row["ok"] = not any(f"{m}_{f}_error" in row for m, f, _ in CURVES)
+    row["ok"] = not any(f"{c}_error" in row for c in curves)
     return row, traces
+
+
+def combine(res):
+    """
+    One row per (query, run). Each curve's fields come from the last row in
+    which that curve ran without error, so a curve re-run with --curves
+    (appended as a new row) replaces a failed one. ``ok`` means all four
+    curves are present.
+    """
+    curve_cols = [f"{m}_{f}_{x}" for m, f, _ in CURVES for x in CURVE_FIELDS]
+    out = res.drop_duplicates(KEY, keep="last")
+    out = out[[c for c in out.columns if c not in curve_cols + ["ok", "error"]]]
+    for m, f, _ in CURVES:
+        c = f"{m}_{f}"
+        good = res[res[f"{c}_k"].notna() & res[f"{c}_error"].isna()]
+        cols = [f"{c}_{x}" for x in CURVE_FIELDS]
+        out = out.merge(good[KEY + cols].drop_duplicates(KEY, keep="last"),
+                        on=KEY, how="left")
+    out["ok"] = out[[f"{m}_{f}_k" for m, f, _ in CURVES]].notna().all(axis=1)
+    return out
 
 
 def _worker_safe(job):
@@ -225,8 +247,10 @@ def select_queries(args, trees):
 def build_jobs(args, sel, trees, models_root, csv_path):
     done = set()
     if os.path.exists(csv_path):
-        d = pd.read_csv(csv_path, sep=";", usecols=KEY)
-        done = set(map(tuple, d.astype({"run": int}).itertuples(index=False, name=None)))
+        d = combine(pd.read_csv(csv_path, sep=";"))
+        have = d[[f"{c}_k" for c in args.curves]].notna().all(axis=1)
+        done = set(map(tuple, d.loc[have, KEY].astype({"run": int})
+                       .itertuples(index=False, name=None)))
     info_cols = (["gt_winner", "time_worlds", "time_programs"]
                  + [f"{x}_{t}" for t in trees for x in ("rec", "leaf", "path")])
     jobs = []
@@ -240,7 +264,7 @@ def build_jobs(args, sel, trees, models_root, csv_path):
             jobs.append((r["config"], r["model"], r["literal"], run, mp,
                          os.path.join(args.output_dir, "runs", r["config"], r["model"]),
                          float(r["exact_l"]), float(r["exact_u"]), args.time_limit,
-                         args.epsilon, args.dense_k, args.seed,
+                         args.epsilon, args.dense_k, args.seed, args.curves,
                          {c: r[c] for c in info_cols}))
     if done:
         print(f"Resuming: {len(done)} (query, run) pairs already on disk")
@@ -265,8 +289,8 @@ def _state_at(tr, col, x, res):
 
 
 def write_summary(output_dir, trees):
-    res = pd.read_csv(os.path.join(output_dir, "results.csv"), sep=";")
-    res = res[res.ok == True]  # noqa: E712
+    res = combine(pd.read_csv(os.path.join(output_dir, "results.csv"), sep=";"))
+    res = res[res.ok]
     tdir = os.path.join(output_dir, "traces")
     if res.empty or not os.path.isdir(tdir):
         print("[warn] nothing to summarise")
@@ -372,6 +396,9 @@ def main():
     p.add_argument("--n_per_leaf", type=int, default=60)
     p.add_argument("--runs", type=int, default=1,
                    help="repetitions of the four curves per query")
+    p.add_argument("--curves", default=",".join(f"{m}_{f}" for m, f, _ in CURVES),
+                   help="which curves to run, e.g. worlds_guided to re-run a "
+                        "failed one; the summary combines the rows per query")
     p.add_argument("--time_limit", type=int, default=280)
     p.add_argument("--dense_k", type=int, default=1000)
     p.add_argument("--epsilon", type=float, default=1e-6)
@@ -381,6 +408,7 @@ def main():
     p.add_argument("--summary_only", action="store_true")
     p.add_argument("--dry_run", action="store_true")
     args = p.parse_args()
+    args.curves = [c.strip() for c in args.curves.split(",") if c.strip()]
 
     trees = load_trees(args.trees)
     os.makedirs(os.path.join(args.output_dir, "traces"), exist_ok=True)
@@ -396,7 +424,7 @@ def main():
           f"cap {args.time_limit}s x {len(CURVES)} curves x {args.runs} run(s)")
     for tag in trees:
         print(f"\n{tag}:\n" + sel.groupby([f"leaf_{tag}", f"rec_{tag}"]).size().to_string())
-    worst = len(jobs) * len(CURVES) * args.time_limit / 3600 / max(args.workers, 1)
+    worst = len(jobs) * len(args.curves) * args.time_limit / 3600 / max(args.workers, 1)
     print(f"\nJobs: {len(jobs)} | worst case (every curve hits the cap): "
           f"{worst:.1f} h at {args.workers} workers")
     if args.dry_run or not jobs:
