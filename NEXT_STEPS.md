@@ -308,6 +308,18 @@ Then, locally:
 and compare the old and new trees under guided sampling by policy cost (mean
 capped time, queries at the exact interval), not only accuracy.
 
+Decisions and expectations (2026-11-13):
+- No race cut (stopping programs once worlds reached the exact interval):
+  it would hide what a wrong "programs" choice costs, which the policy
+  comparison needs; the weekend fits the full curves.
+- Trial on the 618, depth 3, tiers 0-1: without `em_entropy_mc` held-out
+  0.80 +/- 0.04 and leave-one-config-out 0.58; with it 0.80 +/- 0.02 and
+  0.75. Expect the new tree to score below the current 0.93: the guided
+  question is harder. The goal is a tree that says something beyond "sample
+  the smaller space" while lowering the policy cost.
+- After the analysis comes a new version of the paper, on the copy the
+  user supplies (see Paper state).
+
 ## Paper state
 
 Superseded: a new version of the paper will be supplied; edit that one, not
