@@ -20,16 +20,25 @@ Queries that neither guided sampler finished within the cap are labelled
 ground truth. Rows keep every attribute of all_results.csv; the uniform label
 stays as gt_winner_uniform (text, so never a predictor).
 
+--evaluate DIR compares selection policies under the guided samplers on
+every non-trivial query: the trees in DIR/d*/ (out-of-fold predictions from
+final_tree_predictions.csv, and the shown tree), the uniform-trained trees in
+results_tte/analysis/d*/, always one method, and the oracle. Cost is the time
+to the exact interval capped at --cap, so a miss costs the cap. Writes
+DIR/policy_report.txt and DIR/policy.csv.
+
 Usage:
     python sampling/guided_ground_truth.py
     python sampling/final_tree.py --input_csv results_tte/all_results_guided.csv \\
         --depth 3 --ban_tiers 2,3 --min_leaf 25 \\
         --output_dir results_tte/analysis_guided/d3
+    python sampling/guided_ground_truth.py --evaluate results_tte/analysis_guided
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import sys
@@ -44,9 +53,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(ROOT))
 
 from sampling.byWorldSampling import UniqueAncestral                     # noqa: E402
-from sampling.leaf_heuristic_experiment import combine, find_models_root  # noqa: E402
+from sampling.leaf_heuristic_experiment import (  # noqa: E402
+    apply_plain, combine, find_models_root)
 
 Q = ["config", "model", "literal"]
+OLD_TREES = "results_tte/analysis"
 
 
 def entropy_mc(bn, n, rng):
@@ -61,6 +72,55 @@ def entropy_mc(bn, n, rng):
     return -logp.mean(), logp.std(ddof=1) / np.sqrt(n)
 
 
+def evaluate(args):
+    g = pd.read_csv(args.output_csv, sep=";")
+    lab = g.gt_winner.isin(["worlds", "programs"]).values
+    tw, tp = (g[f"time_{m}"].fillna(np.inf).values for m in ("worlds", "programs"))
+    pick = lambda rec: np.where(rec == "worlds", tw, tp)
+    rows = g.to_dict("records")
+    route = lambda path: np.array([apply_plain(json.load(open(path))["tree"], r)[0] for r in rows])
+    pol = {"always worlds": tw, "always programs": tp}
+    for d in sorted(os.listdir(args.evaluate)):
+        new = os.path.join(args.evaluate, d, "final_tree.json")
+        if not os.path.exists(new):
+            continue
+        shown = route(new)
+        oof = g[Q].merge(pd.read_csv(os.path.join(args.evaluate, d, "final_tree_predictions.csv"),
+                                     sep=";")[Q + ["pred_final"]], on=Q, how="left").pred_final
+        # unresolved rows have no out-of-fold prediction; they cost the cap either way
+        pol[f"new {d}, held out"] = pick(oof.fillna(pd.Series(shown)).values)
+        pol[f"new {d}, shown tree"] = pick(shown)
+        if os.path.exists(os.path.join(OLD_TREES, d, "final_tree.json")):
+            pol[f"old {d} (uniform labels)"] = pick(route(os.path.join(OLD_TREES, d, "final_tree.json")))
+    pol["oracle"] = np.minimum(tw, tp)
+
+    best = np.minimum(np.minimum(tw, tp), args.cap)
+    L = [f"Policies under the guided samplers: {len(g)} non-trivial queries "
+         f"({lab.sum()} labelled), time to the exact interval capped at {args.cap:.0f} s",
+         f"{'policy':34s}{'reached':>9s}{'mean time (s)':>18s}{'median':>8s}"
+         f"{'extra vs oracle':>17s}{'accuracy':>16s}"]
+    out = []
+    for name, t in pol.items():
+        tc = np.minimum(t, args.cap)
+        se = tc.std(ddof=1) / np.sqrt(len(tc))
+        rec = np.where(t == tw, "worlds", "programs")[lab]
+        hit = (rec == g.gt_winner.values[lab]).astype(float)
+        hse = hit.std(ddof=1) / np.sqrt(len(hit))
+        L.append(f"{name:34s}{np.isfinite(t).sum():>9d}{tc.mean():>11.1f} +/- {se:4.1f}"
+                 f"{np.median(tc):>8.1f}{(tc - best).mean():>17.1f}"
+                 f"{hit.mean():>9.3f} +/- {hse:.3f}" if name != "oracle" else
+                 f"{name:34s}{np.isfinite(t).sum():>9d}{tc.mean():>11.1f} +/- {se:4.1f}"
+                 f"{np.median(tc):>8.1f}{0.0:>17.1f}{'':>16s}")
+        out.append(dict(policy=name, reached=int(np.isfinite(t).sum()), n=len(t),
+                        mean_time=tc.mean(), sem_time=se, median_time=np.median(tc),
+                        extra_vs_oracle=(tc - best).mean(), accuracy=hit.mean(), sem_accuracy=hse))
+    L.append("accuracy: against the guided label, on the labelled queries; "
+             "'held out' uses the GroupKFold-by-model predictions")
+    open(os.path.join(args.evaluate, "policy_report.txt"), "w").write("\n".join(L) + "\n")
+    pd.DataFrame(out).to_csv(os.path.join(args.evaluate, "policy.csv"), index=False)
+    print("\n".join(L))
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--input_csv", default="results_tte/all_results.csv")
@@ -69,7 +129,12 @@ def main():
     p.add_argument("--models_root", default=None)
     p.add_argument("--n_draws", type=int, default=5000)
     p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--evaluate", default=None,
+                   help="folder with d*/final_tree.json trained on the guided labels")
+    p.add_argument("--cap", type=float, default=280.0)
     args = p.parse_args()
+    if args.evaluate:
+        return evaluate(args)
 
     res = combine(pd.read_csv(os.path.join(args.results_dir, "results.csv"), sep=";"))
     res = res[res.worlds_guided_k.notna() & res.programs_guided_k.notna()]

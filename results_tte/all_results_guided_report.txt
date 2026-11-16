@@ -1,0 +1,13 @@
+Guided ground truth: 1770 non-trivial queries, 1079 models
+labels: {'worlds': 1113, 'programs': 401, 'unresolved': 256}
+
+uniform label (rows) vs guided label (columns):
+gt_winner          programs  unresolved  worlds
+gt_winner_uniform                              
+programs                391          51     180
+unresolved                0         123       0
+worlds                   10          82     933
+
+em_entropy_mc (5000 draws): standard error median 0.0444, max 0.0609 bits
+vs em_entropy on 1079 models: Pearson r 0.9999, mean |diff| 0.0388 bits, max |diff| 0.1641 bits
+labelled rows for the tree: 1514 (1113 worlds, 401 programs)

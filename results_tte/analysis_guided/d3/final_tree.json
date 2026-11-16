@@ -1,0 +1,78 @@
+{
+ "format": "comparison-tree-v1",
+ "target": "gt_winner",
+ "depth": 3,
+ "held_out_accuracy": 0.8844075798308308,
+ "tree": {
+  "kind": "node",
+  "a": "em_n_arcs",
+  "b": "n_annots",
+  "yes": {
+   "kind": "node",
+   "a": "af_var_coverage",
+   "b": "em_eigenvector_max",
+   "yes": {
+    "kind": "node",
+    "a": "em_n_arcs",
+    "b": "em_var",
+    "yes": {
+     "kind": "leaf",
+     "cls": "worlds",
+     "n_p": 16,
+     "n_w": 59
+    },
+    "no": {
+     "kind": "leaf",
+     "cls": "worlds",
+     "n_p": 0,
+     "n_w": 71
+    }
+   },
+   "no": {
+    "kind": "leaf",
+    "cls": "worlds",
+    "n_p": 0,
+    "n_w": 760
+   }
+  },
+  "no": {
+   "kind": "node",
+   "a": "af_avg_connectors",
+   "b": "em_avg_in_degree",
+   "yes": {
+    "kind": "node",
+    "a": "af_n_em_vars_used",
+    "b": "em_entropy_mc",
+    "yes": {
+     "kind": "leaf",
+     "cls": "programs",
+     "n_p": 198,
+     "n_w": 0
+    },
+    "no": {
+     "kind": "leaf",
+     "cls": "programs",
+     "n_p": 114,
+     "n_w": 62
+    }
+   },
+   "no": {
+    "kind": "node",
+    "a": "af_max_complexity",
+    "b": "em_entropy_mc",
+    "yes": {
+     "kind": "leaf",
+     "cls": "worlds",
+     "n_p": 63,
+     "n_w": 92
+    },
+    "no": {
+     "kind": "leaf",
+     "cls": "worlds",
+     "n_p": 10,
+     "n_w": 69
+    }
+   }
+  }
+ }
+}

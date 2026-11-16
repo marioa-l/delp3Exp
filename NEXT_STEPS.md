@@ -320,6 +320,53 @@ Decisions and expectations (2026-11-13):
 - After the analysis comes a new version of the paper, on the copy the
   user supplies (see Paper state).
 
+### Step 4 results (2026-11-16)
+
+Guided curves on all 1770 non-trivial queries (icic, 64fe203b); the uniform
+curves still cover only the 618 (the optional command above is pending).
+
+- Labels (`all_results_guided.csv`, `_report.txt`): 1113 worlds, 401
+  programs, 256 unresolved. The unresolved are the 123 open in the original
+  ground truth plus 133 that need more than 280 s (the original ground truth
+  had no cap; 98% of those took > 280 s even uniformly). Uniform -> guided:
+  180 programs -> worlds, 10 worlds -> programs.
+- Trees (`results_tte/analysis_guided/d*`, tiers 0-1 plus `em_entropy_mc`,
+  min_leaf 25, unpruned), against a majority baseline of 0.735:
+
+  | depth | held-out | leave-one-config-out |
+  |---|---|---|
+  | d1 | 0.842 | 0.803 |
+  | d3 | 0.884 +/- 0.028 | 0.763 |
+  | d5 | 0.892 +/- 0.017 | 0.820 |
+
+  Leave-one-config-out is weak on smc, ssm, sss and smm.
+- Pruning no longer collapses the tree: d3 keeps 2 questions, d5 keeps 8.
+  The root is `em_n_arcs < n_annots -> worlds` (98%), followed by
+  `af_avg_connectors < em_avg_in_degree`. `af_n_em_vars_used <
+  em_entropy_mc -> programs` (198/198) appears in d3 and survives pruning in
+  d5, as does `af_max_complexity < em_entropy_mc`.
+- Policy cost under the guided samplers, mean time capped at 280 s over the
+  1770 queries (`policy_report.txt`):
+
+  | policy | mean time (s) |
+  |---|---|
+  | oracle | 98.6 |
+  | new d5, held out | 99.9 |
+  | new d3, held out | 101.1 |
+  | old d3 and d5 | 102.0 |
+  | always worlds | 118.5 |
+  | always programs | 172.5 |
+
+  Paired, old minus new is 2.10 +/- 0.45 s per query for d5 and 0.91 +/- 0.41
+  for d3. The trees disagree almost only where the old one says programs and
+  the new one says worlds. Every tree is within 3.4 s of the oracle: the root
+  decides most of it.
+- Editable drawing: `results_tte/figures/final_trees_guided.pptx`
+  (`node sampling/trees_to_pptx.js`, as for the old trees).
+- Regenerate: `python sampling/guided_ground_truth.py`, the `final_tree.py`
+  loop above, then `python sampling/guided_ground_truth.py --evaluate
+  results_tte/analysis_guided`.
+
 ## Paper state
 
 Superseded: a new version of the paper will be supplied; edit that one, not

@@ -1,0 +1,15 @@
+Policies under the guided samplers: 1770 non-trivial queries (1514 labelled), time to the exact interval capped at 280 s
+policy                              reached     mean time (s)  median  extra vs oracle        accuracy
+always worlds                          1302      118.5 +/-  2.5    78.2             19.9    0.735 +/- 0.011
+always programs                        1028      172.5 +/-  2.7   237.2             73.9    0.265 +/- 0.011
+new d1, held out                       1498      102.3 +/-  2.2    69.6              3.7    0.842 +/- 0.009
+new d1, shown tree                     1498      102.3 +/-  2.2    69.6              3.7    0.842 +/- 0.009
+old d1 (uniform labels)                1495      102.7 +/-  2.2    69.9              4.1    0.828 +/- 0.010
+new d3, held out                       1500      101.1 +/-  2.2    68.6              2.5    0.884 +/- 0.008
+new d3, shown tree                     1502      100.3 +/-  2.2    67.7              1.6    0.900 +/- 0.008
+old d3 (uniform labels)                1501      102.0 +/-  2.2    69.6              3.4    0.845 +/- 0.009
+new d5, held out                       1504       99.9 +/-  2.2    68.5              1.3    0.892 +/- 0.008
+new d5, shown tree                     1507       99.9 +/-  2.2    68.4              1.3    0.920 +/- 0.007
+old d5 (uniform labels)                1501      102.0 +/-  2.2    69.6              3.4    0.845 +/- 0.009
+oracle                                 1514       98.6 +/-  2.2    67.6              0.0                
+accuracy: against the guided label, on the labelled queries; 'held out' uses the GroupKFold-by-model predictions
