@@ -95,9 +95,11 @@ tiers 2-3 banned.
 ## Step 2 -- the final trees: depth 1, 3 and 5 (decided 2026-11-05)
 
 Three trees are the final result, not one. Pruning is off, because it
-collapses every depth to the root question (no deeper question changes the
-recommendation); the deeper trees are kept for their leaves, whose purity and
-attributes are what the heuristics will read.
+collapses the trees almost to the root question; the deeper trees are kept
+for their leaves, whose purity and attributes are what the heuristics will
+read. (Correction, 2026-11-16: pruned, d3 and d5 keep two questions, not one:
+`em_var < n_annots`, then `af_n_em_vars_used < em_n_arcs`, which sends 36 of
+the 2154 queries back to worlds.)
 
     for d in 1 3 5; do
       python sampling/final_tree.py --depth $d --ban_tiers 2,3 --min_leaf 25 \
@@ -369,8 +371,24 @@ curves still cover only the 618 (the optional command above is pending).
 
 ## Paper state
 
-Superseded: a new version of the paper will be supplied; edit that one, not
-the `KBS_...` copy described below.
+2026-11-16: the user replaced `KBS_.../main.tex` with the current version, and
+it was edited for steps 3 and 4. Our edits are in `\mar{}` (magenta; Gianni
+uses blue); results still missing are marked `\pending{}`, notes to coauthors
+use `\from{M}{...}`. The paper folder is gitignored. Edited: abstract,
+contributions, new Sec. 3.3 (mass-guided orders), Table 2 and Sec. 4.1
+(metrics, with cost and use by the trees; adds `em_entropy_mc` as
+$\widehat{ENT}$), Sec. 4.2 (both trees), old Sec. 4.3 removed (inside
+`\iffalse`), Sec. 5.1 (non-trivial queries, two ground truths), Table 3
+(final uniform GT plus guided GT), Sec. 5.3-5.4 (new measures, convergence
+runs), results, conclusions. Pending, once the uniform curves cover the 1770
+queries: Figs. `conv_mass_vs_samples` and `conv_example_intervals`
+(regenerate, copy to `images/`), the gap-vs-time figure split by the new
+tree's recommendation (placeholder), the tree figure from
+`final_trees_guided.pptx` slide 2 (placeholder), and the numbers marked
+pending. Bib entry `shi2020incremental` added (check).
+
+Older note, superseded: a new version of the paper will be supplied; edit that
+one, not the `KBS_...` copy described below.
 
 `KBS_.../main.tex` compiles clean (0 errors, 35 pages; 36 undefined
 references, all pre-existing `\linelabel` targets). Results and Conclusions
