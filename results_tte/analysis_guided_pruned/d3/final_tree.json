@@ -1,0 +1,34 @@
+{
+ "format": "comparison-tree-v1",
+ "target": "gt_winner",
+ "depth": 3,
+ "held_out_accuracy": 0.8844075798308308,
+ "tree": {
+  "kind": "node",
+  "a": "em_n_arcs",
+  "b": "n_annots",
+  "yes": {
+   "kind": "leaf",
+   "cls": "worlds",
+   "n_p": 16,
+   "n_w": 890
+  },
+  "no": {
+   "kind": "node",
+   "a": "af_avg_connectors",
+   "b": "em_avg_in_degree",
+   "yes": {
+    "kind": "leaf",
+    "cls": "programs",
+    "n_p": 312,
+    "n_w": 62
+   },
+   "no": {
+    "kind": "leaf",
+    "cls": "worlds",
+    "n_p": 73,
+    "n_w": 161
+   }
+  }
+ }
+}

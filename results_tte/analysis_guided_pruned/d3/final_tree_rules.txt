@@ -1,0 +1,10 @@
+Recommendation rules — every question compares two attributes.
+Target: which sampler reaches the exact interval first.
+
+IF em_n_arcs < n_annots:
+    -> sample WORLDS  (n=906, purity=98%, programs=16, worlds=890)
+ELSE:
+    IF af_avg_connectors < em_avg_in_degree:
+        -> sample PROGRAMS  (n=374, purity=83%, programs=312, worlds=62)
+    ELSE:
+        -> sample WORLDS  (n=234, purity=69%, programs=73, worlds=161)

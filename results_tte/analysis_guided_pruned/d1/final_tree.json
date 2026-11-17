@@ -1,0 +1,23 @@
+{
+ "format": "comparison-tree-v1",
+ "target": "gt_winner",
+ "depth": 1,
+ "held_out_accuracy": 0.8421327563219899,
+ "tree": {
+  "kind": "node",
+  "a": "em_n_arcs",
+  "b": "n_annots",
+  "yes": {
+   "kind": "leaf",
+   "cls": "worlds",
+   "n_p": 16,
+   "n_w": 890
+  },
+  "no": {
+   "kind": "leaf",
+   "cls": "programs",
+   "n_p": 385,
+   "n_w": 223
+  }
+ }
+}

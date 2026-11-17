@@ -55,22 +55,24 @@ function drawTree(tree, notes) {
   const nLevels = depth(tree) + 1;
   layout(tree, 0, 0);
 
-  const big = nLeaves <= 8;
+  // Type size by width available: up to 8 leaves, up to 12, more.
+  const tier = nLeaves <= 8 ? 0 : nLeaves <= 12 ? 1 : 2;
+  const big = tier < 2;                                    // one-line leaf counts
   const margin = 0.3;
   const colW = (SLIDE_W - 2 * margin) / nLeaves;          // one slot per leaf
   // Levels share the height, up to 1.9 in each; the drawing is centred.
   const levelH = Math.min(1.9, (SLIDE_H - 0.5) / nLevels);
   const top = (SLIDE_H - nLevels * levelH) / 2 + 0.1;
-  const boxH = Math.min(big ? 0.95 : 0.8, levelH * 0.62);
+  const boxH = Math.min([0.95, 0.9, 0.8][tier], levelH * 0.62);
   // A question stays within the leaf slots below it (so neighbours at the
   // same level never overlap): its half-width is the distance from its centre
   // to the nearer edge of that span. Leaves keep to their slot.
   const qWidth = n => Math.min(3.0,
     2 * 0.95 * colW * Math.min(n.slot - n.lo + 0.5, n.hi - n.slot + 0.5));
   const leafW = Math.min(2.4, Math.max(colW * 0.92, 0.7));
-  const fontQ = big ? 18 : 10;
-  const fontL = big ? 17 : 11;
-  const LINE = big ? 2.5 : 1.75;                           // points
+  const fontQ = [18, 14, 10][tier];
+  const fontL = [17, 13, 11][tier];
+  const LINE = [2.5, 2.25, 1.75][tier];                    // points
 
   const cx = n => margin + (n.slot + 0.5) * colW;
   const cy = n => top + n.level * levelH + boxH / 2;
@@ -93,9 +95,9 @@ function drawTree(tree, notes) {
           line: { color: NODE_ED, width: LINE, endArrowType: "triangle" },
           objectName: `e${k}-c` });
         // Label on the outer side of the drop: "no" to its left, "yes" to its right.
-        const lw = big ? 0.6 : 0.42;
+        const lw = [0.6, 0.5, 0.42][tier];
         s.addText(b, {
-          x: b === "no" ? x2 - lw - 0.06 : x2 + 0.06, y: ym + 0.03, w: lw, h: big ? 0.32 : 0.22,
+          x: b === "no" ? x2 - lw - 0.06 : x2 + 0.06, y: ym + 0.03, w: lw, h: [0.32, 0.27, 0.22][tier],
           isTextBox: true, margin: 0, fontFace: BODY, fontSize: fontL, italic: true,
           color: MUTED, align: b === "no" ? "right" : "left", valign: "top",
           objectName: `e${k}-label`,
