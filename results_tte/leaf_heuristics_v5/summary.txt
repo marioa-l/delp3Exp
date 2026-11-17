@@ -1,36 +1,36 @@
-=== Sample-by-sample convergence, 618 queries, 1 run(s), cap 280 s ===
+=== Sample-by-sample convergence, 1770 queries, 1 run(s), cap 280 s ===
 
 mass@kN : probability mass visited after N distinct samples
 gap@Ts  : (exact_l - l) + (u - exact_u) after T seconds
 values  : mean +/- standard error over the queries of the leaf
 
 guided vs uniform within each method, paired per query (ratios are guided / uniform over queries where both reach the exact interval)
-    worlds    guided first 1.0000 +/- 0.0000 (n=499)   median samples ratio 0.333   median time ratio 0.408   (n=475)
-    programs  guided first 0.9115 +/- 0.0125 (n=520)   median samples ratio 0.906   median time ratio 0.903   (n=487)
+    worlds    guided first 1.0000 +/- 0.0000 (n=1302)   median samples ratio 0.359   median time ratio 0.389   (n=1233)
+    programs  guided first 0.9202 +/- 0.0085 (n=1028)   median samples ratio 0.906   median time ratio 0.893   (n=846)
 
 ##### TREE d3
-recommended method first (random, recommends worlds): 0.7098 +/- 0.0304  (n=224)
-recommended method first (random, recommends programs): 0.9407 +/- 0.0129  (n=337)
-recommended method first (random, all): 0.8485 +/- 0.0152  (n=561)
-recommended method first (guided, recommends worlds): 0.9524 +/- 0.0140  (n=231)
-recommended method first (guided, recommends programs): 0.5154 +/- 0.0265  (n=357)
-recommended method first (guided, all): 0.6871 +/- 0.0191  (n=588)
+recommended method first (random, recommends worlds): 0.9210 +/- 0.0092  (n=861)
+recommended method first (random, recommends programs): 0.9595 +/- 0.0083  (n=568)
+recommended method first (random, all): 0.9363 +/- 0.0065  (n=1429)
+recommended method first (guided, recommends worlds): 0.9856 +/- 0.0040  (n=904)
+recommended method first (guided, recommends programs): 0.6361 +/- 0.0195  (n=610)
+recommended method first (guided, all): 0.8448 +/- 0.0093  (n=1514)
 policy cost: time to the exact interval, capped at 280 s
-    tree + uniform           reached  560/618   mean 92.9 +/- 4.0 s   median   34.3 s
-    tree + guided            reached  577/618   mean 65.2 +/- 3.4 s   median   29.3 s
-    always worlds random     reached  475/618   mean 146.7 +/- 4.5 s   median  180.9 s
-    always worlds guided     reached  499/618   mean 81.9 +/- 4.1 s   median   32.6 s
-    always programs random   reached  487/618   mean 101.1 +/- 4.4 s   median   34.3 s
-    always programs guided   reached  520/618   mean 91.8 +/- 4.3 s   median   31.1 s
-    oracle guided            reached  588/618   mean 57.7 +/- 3.1 s   median   26.4 s
+    tree + uniform           reached 1428/1770   mean 158.9 +/- 2.4 s   median  194.3 s
+    tree + guided            reached 1501/1770   mean 102.0 +/- 2.2 s   median   69.6 s
+    always worlds random     reached 1233/1770   mean 196.3 +/- 2.1 s   median  227.8 s
+    always worlds guided     reached 1302/1770   mean 118.5 +/- 2.5 s   median   78.2 s
+    always programs random   reached  846/1770   mean 184.2 +/- 2.7 s   median  280.0 s
+    always programs guided   reached 1028/1770   mean 172.5 +/- 2.7 s   median  237.2 s
+    oracle guided            reached 1514/1770   mean 98.6 +/- 2.2 s   median   67.6 s
 
-d3 L1  recommends worlds  n=44  gt={'worlds': 33, 'programs': 11}  guided winner={'worlds': 40, 'programs': 4}
+d3 L1  recommends worlds  n=45  gt={'worlds': 33, 'programs': 11, 'unresolved': 1}  guided winner={'worlds': 40, 'programs': 4}
     em_var < n_annots & af_avg_var_usage < em_max_in_degree & af_pct_annotated < em_closeness_max
                                 mass@k1          mass@k2          mass@k3         mass@k10        mass@k100           gap@1s          gap@10s          gap@60s   exact  med tte
-    worlds random         0.0000+/-0.0000    0.0001+/-0.0001    0.0001+/-0.0001    0.0003+/-0.0001    0.0129+/-0.0026    0.9195+/-0.0104    0.6438+/-0.0594    0.0477+/-0.0246      44     17.0
-    worlds guided         0.3477+/-0.0383    0.4929+/-0.0293    0.5840+/-0.0185    0.7666+/-0.0084    0.9818+/-0.0013    0.0600+/-0.0048    0.0005+/-0.0001    0.0000+/-0.0000      44     11.7
-    programs random       0.0004+/-0.0002    0.0028+/-0.0013    0.0031+/-0.0013    0.0579+/-0.0247    0.3658+/-0.0558    0.8601+/-0.0249    0.4501+/-0.0581    0.0417+/-0.0235      43     16.4
-    programs guided       0.6096+/-0.0105    0.6577+/-0.0133    0.6898+/-0.0135    0.7893+/-0.0152    0.9606+/-0.0067    0.1184+/-0.0109    0.0110+/-0.0036    0.0002+/-0.0002      44     14.5
+    worlds random         0.0000+/-0.0000    0.0001+/-0.0001    0.0001+/-0.0001    0.0003+/-0.0001    0.0126+/-0.0025    0.9212+/-0.0103    0.6516+/-0.0586    0.0687+/-0.0319      44     17.0
+    worlds guided         0.3399+/-0.0382    0.4897+/-0.0289    0.5788+/-0.0188    0.7592+/-0.0111    0.9783+/-0.0037    0.0690+/-0.0101    0.0027+/-0.0022    0.0003+/-0.0003      44     11.7
+    programs random       0.0004+/-0.0002    0.0028+/-0.0013    0.0030+/-0.0013    0.0566+/-0.0242    0.3577+/-0.0551    0.8630+/-0.0246    0.4621+/-0.0581    0.0628+/-0.0312      43     16.4
+    programs guided       0.6038+/-0.0118    0.6512+/-0.0145    0.6827+/-0.0150    0.7824+/-0.0164    0.9545+/-0.0090    0.1378+/-0.0222    0.0203+/-0.0100    0.0057+/-0.0055      44     14.5
 
 d3 L2  recommends worlds  n=80  gt={'worlds': 76, 'programs': 4}  guided winner={'worlds': 72, 'programs': 7}
     em_var < n_annots & af_avg_var_usage < em_max_in_degree & af_pct_annotated >= em_closeness_max
@@ -48,29 +48,29 @@ d3 L3  recommends worlds  n=27  gt={'worlds': 26, 'programs': 1}  guided winner=
     programs random       0.0000+/-0.0000    0.0000+/-0.0000    0.0000+/-0.0000    0.0068+/-0.0049    0.1043+/-0.0509    0.8973+/-0.0313    0.8066+/-0.0548    0.7008+/-0.0641       7     16.1
     programs guided       0.5672+/-0.0109    0.5922+/-0.0128    0.6079+/-0.0137    0.7038+/-0.0170    0.8821+/-0.0125    0.2299+/-0.0206    0.0690+/-0.0113    0.0081+/-0.0023      16    159.3
 
-d3 L4  recommends worlds  n=60  gt={'worlds': 60}  guided winner={'worlds': 56}
+d3 L4  recommends worlds  n=920  gt={'worlds': 809, 'unresolved': 111}  guided winner={'worlds': 727, 'programs': 2}
     em_var < n_annots & af_avg_var_usage >= em_max_in_degree & af_avg_connectors >= em_betweenness_avg
                                 mass@k1          mass@k2          mass@k3         mass@k10        mass@k100           gap@1s          gap@10s          gap@60s   exact  med tte
-    worlds random         0.0001+/-0.0001    0.0001+/-0.0001    0.0001+/-0.0001    0.0012+/-0.0009    0.0103+/-0.0020    0.9163+/-0.0097    0.9020+/-0.0099    0.6875+/-0.0333      55    224.1
-    worlds guided         0.2543+/-0.0339    0.4312+/-0.0289    0.5348+/-0.0201    0.7321+/-0.0107    0.9701+/-0.0046    0.1088+/-0.0082    0.0060+/-0.0011    0.0001+/-0.0001      56     72.2
-    programs random       0.0001+/-0.0001    0.0001+/-0.0001    0.0001+/-0.0001    0.0004+/-0.0001    0.0321+/-0.0140    0.9171+/-0.0097    0.9116+/-0.0096    0.8062+/-0.0246       5    172.8
-    programs guided       0.5352+/-0.0086    0.5609+/-0.0091    0.5856+/-0.0094    0.6875+/-0.0095    0.8771+/-0.0077    0.4587+/-0.0373    0.1223+/-0.0096    0.0372+/-0.0051      17    214.9
+    worlds random         0.0005+/-0.0004    0.0005+/-0.0004    0.0006+/-0.0004    0.0035+/-0.0013    0.0205+/-0.0027    0.9139+/-0.0028    0.8857+/-0.0042    0.6951+/-0.0090     692    224.5
+    worlds guided         0.2932+/-0.0084    0.4317+/-0.0072    0.5142+/-0.0057    0.7097+/-0.0038    0.9558+/-0.0016    0.1444+/-0.0031    0.0138+/-0.0007    0.0011+/-0.0001     729     77.9
+    programs random       0.0001+/-0.0001    0.0009+/-0.0007    0.0018+/-0.0011    0.0033+/-0.0013    0.0294+/-0.0035    0.9149+/-0.0028    0.8953+/-0.0040    0.8027+/-0.0072     133    190.3
+    programs guided       0.5233+/-0.0025    0.5479+/-0.0026    0.5697+/-0.0027    0.6663+/-0.0033    0.8536+/-0.0028    0.4834+/-0.0100    0.1453+/-0.0037    0.0490+/-0.0019     274    192.6
 
-d3 L5  recommends programs  n=203  gt={'programs': 192, 'worlds': 11}  guided winner={'programs': 132, 'worlds': 49}
+d3 L5  recommends programs  n=447  gt={'programs': 423, 'worlds': 15, 'unresolved': 9}  guided winner={'programs': 315, 'worlds': 75}
     em_var >= n_annots & af_n_em_vars_used < em_n_arcs & af_avg_connectors < em_avg_in_degree
                                 mass@k1          mass@k2          mass@k3         mass@k10        mass@k100           gap@1s          gap@10s          gap@60s   exact  med tte
-    worlds random         0.0000+/-0.0000    0.0000+/-0.0000    0.0000+/-0.0000    0.0002+/-0.0002    0.0017+/-0.0005    0.8474+/-0.0098    0.7524+/-0.0196    0.6536+/-0.0231      89    174.2
-    worlds guided         0.0887+/-0.0122    0.1602+/-0.0158    0.1907+/-0.0171    0.3035+/-0.0225    0.4535+/-0.0314    0.4606+/-0.0238    0.3364+/-0.0240    0.1487+/-0.0132      97     27.1
-    programs random       0.0041+/-0.0026    0.0090+/-0.0042    0.0147+/-0.0055    0.0305+/-0.0075    0.2216+/-0.0210    0.8110+/-0.0127    0.5919+/-0.0221    0.2471+/-0.0220     170     58.5
-    programs guided       0.3126+/-0.0186    0.3599+/-0.0194    0.3983+/-0.0198    0.5353+/-0.0211    0.8045+/-0.0162    0.3701+/-0.0204    0.1448+/-0.0130    0.0388+/-0.0064     179     46.8
+    worlds random         0.0000+/-0.0000    0.0000+/-0.0000    0.0000+/-0.0000    0.0001+/-0.0001    0.0010+/-0.0003    0.8372+/-0.0068    0.7774+/-0.0115    0.6997+/-0.0134     171    180.7
+    worlds guided         0.0858+/-0.0080    0.1372+/-0.0100    0.1669+/-0.0108    0.2565+/-0.0144    0.3933+/-0.0206    0.5077+/-0.0155    0.3789+/-0.0162    0.1644+/-0.0090     187     33.0
+    programs random       0.0024+/-0.0012    0.0063+/-0.0020    0.0097+/-0.0026    0.0279+/-0.0045    0.2108+/-0.0135    0.8051+/-0.0084    0.6100+/-0.0142    0.2695+/-0.0149     358     64.8
+    programs guided       0.2798+/-0.0121    0.3306+/-0.0126    0.3683+/-0.0128    0.5089+/-0.0136    0.8016+/-0.0105    0.4040+/-0.0138    0.1755+/-0.0102    0.0549+/-0.0063     387     52.8
 
-d3 L6  recommends programs  n=179  gt={'programs': 138, 'worlds': 41}  guided winner={'worlds': 124, 'programs': 52}
+d3 L6  recommends programs  n=226  gt={'programs': 179, 'worlds': 45, 'unresolved': 2}  guided winner={'worlds': 147, 'programs': 73}
     em_var >= n_annots & af_n_em_vars_used < em_n_arcs & af_avg_connectors >= em_avg_in_degree
                                 mass@k1          mass@k2          mass@k3         mass@k10        mass@k100           gap@1s          gap@10s          gap@60s   exact  med tte
-    worlds random         0.0003+/-0.0002    0.0003+/-0.0002    0.0003+/-0.0002    0.0004+/-0.0002    0.0055+/-0.0011    0.9396+/-0.0064    0.6382+/-0.0314    0.4275+/-0.0295     162    161.8
-    worlds guided         0.2023+/-0.0172    0.3273+/-0.0174    0.4023+/-0.0159    0.5947+/-0.0136    0.8716+/-0.0147    0.1538+/-0.0139    0.0346+/-0.0115    0.0099+/-0.0037     171     14.5
-    programs random       0.0087+/-0.0049    0.0126+/-0.0059    0.0275+/-0.0090    0.0698+/-0.0143    0.5160+/-0.0302    0.8491+/-0.0166    0.4135+/-0.0296    0.1087+/-0.0185     166     17.1
-    programs guided       0.5815+/-0.0111    0.6373+/-0.0115    0.6742+/-0.0116    0.8173+/-0.0096    0.9760+/-0.0032    0.1793+/-0.0140    0.0327+/-0.0080    0.0063+/-0.0029     167     13.3
+    worlds random         0.0002+/-0.0002    0.0002+/-0.0002    0.0002+/-0.0002    0.0003+/-0.0002    0.0050+/-0.0009    0.9341+/-0.0061    0.6603+/-0.0272    0.4536+/-0.0259     201    170.7
+    worlds guided         0.1938+/-0.0151    0.3150+/-0.0155    0.3866+/-0.0145    0.5754+/-0.0132    0.8488+/-0.0154    0.1717+/-0.0139    0.0506+/-0.0123    0.0192+/-0.0056     211     17.2
+    programs random       0.0071+/-0.0039    0.0118+/-0.0048    0.0244+/-0.0072    0.0737+/-0.0132    0.4980+/-0.0269    0.8404+/-0.0156    0.4315+/-0.0263    0.1205+/-0.0172     209     18.9
+    programs guided       0.5683+/-0.0110    0.6274+/-0.0113    0.6663+/-0.0115    0.8060+/-0.0101    0.9708+/-0.0032    0.1979+/-0.0147    0.0472+/-0.0094    0.0133+/-0.0050     210     15.1
 
 d3 L7  recommends worlds  n=25  gt={'worlds': 21, 'programs': 4}  guided winner={'worlds': 25}
     em_var >= n_annots & af_n_em_vars_used >= em_n_arcs
@@ -81,28 +81,28 @@ d3 L7  recommends worlds  n=25  gt={'worlds': 21, 'programs': 4}  guided winner=
     programs guided       0.6320+/-0.0199    0.6921+/-0.0194    0.7328+/-0.0197    0.8292+/-0.0209    0.9624+/-0.0081    0.1307+/-0.0258    0.0262+/-0.0103    0.0108+/-0.0058      19     13.6
 
 ##### TREE d5
-recommended method first (random, recommends worlds): 0.7098 +/- 0.0304  (n=224)
-recommended method first (random, recommends programs): 0.9407 +/- 0.0129  (n=337)
-recommended method first (random, all): 0.8485 +/- 0.0152  (n=561)
-recommended method first (guided, recommends worlds): 0.9524 +/- 0.0140  (n=231)
-recommended method first (guided, recommends programs): 0.5154 +/- 0.0265  (n=357)
-recommended method first (guided, all): 0.6871 +/- 0.0191  (n=588)
+recommended method first (random, recommends worlds): 0.9210 +/- 0.0092  (n=861)
+recommended method first (random, recommends programs): 0.9595 +/- 0.0083  (n=568)
+recommended method first (random, all): 0.9363 +/- 0.0065  (n=1429)
+recommended method first (guided, recommends worlds): 0.9856 +/- 0.0040  (n=904)
+recommended method first (guided, recommends programs): 0.6361 +/- 0.0195  (n=610)
+recommended method first (guided, all): 0.8448 +/- 0.0093  (n=1514)
 policy cost: time to the exact interval, capped at 280 s
-    tree + uniform           reached  560/618   mean 92.9 +/- 4.0 s   median   34.3 s
-    tree + guided            reached  577/618   mean 65.2 +/- 3.4 s   median   29.3 s
-    always worlds random     reached  475/618   mean 146.7 +/- 4.5 s   median  180.9 s
-    always worlds guided     reached  499/618   mean 81.9 +/- 4.1 s   median   32.6 s
-    always programs random   reached  487/618   mean 101.1 +/- 4.4 s   median   34.3 s
-    always programs guided   reached  520/618   mean 91.8 +/- 4.3 s   median   31.1 s
-    oracle guided            reached  588/618   mean 57.7 +/- 3.1 s   median   26.4 s
+    tree + uniform           reached 1428/1770   mean 158.9 +/- 2.4 s   median  194.3 s
+    tree + guided            reached 1501/1770   mean 102.0 +/- 2.2 s   median   69.6 s
+    always worlds random     reached 1233/1770   mean 196.3 +/- 2.1 s   median  227.8 s
+    always worlds guided     reached 1302/1770   mean 118.5 +/- 2.5 s   median   78.2 s
+    always programs random   reached  846/1770   mean 184.2 +/- 2.7 s   median  280.0 s
+    always programs guided   reached 1028/1770   mean 172.5 +/- 2.7 s   median  237.2 s
+    oracle guided            reached 1514/1770   mean 98.6 +/- 2.2 s   median   67.6 s
 
-d5 L1  recommends worlds  n=23  gt={'worlds': 19, 'programs': 4}  guided winner={'worlds': 23}
+d5 L1  recommends worlds  n=24  gt={'worlds': 19, 'programs': 4, 'unresolved': 1}  guided winner={'worlds': 23}
     em_var < n_annots & af_avg_var_usage < em_max_in_degree & af_pct_annotated < em_closeness_max & em_betweenness_avg < em_clustering_coef
                                 mass@k1          mass@k2          mass@k3         mass@k10        mass@k100           gap@1s          gap@10s          gap@60s   exact  med tte
-    worlds random         0.0000+/-0.0000    0.0000+/-0.0000    0.0001+/-0.0000    0.0002+/-0.0001    0.0107+/-0.0031    0.9196+/-0.0142    0.7965+/-0.0564    0.0524+/-0.0379      23     20.3
-    worlds guided         0.4126+/-0.0499    0.5059+/-0.0395    0.5825+/-0.0251    0.7710+/-0.0110    0.9810+/-0.0019    0.0662+/-0.0062    0.0004+/-0.0002    0.0000+/-0.0000      23     12.0
-    programs random       0.0003+/-0.0003    0.0031+/-0.0019    0.0032+/-0.0019    0.0611+/-0.0359    0.2795+/-0.0607    0.8568+/-0.0370    0.5130+/-0.0754    0.0475+/-0.0324      23     22.9
-    programs guided       0.6065+/-0.0114    0.6490+/-0.0151    0.6893+/-0.0135    0.7929+/-0.0126    0.9682+/-0.0055    0.1227+/-0.0134    0.0080+/-0.0035    0.0001+/-0.0001      23     15.2
+    worlds random         0.0000+/-0.0000    0.0000+/-0.0000    0.0001+/-0.0000    0.0002+/-0.0001    0.0102+/-0.0030    0.9226+/-0.0140    0.8047+/-0.0546    0.0916+/-0.0534      23     20.3
+    worlds guided         0.3954+/-0.0507    0.4993+/-0.0384    0.5727+/-0.0260    0.7568+/-0.0177    0.9745+/-0.0068    0.0828+/-0.0176    0.0045+/-0.0041    0.0006+/-0.0006      23     12.0
+    programs random       0.0003+/-0.0003    0.0030+/-0.0018    0.0030+/-0.0018    0.0586+/-0.0345    0.2679+/-0.0593    0.8625+/-0.0358    0.5330+/-0.0749    0.0869+/-0.0501      23     22.9
+    programs guided       0.5957+/-0.0153    0.6372+/-0.0187    0.6762+/-0.0185    0.7798+/-0.0178    0.9563+/-0.0130    0.1589+/-0.0385    0.0256+/-0.0179    0.0103+/-0.0102      23     15.2
 
 d5 L2  recommends worlds  n=21  gt={'worlds': 14, 'programs': 7}  guided winner={'worlds': 17, 'programs': 4}
     em_var < n_annots & af_avg_var_usage < em_max_in_degree & af_pct_annotated < em_closeness_max & em_betweenness_avg >= em_clustering_coef
@@ -136,13 +136,13 @@ d5 L5  recommends worlds  n=27  gt={'worlds': 26, 'programs': 1}  guided winner=
     programs random       0.0000+/-0.0000    0.0000+/-0.0000    0.0000+/-0.0000    0.0068+/-0.0049    0.1043+/-0.0509    0.8973+/-0.0313    0.8066+/-0.0548    0.7008+/-0.0641       7     16.1
     programs guided       0.5672+/-0.0109    0.5922+/-0.0128    0.6079+/-0.0137    0.7038+/-0.0170    0.8821+/-0.0125    0.2299+/-0.0206    0.0690+/-0.0113    0.0081+/-0.0023      16    159.3
 
-d5 L6  recommends worlds  n=60  gt={'worlds': 60}  guided winner={'worlds': 56}
+d5 L6  recommends worlds  n=920  gt={'worlds': 809, 'unresolved': 111}  guided winner={'worlds': 727, 'programs': 2}
     em_var < n_annots & af_avg_var_usage >= em_max_in_degree & af_avg_connectors >= em_betweenness_avg
                                 mass@k1          mass@k2          mass@k3         mass@k10        mass@k100           gap@1s          gap@10s          gap@60s   exact  med tte
-    worlds random         0.0001+/-0.0001    0.0001+/-0.0001    0.0001+/-0.0001    0.0012+/-0.0009    0.0103+/-0.0020    0.9163+/-0.0097    0.9020+/-0.0099    0.6875+/-0.0333      55    224.1
-    worlds guided         0.2543+/-0.0339    0.4312+/-0.0289    0.5348+/-0.0201    0.7321+/-0.0107    0.9701+/-0.0046    0.1088+/-0.0082    0.0060+/-0.0011    0.0001+/-0.0001      56     72.2
-    programs random       0.0001+/-0.0001    0.0001+/-0.0001    0.0001+/-0.0001    0.0004+/-0.0001    0.0321+/-0.0140    0.9171+/-0.0097    0.9116+/-0.0096    0.8062+/-0.0246       5    172.8
-    programs guided       0.5352+/-0.0086    0.5609+/-0.0091    0.5856+/-0.0094    0.6875+/-0.0095    0.8771+/-0.0077    0.4587+/-0.0373    0.1223+/-0.0096    0.0372+/-0.0051      17    214.9
+    worlds random         0.0005+/-0.0004    0.0005+/-0.0004    0.0006+/-0.0004    0.0035+/-0.0013    0.0205+/-0.0027    0.9139+/-0.0028    0.8857+/-0.0042    0.6951+/-0.0090     692    224.5
+    worlds guided         0.2932+/-0.0084    0.4317+/-0.0072    0.5142+/-0.0057    0.7097+/-0.0038    0.9558+/-0.0016    0.1444+/-0.0031    0.0138+/-0.0007    0.0011+/-0.0001     729     77.9
+    programs random       0.0001+/-0.0001    0.0009+/-0.0007    0.0018+/-0.0011    0.0033+/-0.0013    0.0294+/-0.0035    0.9149+/-0.0028    0.8953+/-0.0040    0.8027+/-0.0072     133    190.3
+    programs guided       0.5233+/-0.0025    0.5479+/-0.0026    0.5697+/-0.0027    0.6663+/-0.0033    0.8536+/-0.0028    0.4834+/-0.0100    0.1453+/-0.0037    0.0490+/-0.0019     274    192.6
 
 d5 L7  recommends programs  n=24  gt={'programs': 24}  guided winner={'programs': 11, 'worlds': 7}
     em_var >= n_annots & af_n_em_vars_used < em_n_arcs & af_avg_connectors < em_avg_in_degree & af_var_usage_gini < em_deg_centrality_avg & af_max_body_size < em_avg_shortest_path
@@ -160,29 +160,29 @@ d5 L8  recommends programs  n=25  gt={'programs': 17, 'worlds': 8}  guided winne
     programs random       0.0215+/-0.0207    0.0223+/-0.0207    0.0227+/-0.0207    0.0609+/-0.0353    0.3465+/-0.0778    0.8039+/-0.0433    0.4287+/-0.0743    0.0853+/-0.0463      23     16.2
     programs guided       0.4312+/-0.0451    0.5027+/-0.0494    0.5510+/-0.0512    0.6765+/-0.0514    0.9036+/-0.0328    0.1932+/-0.0373    0.0485+/-0.0168    0.0118+/-0.0070      23     15.8
 
-d5 L9  recommends programs  n=69  gt={'programs': 66, 'worlds': 3}  guided winner={'programs': 44, 'worlds': 22}
+d5 L9  recommends programs  n=137  gt={'programs': 130, 'worlds': 7}  guided winner={'programs': 94, 'worlds': 38}
     em_var >= n_annots & af_n_em_vars_used < em_n_arcs & af_avg_connectors < em_avg_in_degree & af_var_usage_gini >= em_deg_centrality_avg & em_closeness_avg < em_deg_centrality_max
                                 mass@k1          mass@k2          mass@k3         mass@k10        mass@k100           gap@1s          gap@10s          gap@60s   exact  med tte
-    worlds random         0.0000+/-0.0000    0.0000+/-0.0000    0.0000+/-0.0000    0.0006+/-0.0006    0.0023+/-0.0009    0.8918+/-0.0140    0.7665+/-0.0385    0.6390+/-0.0424      46    177.8
-    worlds guided         0.1255+/-0.0224    0.2450+/-0.0282    0.2916+/-0.0289    0.4859+/-0.0308    0.7318+/-0.0417    0.2619+/-0.0297    0.1203+/-0.0287    0.0418+/-0.0115      54     30.0
-    programs random       0.0009+/-0.0006    0.0119+/-0.0097    0.0134+/-0.0098    0.0209+/-0.0103    0.2143+/-0.0366    0.8446+/-0.0214    0.5920+/-0.0427    0.2292+/-0.0410      63     33.6
-    programs guided       0.4709+/-0.0264    0.5134+/-0.0273    0.5512+/-0.0275    0.6900+/-0.0278    0.8996+/-0.0185    0.2144+/-0.0242    0.0597+/-0.0138    0.0140+/-0.0080      64     33.8
+    worlds random         0.0000+/-0.0000    0.0000+/-0.0000    0.0000+/-0.0000    0.0004+/-0.0003    0.0020+/-0.0007    0.8963+/-0.0091    0.7797+/-0.0267    0.6491+/-0.0295      97    178.9
+    worlds guided         0.1701+/-0.0177    0.2665+/-0.0196    0.3182+/-0.0194    0.4963+/-0.0208    0.7496+/-0.0281    0.2584+/-0.0201    0.1139+/-0.0206    0.0430+/-0.0095     111     33.0
+    programs random       0.0010+/-0.0005    0.0073+/-0.0049    0.0083+/-0.0050    0.0195+/-0.0066    0.2372+/-0.0281    0.8533+/-0.0149    0.5819+/-0.0310    0.2187+/-0.0283     125     33.5
+    programs guided       0.4815+/-0.0178    0.5273+/-0.0186    0.5617+/-0.0188    0.6951+/-0.0191    0.9044+/-0.0125    0.2007+/-0.0163    0.0537+/-0.0093    0.0125+/-0.0047     129     32.0
 
-d5 L10  recommends programs  n=85  gt={'programs': 85}  guided winner={'programs': 67, 'worlds': 7}
+d5 L10  recommends programs  n=261  gt={'programs': 252, 'unresolved': 9}  guided winner={'programs': 200, 'worlds': 17}
     em_var >= n_annots & af_n_em_vars_used < em_n_arcs & af_avg_connectors < em_avg_in_degree & af_var_usage_gini >= em_deg_centrality_avg & em_closeness_avg >= em_deg_centrality_max
                                 mass@k1          mass@k2          mass@k3         mass@k10        mass@k100           gap@1s          gap@10s          gap@60s   exact  med tte
-    worlds random         0.0000+/-0.0000    0.0000+/-0.0000    0.0000+/-0.0000    0.0000+/-0.0000    0.0000+/-0.0000    0.8008+/-0.0171    0.8008+/-0.0171    0.7823+/-0.0177      13    209.1
-    worlds guided         0.0275+/-0.0102    0.0435+/-0.0133    0.0510+/-0.0144    0.0810+/-0.0205    0.1461+/-0.0332    0.6860+/-0.0281    0.5588+/-0.0302    0.2457+/-0.0190      13     52.9
-    programs random       0.0024+/-0.0008    0.0043+/-0.0012    0.0053+/-0.0013    0.0196+/-0.0042    0.1795+/-0.0248    0.7889+/-0.0171    0.6581+/-0.0242    0.3105+/-0.0313      66     69.2
-    programs guided       0.1389+/-0.0201    0.1821+/-0.0214    0.2218+/-0.0226    0.3588+/-0.0271    0.7041+/-0.0264    0.5628+/-0.0287    0.2461+/-0.0221    0.0654+/-0.0123      74     66.7
+    worlds random         0.0000+/-0.0000    0.0000+/-0.0000    0.0000+/-0.0000    0.0000+/-0.0000    0.0000+/-0.0000    0.8008+/-0.0096    0.8003+/-0.0096    0.7729+/-0.0104      44    204.0
+    worlds guided         0.0308+/-0.0062    0.0495+/-0.0082    0.0641+/-0.0094    0.0975+/-0.0129    0.1685+/-0.0201    0.6683+/-0.0163    0.5413+/-0.0178    0.2344+/-0.0113      46     45.2
+    programs random       0.0015+/-0.0004    0.0044+/-0.0011    0.0061+/-0.0012    0.0258+/-0.0048    0.1793+/-0.0142    0.7803+/-0.0103    0.6498+/-0.0147    0.3163+/-0.0186     192     69.3
+    programs guided       0.1532+/-0.0119    0.2045+/-0.0127    0.2441+/-0.0133    0.3887+/-0.0154    0.7366+/-0.0142    0.5387+/-0.0165    0.2557+/-0.0143    0.0823+/-0.0099     217     68.6
 
-d5 L11  recommends programs  n=80  gt={'programs': 72, 'worlds': 8}  guided winner={'worlds': 47, 'programs': 30}
+d5 L11  recommends programs  n=122  gt={'programs': 110, 'worlds': 10, 'unresolved': 2}  guided winner={'worlds': 66, 'programs': 50}
     em_var >= n_annots & af_n_em_vars_used < em_n_arcs & af_avg_connectors >= em_avg_in_degree & af_rule_to_var_ratio < em_avg_in_degree & af_var_coverage < em_eigenvector_max
                                 mass@k1          mass@k2          mass@k3         mass@k10        mass@k100           gap@1s          gap@10s          gap@60s   exact  med tte
-    worlds random         0.0000+/-0.0000    0.0000+/-0.0000    0.0000+/-0.0000    0.0001+/-0.0000    0.0017+/-0.0008    0.9341+/-0.0111    0.8172+/-0.0348    0.6295+/-0.0361      69    186.3
-    worlds guided         0.1689+/-0.0235    0.2735+/-0.0239    0.3487+/-0.0229    0.5103+/-0.0222    0.7967+/-0.0299    0.2113+/-0.0271    0.0741+/-0.0250    0.0222+/-0.0081      72     29.0
-    programs random       0.0027+/-0.0012    0.0032+/-0.0013    0.0080+/-0.0029    0.0456+/-0.0170    0.3959+/-0.0426    0.8818+/-0.0202    0.5593+/-0.0423    0.1794+/-0.0326      73     44.3
-    programs guided       0.5508+/-0.0208    0.6023+/-0.0215    0.6385+/-0.0211    0.7915+/-0.0173    0.9677+/-0.0060    0.2490+/-0.0267    0.0615+/-0.0172    0.0130+/-0.0064      74     40.1
+    worlds random         0.0000+/-0.0000    0.0000+/-0.0000    0.0000+/-0.0000    0.0001+/-0.0000    0.0020+/-0.0008    0.9264+/-0.0093    0.8077+/-0.0282    0.6258+/-0.0289     103    188.0
+    worlds guided         0.1634+/-0.0188    0.2684+/-0.0199    0.3394+/-0.0193    0.4997+/-0.0195    0.7762+/-0.0263    0.2283+/-0.0232    0.0915+/-0.0222    0.0356+/-0.0102     107     29.4
+    programs random       0.0022+/-0.0009    0.0055+/-0.0017    0.0100+/-0.0027    0.0583+/-0.0161    0.3950+/-0.0348    0.8564+/-0.0199    0.5512+/-0.0343    0.1814+/-0.0267     111     41.6
+    programs guided       0.5355+/-0.0180    0.5927+/-0.0185    0.6334+/-0.0187    0.7781+/-0.0164    0.9602+/-0.0054    0.2633+/-0.0244    0.0798+/-0.0169    0.0239+/-0.0092     112     36.3
 
 d5 L12  recommends programs  n=21  gt={'programs': 15, 'worlds': 6}  guided winner={'worlds': 15, 'programs': 6}
     em_var >= n_annots & af_n_em_vars_used < em_n_arcs & af_avg_connectors >= em_avg_in_degree & af_rule_to_var_ratio < em_avg_in_degree & af_var_coverage >= em_eigenvector_max
@@ -192,13 +192,13 @@ d5 L12  recommends programs  n=21  gt={'programs': 15, 'worlds': 6}  guided winn
     programs random       0.0000+/-0.0000    0.0298+/-0.0291    0.0321+/-0.0294    0.0971+/-0.0505    0.3591+/-0.0843    0.8361+/-0.0552    0.6288+/-0.0764    0.1606+/-0.0721      17     36.3
     programs guided       0.5453+/-0.0204    0.6105+/-0.0220    0.6585+/-0.0260    0.8104+/-0.0253    0.9673+/-0.0094    0.1882+/-0.0253    0.0274+/-0.0066    0.0027+/-0.0013      17     24.9
 
-d5 L13  recommends programs  n=62  gt={'programs': 37, 'worlds': 25}  guided winner={'worlds': 52, 'programs': 10}
+d5 L13  recommends programs  n=67  gt={'programs': 40, 'worlds': 27}  guided winner={'worlds': 56, 'programs': 11}
     em_var >= n_annots & af_n_em_vars_used < em_n_arcs & af_avg_connectors >= em_avg_in_degree & af_rule_to_var_ratio >= em_avg_in_degree & af_var_usage_gini < em_deg_centrality_max
                                 mass@k1          mass@k2          mass@k3         mass@k10        mass@k100           gap@1s          gap@10s          gap@60s   exact  med tte
-    worlds random         0.0007+/-0.0007    0.0007+/-0.0007    0.0007+/-0.0007    0.0010+/-0.0007    0.0111+/-0.0024    0.9475+/-0.0090    0.3341+/-0.0539    0.0832+/-0.0317      60      9.7
-    worlds guided         0.2605+/-0.0324    0.4296+/-0.0298    0.4843+/-0.0272    0.7203+/-0.0131    0.9642+/-0.0051    0.0649+/-0.0076    0.0014+/-0.0009    0.0000+/-0.0000      62      6.2
-    programs random       0.0122+/-0.0105    0.0126+/-0.0105    0.0485+/-0.0217    0.0970+/-0.0290    0.7224+/-0.0460    0.8019+/-0.0329    0.1742+/-0.0388    0.0144+/-0.0102      60      8.8
-    programs guided       0.6362+/-0.0108    0.6987+/-0.0112    0.7313+/-0.0128    0.8652+/-0.0106    0.9896+/-0.0025    0.0872+/-0.0098    0.0028+/-0.0014    0.0004+/-0.0003      60      7.8
+    worlds random         0.0007+/-0.0007    0.0007+/-0.0007    0.0007+/-0.0007    0.0009+/-0.0007    0.0109+/-0.0023    0.9460+/-0.0089    0.3365+/-0.0522    0.0770+/-0.0294      65      9.6
+    worlds guided         0.2583+/-0.0312    0.4235+/-0.0287    0.4758+/-0.0266    0.7178+/-0.0125    0.9649+/-0.0047    0.0652+/-0.0071    0.0013+/-0.0009    0.0000+/-0.0000      67      6.3
+    programs random       0.0113+/-0.0097    0.0118+/-0.0097    0.0450+/-0.0202    0.1001+/-0.0281    0.7233+/-0.0439    0.8018+/-0.0320    0.1761+/-0.0374    0.0133+/-0.0094      65      8.9
+    programs guided       0.6345+/-0.0102    0.7004+/-0.0104    0.7319+/-0.0119    0.8640+/-0.0099    0.9895+/-0.0024    0.0868+/-0.0092    0.0026+/-0.0013    0.0004+/-0.0002      65      7.9
 
 d5 L14  recommends programs  n=16  gt={'programs': 14, 'worlds': 2}  guided winner={'worlds': 10, 'programs': 6}
     em_var >= n_annots & af_n_em_vars_used < em_n_arcs & af_avg_connectors >= em_avg_in_degree & af_rule_to_var_ratio >= em_avg_in_degree & af_var_usage_gini >= em_deg_centrality_max
