@@ -76,10 +76,12 @@ def evaluate(args):
     g = pd.read_csv(args.output_csv, sep=";")
     lab = g.gt_winner.isin(["worlds", "programs"]).values
     tw, tp = (g[f"time_{m}"].fillna(np.inf).values for m in ("worlds", "programs"))
-    pick = lambda rec: np.where(rec == "worlds", tw, tp)
     rows = g.to_dict("records")
     route = lambda path: np.array([apply_plain(json.load(open(path))["tree"], r)[0] for r in rows])
-    pol = {"always worlds": tw, "always programs": tp}
+    # Each rule is the algorithm it picks per query; the oracle (None) picks
+    # the faster one under whichever order is being costed.
+    n = len(g)
+    choice = {"always worlds": np.full(n, "worlds"), "always programs": np.full(n, "programs")}
     for d in sorted(os.listdir(args.evaluate)):
         new = os.path.join(args.evaluate, d, "final_tree.json")
         if not os.path.exists(new):
@@ -88,34 +90,61 @@ def evaluate(args):
         oof = g[Q].merge(pd.read_csv(os.path.join(args.evaluate, d, "final_tree_predictions.csv"),
                                      sep=";")[Q + ["pred_final"]], on=Q, how="left").pred_final
         # unresolved rows have no out-of-fold prediction; they cost the cap either way
-        pol[f"new {d}, held out"] = pick(oof.fillna(pd.Series(shown)).values)
-        pol[f"new {d}, shown tree"] = pick(shown)
+        choice[f"new {d}, held out"] = oof.fillna(pd.Series(shown)).values
+        choice[f"new {d}, shown tree"] = shown
         if os.path.exists(os.path.join(OLD_TREES, d, "final_tree.json")):
-            pol[f"old {d} (uniform labels)"] = pick(route(os.path.join(OLD_TREES, d, "final_tree.json")))
-    pol["oracle"] = np.minimum(tw, tp)
+            choice[f"old {d} (uniform labels)"] = route(os.path.join(OLD_TREES, d, "final_tree.json"))
+    choice["oracle"] = None
 
-    best = np.minimum(np.minimum(tw, tp), args.cap)
-    L = [f"Policies under the guided samplers: {len(g)} non-trivial queries "
+    def cost(rec, w, p):
+        t = np.minimum(w, p) if rec is None else np.where(rec == "worlds", w, p)
+        return t, np.minimum(t, args.cap)
+
+    best = cost(None, tw, tp)[1]
+    L = [f"Policies under the guided samplers: {n} non-trivial queries "
          f"({lab.sum()} labelled), time to the exact interval capped at {args.cap:.0f} s",
          f"{'policy':34s}{'reached':>9s}{'mean time (s)':>18s}{'median':>8s}"
          f"{'extra vs oracle':>17s}{'accuracy':>16s}"]
     out = []
-    for name, t in pol.items():
-        tc = np.minimum(t, args.cap)
-        se = tc.std(ddof=1) / np.sqrt(len(tc))
-        rec = np.where(t == tw, "worlds", "programs")[lab]
-        hit = (rec == g.gt_winner.values[lab]).astype(float)
-        hse = hit.std(ddof=1) / np.sqrt(len(hit))
-        L.append(f"{name:34s}{np.isfinite(t).sum():>9d}{tc.mean():>11.1f} +/- {se:4.1f}"
-                 f"{np.median(tc):>8.1f}{(tc - best).mean():>17.1f}"
-                 f"{hit.mean():>9.3f} +/- {hse:.3f}" if name != "oracle" else
-                 f"{name:34s}{np.isfinite(t).sum():>9d}{tc.mean():>11.1f} +/- {se:4.1f}"
-                 f"{np.median(tc):>8.1f}{0.0:>17.1f}{'':>16s}")
-        out.append(dict(policy=name, reached=int(np.isfinite(t).sum()), n=len(t),
-                        mean_time=tc.mean(), sem_time=se, median_time=np.median(tc),
-                        extra_vs_oracle=(tc - best).mean(), accuracy=hit.mean(), sem_accuracy=hse))
+    for name, rec in choice.items():
+        t, tc = cost(rec, tw, tp)
+        se = tc.std(ddof=1) / np.sqrt(n)
+        acc = ""
+        row = dict(policy=name, reached=int(np.isfinite(t).sum()), n=n, mean_time=tc.mean(),
+                   sem_time=se, median_time=np.median(tc), extra_vs_oracle=(tc - best).mean())
+        if rec is not None:
+            hit = (rec[lab] == g.gt_winner.values[lab]).astype(float)
+            row.update(accuracy=hit.mean(), sem_accuracy=hit.std(ddof=1) / np.sqrt(len(hit)))
+            acc = f"{row['accuracy']:.3f} +/- {row['sem_accuracy']:.3f}"
+        L.append(f"{name:34s}{row['reached']:>9d}{tc.mean():>11.1f} +/- {se:4.1f}"
+                 f"{np.median(tc):>8.1f}{row['extra_vs_oracle']:>17.1f}{acc:>16s}")
+        out.append(row)
     L.append("accuracy: against the guided label, on the labelled queries; "
              "'held out' uses the GroupKFold-by-model predictions")
+
+    # The same rules when both algorithms sample uniformly (convergence runs),
+    # on the queries that have uniform runs.
+    res = combine(pd.read_csv(os.path.join(args.results_dir, "results.csv"), sep=";"))
+    u = g[Q].merge(res.groupby(Q, as_index=False)[["worlds_random_k", "worlds_random_tte",
+                                                    "programs_random_tte"]].median(),
+                   on=Q, how="left")
+    have = u.worlds_random_k.notna().values
+    if have.any():
+        uw, up = (u[f"{m}_random_tte"].fillna(np.inf).values for m in ("worlds", "programs"))
+        L += ["", f"Same rules, uniform against guided selection ({have.sum()} queries with "
+                  f"uniform runs)",
+              f"{'policy':34s}{'reached':>9s}{'uniform (s)':>18s}{'guided (s)':>18s}"]
+        for name, rec in choice.items():
+            r = None if rec is None else rec[have]
+            t, tu = cost(r, uw[have], up[have])
+            tg = cost(r, tw[have], tp[have])[1]
+            m = len(tu)
+            L.append(f"{name:34s}{int(np.isfinite(t).sum()):>9d}"
+                     f"{tu.mean():>11.1f} +/- {tu.std(ddof=1) / np.sqrt(m):4.1f}"
+                     f"{tg.mean():>11.1f} +/- {tg.std(ddof=1) / np.sqrt(m):4.1f}")
+            out.append(dict(policy=name + ", uniform selection", reached=int(np.isfinite(t).sum()),
+                            n=m, mean_time=tu.mean(), sem_time=tu.std(ddof=1) / np.sqrt(m),
+                            median_time=np.median(tu)))
     open(os.path.join(args.evaluate, "policy_report.txt"), "w").write("\n".join(L) + "\n")
     pd.DataFrame(out).to_csv(os.path.join(args.evaluate, "policy.csv"), index=False)
     print("\n".join(L))

@@ -380,12 +380,20 @@ contributions, new Sec. 3.3 (mass-guided orders), Table 2 and Sec. 4.1
 $\widehat{ENT}$), Sec. 4.2 (both trees), old Sec. 4.3 removed (inside
 `\iffalse`), Sec. 5.1 (non-trivial queries, two ground truths), Table 3
 (final uniform GT plus guided GT), Sec. 5.3-5.4 (new measures, convergence
-runs), results, conclusions. Pending, once the uniform curves cover the 1770
-queries: Figs. `conv_mass_vs_samples` and `conv_example_intervals`
-(regenerate, copy to `images/`), the gap-vs-time figure split by the new
-tree's recommendation (placeholder), the tree figure from
-`final_trees_guided.pptx` slide 2 (placeholder), and the numbers marked
-pending. Bib entry `shi2020incremental` added (check).
+runs), results, conclusions. Bib entry `shi2020incremental` added (check).
+
+2026-11-17: uniform curves now cover all 1770 queries (8b2cca2b). The figures
+split by the guided d3/d5 trees (`generate_leaf_heuristic_figures.py --trees`,
+default); `conv_mass_vs_samples`, `conv_example_intervals` and
+`conv_gap_vs_time` copied to `images/`, every number in the results and
+conclusions recomputed on 1770, Table 5 gained a uniform-selection column
+(`guided_ground_truth.py --evaluate`). Findings: each tree is closest to the
+oracle with the order it was fitted on (uniform: uniform trees 158.9 s vs
+oracle 158.8; guided: guided d5 99.9 vs 98.6); order matters more than the
+tree (~159-167 s uniform vs ~100-103 s guided). The entropy leaf of d3 (222
+queries): worlds reaches exact in 1, programs in 172 (uniform) / 198
+(marginal). Only pending item: the tree figure (slide 2 of
+`final_trees_guided.pptx`, exported by the user).
 
 Older note, superseded: a new version of the paper will be supplied; edit that
 one, not the `KBS_...` copy described below.

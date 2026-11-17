@@ -23,6 +23,11 @@ Compare the order within a method against k, and the methods against time:
 a program groups every world that induces it, so per sample it always holds
 more mass. Curves still missing from the results (a failed run) are skipped.
 
+The split by recommendation and the leaves come from --trees (by default the
+trees fitted on the guided ground truth), applied to the attributes in
+--features_csv; --trees "" keeps the leaves stored in results.csv, i.e. the
+trees the queries were selected with.
+
     python sampling/generate_leaf_heuristic_figures.py \\
         --input_dir results_tte/leaf_heuristics_v5 --output_dir results_tte/figures
 """
@@ -43,7 +48,10 @@ import pandas as pd  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(ROOT))
-from sampling.leaf_heuristic_experiment import CURVES, KEY, combine  # noqa: E402
+from sampling.leaf_heuristic_experiment import (  # noqa: E402
+    CURVES, KEY, apply_plain, combine, load_trees)
+GUIDED_TREES = ("results_tte/analysis_guided/d3/final_tree.json,"
+                "results_tte/analysis_guided/d5/final_tree.json")
 
 COLOR = {"worlds": "#0072B2", "programs": "#D55E00"}      # Okabe-Ito
 STYLE = {"random": "--", "guided": "-"}
@@ -117,6 +125,18 @@ def load(d):
     tr = tr.merge(res[KEY], on=KEY)
     print(f"queries with every curve: {len(res)}")
     return res, tr, present
+
+
+def route(res, spec, features_csv):
+    """Recommendation and leaf of every query under the trees in spec."""
+    q = ["config", "model", "literal"]
+    feats = pd.read_csv(features_csv, sep=";").drop_duplicates(q)
+    rows = res[q].merge(feats, on=q, how="left").to_dict("records")
+    res = res.drop(columns=[c for c in res.columns if c.startswith(("rec_", "leaf_", "path_"))])
+    for tag, tree in load_trees(spec).items():
+        p = [apply_plain(tree, r) for r in rows]
+        res = res.assign(**{f"rec_{tag}": [x[0] for x in p], f"leaf_{tag}": [x[1] for x in p]})
+    return res
 
 
 def mass_at_k(res, tr, m, f):
@@ -346,10 +366,16 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("--input_dir", default="results_tte/leaf_heuristics_v5")
     p.add_argument("--output_dir", default="results_tte/figures")
+    p.add_argument("--trees", default=GUIDED_TREES,
+                   help="comma-separated final_tree.json paths that split the "
+                        "figures; empty keeps the leaves stored in results.csv")
+    p.add_argument("--features_csv", default="results_tte/all_results_guided.csv")
     args = p.parse_args()
     os.makedirs(args.output_dir, exist_ok=True)
     setup()
     res, tr, present = load(args.input_dir)
+    if args.trees:
+        res = route(res, args.trees, args.features_csv)
     tags = [c[5:] for c in res.columns if c.startswith("leaf_")]
     fig_mass(res, tr, present, args.output_dir)
     fig_gap(res, tr, present, args.output_dir)
