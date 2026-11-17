@@ -216,7 +216,7 @@ def _by_recommendation(res, tr, present, out, name, ylabel, value, logy):
     grid = np.logspace(-1, np.log10(cap), 60)
     fig, axes = plt.subplots(1, 2, figsize=(10, 4), sharey=True)
     for ax, rec, s in zip(axes, ("worlds", "programs"), "AB"):
-        mask = res.rec_d3 == rec
+        mask = res.rec_split == rec
         for m, f in present:
             mean, se, n = stats(subset(value(res, tr, m, f, grid), res, mask))
             line(ax, grid, mean.values, se.values, m, f)
@@ -326,7 +326,7 @@ def fig_example(res, tr, present, out):
         if not {(m, "random"), (m, "guided")} <= set(present):
             ax.axis("off")
             continue
-        q = res[(res.rec_d3 == m) & res[f"{m}_random_tte"].notna()
+        q = res[(res.rec_split == m) & res[f"{m}_random_tte"].notna()
                 & res[f"{m}_guided_tte"].notna() & (res[f"{m}_random_tte"] >= 10)]
         if q.empty:
             ax.axis("off")
@@ -370,12 +370,16 @@ def main():
                    help="comma-separated final_tree.json paths that split the "
                         "figures; empty keeps the leaves stored in results.csv")
     p.add_argument("--features_csv", default="results_tte/all_results_guided.csv")
+    p.add_argument("--split", default="d5",
+                   help="tree tag whose recommendation splits conv_gap_vs_time, "
+                        "conv_exact_vs_time and conv_example_intervals")
     args = p.parse_args()
     os.makedirs(args.output_dir, exist_ok=True)
     setup()
     res, tr, present = load(args.input_dir)
     if args.trees:
         res = route(res, args.trees, args.features_csv)
+    res["rec_split"] = res[f"rec_{args.split}"]
     tags = [c[5:] for c in res.columns if c.startswith("leaf_")]
     fig_mass(res, tr, present, args.output_dir)
     fig_gap(res, tr, present, args.output_dir)

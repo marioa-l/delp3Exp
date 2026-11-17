@@ -392,8 +392,14 @@ oracle with the order it was fitted on (uniform: uniform trees 158.9 s vs
 oracle 158.8; guided: guided d5 99.9 vs 98.6); order matters more than the
 tree (~159-167 s uniform vs ~100-103 s guided). The entropy leaf of d3 (222
 queries): worlds reaches exact in 1, programs in 172 (uniform) / 198
-(marginal). Only pending item: the tree figure (slide 2 of
-`final_trees_guided.pptx`, exported by the user).
+(marginal).
+
+2026-11-17, later: the paper's tree is the pruned depth-5 guided tree (8 of 15
+questions; slide 6 of `final_trees_guided.pptx`, outputs in
+`results_tte/analysis_guided_pruned/d5`), exported by the user as
+`images/final_tree.pdf`. Sec. 4.2 and the Fig. 3 caption describe it; the
+gap-vs-time and example figures split by its recommendation
+(`generate_leaf_heuristic_figures.py --split d5`, the default).
 
 Older note, superseded: a new version of the paper will be supplied; edit that
 one, not the `KBS_...` copy described below.
